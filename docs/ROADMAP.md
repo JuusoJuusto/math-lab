@@ -12,12 +12,15 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 - [x] Step-by-step equation solver with the same operation applied to both sides (one-step, two-step and both-sides levels)
 - [x] Hints that reveal one reasoning step at a time
 - [x] Verification of a solution by substitution
-- [ ] Typed numeric and algebraic answers
+- [x] Typed numeric answers
+- [ ] Typed algebraic answers (the learner writes an expression or an equation)
 - [ ] Brackets in the equation solver (an "expand brackets" operation)
 - [ ] Solver equations with fractions and decimals
 - [ ] Optional challenge: equations with no solution or infinitely many solutions (the engine already supports them)
 - [ ] Solver word problems: write the equation, then solve it
-- [ ] Mistake review and retry queue
+- [x] Mistake review and retry queue ("Fix your mistakes")
+- [x] Varied task types for exam practice: typed answers, true or false, which step, find the mistake, write the equation, time attack, daily challenge
+- [x] XP and levels
 - [ ] Difficulty selection and adaptive practice
 - [ ] More exercises per topic with validated answer keys (equation exercises and quiz equations are already validated by tests)
 

@@ -35,6 +35,8 @@ npm run check
 
 The project uses Next.js static export. A production build writes the deployable site to `out/`.
 
+Screens are addressed with the URL hash (`#/practice`, `#/learn/two-step`), so every address is served by the single exported page. No rewrite or redirect rules are needed on the host.
+
 ## Cloudflare Workers
 
 Authenticate Wrangler:

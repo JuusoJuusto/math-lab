@@ -135,11 +135,11 @@ Accessibility and design details worth knowing:
 - After applying a step, focus moves to **Simplify**; after simplifying it returns to the operations; on a stage change it moves to the new stage marker.
 - Motion is limited to short fades, and the global `prefers-reduced-motion` rule turns it off.
 - The equation font scales with the width of its own card and the length of the equation, so it fits phones, tablets and laptops.
-- Controls are at least 44 px high. Solver buttons use a slightly deeper teal than the rest of the app so white text meets WCAG AA contrast.
+- Controls are at least 44 px high. Button text meets WCAG AA contrast (white on `#13826f` is 4.7:1).
 
 ## Progress
 
-Finishing a practice round stores the level id in `solverLevels` inside the existing `mathlab:progress:v1` entry. This is additive: older stored data is still read correctly, and unreadable data falls back to empty progress. The retired topic id `simple` is mapped to `one-step`. A topic counts as finished when its quiz round or its solver level is done. Solver moves do not change the quiz accuracy statistics.
+Finishing a practice round stores the level id in `solverLevels` inside the existing `mathlab:progress:v1` entry. This is additive: older stored data is still read correctly, and unreadable data falls back to empty progress. The retired topic id `simple` is mapped to `one-step`. A topic counts as finished when its solver level, an older quiz round or enough good practice is done. Each solved equation earns 10 XP and a finished level earns 20 XP the first time. Solver moves do not change the practice accuracy statistics.
 
 ## Adding or changing exercises
 
@@ -158,7 +158,7 @@ The test runner is [Vitest](https://vitest.dev/). It needs **Node.js 22.22 or ne
 | Project | Environment | Covers |
 | --- | --- | --- |
 | `engine` | Node | `lib/**` and `content/**`: arithmetic, parsing, operation validation, solving, substitution, formatting, tutor, session, levels, progress, content validation |
-| `ui` | jsdom | `components/**`, `hooks/**`, `app/**`: the workspace, operation picker, level flow, storage hook and page integration |
+| `ui` | jsdom | `components/**`, `hooks/**`: the workspace, operation picker, level flow, storage hook and the whole app |
 
 Highlights of what is checked:
 
