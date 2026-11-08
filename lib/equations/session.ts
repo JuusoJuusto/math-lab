@@ -142,7 +142,8 @@ export function canGetHint(state: SessionState): boolean {
   return state.outcome === "solving" && state.pending === null && currentPreludeStep(state) === null && state.hintLevel < 3;
 }
 
-function terminalNotice(outcome: TerminalState, equation: Equation, lang: Lang): Notice {
+/** What the tutor says when an equation has come to an end: x alone, or x gone. */
+export function terminalNotice(outcome: TerminalState, equation: Equation, lang: Lang): Notice {
   const text = engineText(lang).session;
   if (outcome === "solved") {
     return { tone: "success", title: text.alone, body: [describeNextStep(equation, lang)] };

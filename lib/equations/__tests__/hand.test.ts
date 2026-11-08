@@ -119,3 +119,26 @@ describe("by hand, over thousands of equations", () => {
     expect(rejected).toBeGreaterThan(500);
   });
 });
+
+import { LEVELS } from "../levels";
+import { startEquation } from "../prelude";
+import { terminalState } from "../solve";
+
+describe("every exercise of every level can be finished by hand", () => {
+  it("accepts each line of the tutor's solution and ends in a terminal state, including no solution and infinitely many", () => {
+    let finished = 0;
+    for (const level of LEVELS.filter((item) => item.kind === "equations")) {
+      for (const exercise of level.exercises) {
+        let above = startEquation(exercise.equation);
+        for (const step of solveWithTutor(above)) {
+          const typed = formatEquation(step.after).replace(/−/g, "-");
+          expect(judgeLine(above, typed, true).kind, `${exercise.id}: ${formatEquation(above)} -> ${typed}`).toBe("ok");
+          above = step.after;
+        }
+        expect(terminalState(above), exercise.id).not.toBeNull();
+        finished += 1;
+      }
+    }
+    expect(finished).toBeGreaterThan(150);
+  });
+});

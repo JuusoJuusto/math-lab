@@ -116,6 +116,24 @@ describe("solving by hand", () => {
     expect(screen.getByText("Solved")).toBeTruthy();
   });
 
+  it("ends when x cancels out: 2x + 3 = 2x + 7 has no solution, and the tutor says so", async () => {
+    const { user, onContinue } = setup("2x + 3 = 2x + 7");
+    await write(user, "3 = 7");
+    expect(screen.getAllByText(/no solution/i).length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("Write the next line")).toBeNull();
+    // There is no x to put back, so there is nothing to check by substituting.
+    expect(screen.queryByRole("button", { name: "Check by substituting" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: /Next equation/ }));
+    expect(onContinue).toHaveBeenCalledWith({ steps: 1, mistakes: 0, hints: 0 });
+  });
+
+  it("ends when x cancels out and the equation is always true", async () => {
+    const { user } = setup("2(x + 1) = 2x + 2");
+    await write(user, "2 = 2");
+    expect(screen.getAllByText(/infinitely many/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /Next equation/ })).toBeTruthy();
+  });
+
   it("lets the learner delete the last line", async () => {
     const { user } = setup("2x + 5 = 17");
     await write(user, "2x = 12");

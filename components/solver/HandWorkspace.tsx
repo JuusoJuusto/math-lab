@@ -8,11 +8,12 @@ import {
   engineText,
   formatBar,
   getHints,
-  isSolved,
   isWrittenSimply,
   judgeLine,
   readNote,
   solveEquation,
+  terminalNotice,
+  terminalState,
   type Equation,
   type Notice,
   type Operation,
@@ -64,8 +65,10 @@ export function HandWorkspace({ source, equation, continueLabel, onContinue }: H
 
   const current = lines.length > 0 ? lines[lines.length - 1].equation : equation;
   const aboveText = lines.length > 0 ? lines[lines.length - 1].text : source;
-  const finished = lines.length > 0 && isSolved(current);
-  const solved = finished ? solveEquation(equation) : null;
+  // A solution ends with x alone, or, when x cancels out, with a statement such as 3 = 7 (never true) or 4 = 4 (always true).
+  const ended = lines.length > 0 ? terminalState(current) : null;
+  const finished = ended !== null;
+  const solved = ended === "solved" ? solveEquation(equation) : null;
   const answer = solved?.kind === "one" ? solved.value : null;
 
   useEffect(() => {
@@ -123,7 +126,12 @@ export function HandWorkspace({ source, equation, continueLabel, onContinue }: H
     setValue("");
     setHintLevel(0);
     const praise = verdict.kind === "ok" ? words.ok(describeOperation(verdict.operation, lang)) : words.tidy;
-    setNotice({ tone: "success", title: t.solver.hand.stepLabel(lines.length + 1, praise), body: isSolved(verdict.equation) ? [words.done] : [] });
+    const end = terminalState(verdict.equation);
+    setNotice(
+      end !== null && end !== "solved"
+        ? terminalNotice(end, verdict.equation, lang)
+        : { tone: "success", title: t.solver.hand.stepLabel(lines.length + 1, praise), body: end === "solved" ? [words.done] : [] },
+    );
   }
 
   function undo() {
@@ -211,7 +219,7 @@ export function HandWorkspace({ source, equation, continueLabel, onContinue }: H
         {finished ? (
           <>
             {answer && <SubstitutionCheck original={equation} value={answer} checked={checked} onCheck={() => setChecked(true)} />}
-            {checked && (
+            {(checked || !answer) && (
               <div className="action-buttons action-finish">
                 <button type="button" className="button-primary" onClick={finish}>
                   {continueLabel} <ArrowRight size={17} aria-hidden="true" />
