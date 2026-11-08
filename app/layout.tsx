@@ -4,9 +4,26 @@ import "@fontsource-variable/open-sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "MathLab – Matikka haltuun!", template: "%s · MathLab" },
-  description: "Opiskele yhtälöitä ja verrannollisuutta interaktiivisilla tehtävillä.",
-  applicationName: "MathLab"
+  title: {
+    default: "MathLab — Learn mathematics by doing",
+    template: "%s | MathLab"
+  },
+  description:
+    "A visual, interactive mathematics learning space for equations, algebra and proportional relationships.",
+  applicationName: "MathLab",
+  keywords: [
+    "mathematics",
+    "algebra",
+    "equations",
+    "proportionality",
+    "interactive learning",
+    "math practice"
+  ],
+  appleWebApp: {
+    capable: true,
+    title: "MathLab",
+    statusBarStyle: "default"
+  }
 };
 
 export const viewport: Viewport = {
@@ -15,9 +32,11 @@ export const viewport: Viewport = {
   themeColor: "#92e3f1"
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fi">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );
