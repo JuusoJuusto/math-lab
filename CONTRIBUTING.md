@@ -27,6 +27,7 @@ Keep pull requests focused and describe the learner-facing impact.
 - Prefer small components with clear responsibilities.
 - Keep content (`content/`) and mathematics (`lib/equations/`) separate from presentation. Components decide how something looks, never whether it is correct.
 - Add or update tests with every change to the equation engine, the content or a learning interaction.
+- **Never use emojis, or text symbols such as check marks and arrows, as icons.** Use [Lucide](https://lucide.dev/) icons (see `components/ui/icons.tsx`). A test fails if an emoji or glyph icon is added.
 - Use descriptive identifiers and stable IDs for topics and questions.
 - Make controls keyboard accessible and provide visible focus states.
 - Support narrow screens and school-managed devices.
@@ -38,7 +39,7 @@ Follow [the content guide](docs/CONTENT_GUIDE.md). New equation exercises and qu
 
 ## Design direction
 
-MathLab should feel like part of the same family as GeoMaster and Master-Modus: approachable, colourful, direct and practical. Avoid generic dashboard patterns, excessive gradients, glass effects, decorative blobs and unnecessary animation. Prefer purposeful illustrations, clear hierarchy, flat cards and useful interactions.
+MathLab should feel like part of the same family as GeoMaster and MasterModus: approachable, colourful, direct and practical. The shared look is sky-blue stripes, a chunky outlined wordmark, white pill navigation with a yellow level coin, white rounded cards, big uppercase teal buttons with a darker bottom edge, and coloured cards with a darker label band. The design tokens are at the top of `app/globals.css`. Avoid generic dashboard patterns, excessive gradients, glass effects and unnecessary animation. Prefer clear hierarchy, flat cards and useful interactions. Interactions should feel instant: keep transitions under about 150 ms.
 
 ## Pull request checklist
 

@@ -40,7 +40,7 @@ Divisions by zero and other moves that would break the equation are never accept
 
 ## Product direction
 
-MathLab belongs to the same learning-app family as **GeoMaster** and **Master-Modus**:
+MathLab belongs to the same learning-app family as **GeoMaster** and **MasterModus**, and shares their look (sky-blue stripes, outlined wordmark, pill navigation with a level coin, coloured cards):
 
 - Clear, topic-first navigation.
 - Colourful, flat cards and friendly display typography.
@@ -57,7 +57,8 @@ MathLab belongs to the same learning-app family as **GeoMaster** and **Master-Mo
 - **Topics:** browse all available learning areas.
 - **Lessons:** review concise explanations before practising.
 - **Equation solver:** learn, see a worked example and solve equations step by step.
-- **Practice:** answer multiple-choice questions with instant feedback.
+- **Practice:** ten ways to prepare for an exam, each with an explanation for every answer: daily challenge, quick quiz, solve it (type the answer), true or false, which step?, find the mistake, write the equation, time attack, exam practice and fix your mistakes. Tasks are generated, so you never run out.
+- **XP and levels:** correct answers earn XP, as in GeoMaster and MasterModus.
 - **Results:** review a completed round and retry it.
 - **Progress:** see total attempts, accuracy and completed topics.
 
@@ -69,7 +70,7 @@ MathLab belongs to the same learning-app family as **GeoMaster** and **Master-Mo
 | UI | React 19 |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS 4 and project CSS |
-| Icons | Lucide |
+| Icons | Lucide (never emojis) |
 | Typography | Fredoka Variable and Open Sans Variable |
 | Hosting target | Cloudflare Workers static assets |
 | Persistence | Browser `localStorage` |
@@ -124,19 +125,27 @@ math-lab/
 │   ├── page.tsx
 │   └── solver.css
 ├── components/
-│   └── solver/            # Equation solver interface
+│   ├── app/               # Application shell and routing
+│   ├── practice/          # Practice sessions and results
+│   ├── screens/           # Home, learn, lesson, practice, progress
+│   ├── shell/             # Header, logo, footer
+│   ├── solver/            # Equation solver interface
+│   └── ui/                # Cards, maths line, icons
 ├── content/               # Topics and quiz questions
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── CONTENT_GUIDE.md
 │   ├── DEPLOYMENT.md
 │   ├── EQUATION_SOLVER.md
+│   ├── PRACTICE.md
 │   ├── README.md
 │   └── ROADMAP.md
 ├── hooks/                 # Progress storage hook
 ├── lib/
 │   ├── equations/         # Equation engine (no React)
-│   └── progress.ts
+│   ├── tasks/             # Practice task generators and grading (no React)
+│   ├── progress.ts
+│   └── routes.ts
 ├── public/
 ├── CONTRIBUTING.md
 ├── next.config.ts
@@ -169,6 +178,7 @@ This runs ESLint, the TypeScript check, the test suite and the production build.
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [Practice and exam preparation](docs/PRACTICE.md)
 - [Equation solver](docs/EQUATION_SOLVER.md)
 - [Content authoring guide](docs/CONTENT_GUIDE.md)
 - [Deployment guide](docs/DEPLOYMENT.md)

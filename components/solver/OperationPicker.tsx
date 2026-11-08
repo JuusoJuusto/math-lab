@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { Minus, Plus } from "lucide-react";
+import { Check, Minus, Plus } from "lucide-react";
 import { MAX_AMOUNT, describeOperation, operation, type Operation, type OperationKind } from "@/lib/equations";
 
 const KINDS: readonly { kind: OperationKind; label: string; symbol: string }[] = [
@@ -99,9 +99,7 @@ export function OperationPicker({ onApply, autoFocus = false, extra }: Operation
                 {option.symbol}
               </span>
               <span className="picker-kind-label">{option.label}</span>
-              <span className="picker-check" aria-hidden="true">
-                ✓
-              </span>
+              <Check className="picker-check" size={16} strokeWidth={3} aria-hidden="true" />
             </label>
           ))}
         </div>

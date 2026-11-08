@@ -120,7 +120,13 @@ export function amountExpression(op: Operation): LinearExpr {
   return op.withVariable ? expr(op.amount, 0) : expr(0, op.amount);
 }
 
-function transform(side: LinearExpr, op: Operation): LinearExpr {
+/**
+ * Applies an operation to a single side.
+ *
+ * `applyOperation` always does this to both sides. Exposing the one-side
+ * version lets exercises show what happens when a learner forgets a side.
+ */
+export function applyOperationToSide(side: LinearExpr, op: Operation): LinearExpr {
   switch (op.kind) {
     case "add":
       return addExpr(side, amountExpression(op));
@@ -145,7 +151,7 @@ export function applyOperation(eq: Equation, op: Operation): ApplyResult {
 
   let after: Equation;
   try {
-    after = { left: transform(eq.left, op), right: transform(eq.right, op) };
+    after = { left: applyOperationToSide(eq.left, op), right: applyOperationToSide(eq.right, op) };
   } catch (error) {
     if (error instanceof FractionRangeError) {
       return {

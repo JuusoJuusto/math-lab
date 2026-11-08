@@ -18,6 +18,10 @@ The initial content is designed for introductory lower-secondary mathematics, wi
 
 The topics are defined in `content/topics.ts`. Topic ids are stored in learners' browsers as progress, so never rename an id. Add a new one instead.
 
+Each topic has a module colour, a **Lucide icon name** and a short formula with one highlighted part, which is what the coloured card shows. Never use an emoji as an icon; add the Lucide icon to `components/ui/icons.tsx` instead.
+
+The generated practice tasks (typed answers, true or false, which step, find the mistake, write the equation) are described in [practice](PRACTICE.md). They need no authoring: they come from templates in `lib/tasks`.
+
 ## Exercise authoring rules
 
 - Use one clear learning objective per question.

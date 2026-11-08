@@ -4,16 +4,31 @@
  * Topic ids are stable: they are stored in learners' browsers as progress, and
  * question ids refer to them. Topics that host an interactive solver level use
  * the same id as the level (see lib/equations/levels.ts).
+ *
+ * Icons are Lucide icon names (see components/ui/icons.tsx). Emojis are never
+ * used as icons.
  */
 
-export type TopicColour = "blue" | "green" | "orange" | "purple" | "pink" | "teal";
+export type TopicColour = "blue" | "red" | "purple" | "orange" | "teal" | "magenta" | "navy";
+
+export type TopicIconName = "Scale" | "Search" | "Footprints" | "ArrowLeftRight" | "Parentheses" | "TrendingUp" | "MessageSquareText";
+
+/** A formula shown large on the topic card, with one highlighted part. */
+export interface Formula {
+  readonly before: string;
+  readonly mark: string;
+  readonly after: string;
+  /** A short caption under the formula. */
+  readonly caption: string;
+}
 
 export interface Topic {
   id: string;
   title: string;
   subtitle: string;
   colour: TopicColour;
-  icon: string;
+  icon: TopicIconName;
+  formula: Formula;
   description: string;
   lesson: string[];
 }
@@ -24,7 +39,8 @@ export const topics: Topic[] = [
     title: "Understanding equations",
     subtitle: "What does equality mean?",
     colour: "blue",
-    icon: "⚖️",
+    icon: "Scale",
+    formula: { before: "", mark: "x", after: " = ?", caption: "an unknown number" },
     description: "Learn what an equation is and how to find an unknown value.",
     lesson: [
       "An equation says that its left-hand side and right-hand side have the same value.",
@@ -37,8 +53,9 @@ export const topics: Topic[] = [
     id: "one-step",
     title: "One-step equations",
     subtitle: "Undo one operation to find x",
-    colour: "green",
-    icon: "🔎",
+    colour: "red",
+    icon: "Search",
+    formula: { before: "", mark: "x", after: " + 5 = 12", caption: "undo the + 5" },
     description: "Use inverse operations to get x on its own, one step at a time.",
     lesson: [
       "Addition and subtraction undo each other: to undo + 5, subtract 5.",
@@ -51,8 +68,9 @@ export const topics: Topic[] = [
     id: "two-step",
     title: "Two-step equations",
     subtitle: "Undo two operations, in order",
-    colour: "teal",
-    icon: "🪜",
+    colour: "purple",
+    icon: "Footprints",
+    formula: { before: "", mark: "2x", after: " + 5 = 17", caption: "subtract, then divide" },
     description: "Solve equations where x has been multiplied or divided and then had a number added or subtracted.",
     lesson: [
       "In 2x + 5, x is multiplied by 2 first, then 5 is added.",
@@ -66,7 +84,8 @@ export const topics: Topic[] = [
     title: "Variables on both sides",
     subtitle: "Collect the variable terms",
     colour: "orange",
-    icon: "↔️",
+    icon: "ArrowLeftRight",
+    formula: { before: "3", mark: "x", after: " = x + 8", caption: "x on both sides" },
     description: "Move variable terms to one side and constants to the other.",
     lesson: [
       "Choose the side on which you want to keep x.",
@@ -78,8 +97,9 @@ export const topics: Topic[] = [
     id: "brackets",
     title: "Equations with brackets",
     subtitle: "Expand brackets correctly",
-    colour: "purple",
-    icon: "( )",
+    colour: "teal",
+    icon: "Parentheses",
+    formula: { before: "2", mark: "(x + 3)", after: " = 14", caption: "expand first" },
     description: "Practice the distributive property and expanding brackets.",
     lesson: [
       "Multiply every term inside the brackets by the factor outside.",
@@ -91,8 +111,9 @@ export const topics: Topic[] = [
     id: "proportion",
     title: "Proportional relationships",
     subtitle: "How quantities change together",
-    colour: "pink",
-    icon: "📈",
+    colour: "magenta",
+    icon: "TrendingUp",
+    formula: { before: "y = ", mark: "k", after: "x", caption: "constant ratio" },
     description: "Explore direct and inverse proportion.",
     lesson: [
       "In direct proportion, two quantities change by the same factor.",
@@ -104,8 +125,9 @@ export const topics: Topic[] = [
     id: "word",
     title: "Word problems",
     subtitle: "Turn a situation into an equation",
-    colour: "teal",
-    icon: "💬",
+    colour: "navy",
+    icon: "MessageSquareText",
+    formula: { before: "3", mark: "x", after: " = 6", caption: "from a story" },
     description: "Build and solve equations from everyday situations.",
     lesson: [
       "Read the problem and decide what the unknown x represents.",

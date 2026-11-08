@@ -1,7 +1,10 @@
 import { act, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { EMPTY_PROGRESS, STORAGE_KEY, recordAnswer, recordSolverLevel } from "@/lib/progress";
+import { EMPTY_PROGRESS, STORAGE_KEY, recordSolverLevel, recordTask } from "@/lib/progress";
 import { resetProgress, updateProgress, useProgress } from "../useProgress";
+
+const answered = (correct: boolean) => (old: Parameters<typeof recordTask>[0]) =>
+  recordTask(old, { spec: { kind: "solve", topic: "two-step", seed: 1 }, correct, xp: 10 });
 
 function Probe() {
   const progress = useProgress();
@@ -31,7 +34,7 @@ describe("useProgress", () => {
         <Probe />
       </>,
     );
-    act(() => updateProgress((old) => recordSolverLevel(recordAnswer(old, true), "two-step")));
+    act(() => updateProgress((old) => recordSolverLevel(answered(true)(old), "two-step")));
 
     expect(screen.getAllByTestId("probe").map((node) => node.textContent)).toEqual(["1/1/two-step", "1/1/two-step"]);
     expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)!)).toMatchObject({ attempts: 1, correct: 1, solverLevels: ["two-step"] });
@@ -51,7 +54,7 @@ describe("useProgress", () => {
       throw new DOMException("quota", "QuotaExceededError");
     });
     render(<Probe />);
-    act(() => updateProgress((old) => recordAnswer(old, true)));
+    act(() => updateProgress(answered(true)));
     expect(screen.getByTestId("probe").textContent).toBe("1/1/");
   });
 
@@ -65,7 +68,7 @@ describe("useProgress", () => {
 
   it("resets to empty progress", () => {
     render(<Probe />);
-    act(() => updateProgress((old) => recordAnswer(old, true)));
+    act(() => updateProgress(answered(true)));
     act(() => resetProgress());
     expect(screen.getByTestId("probe").textContent).toBe("0/0/");
     expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)!)).toEqual(EMPTY_PROGRESS);

@@ -6,37 +6,43 @@ MathLab is a client-interactive Next.js application exported as a static site. T
 
 ## Runtime structure
 
-- `app/layout.tsx` defines the document language, global fonts, metadata and shared stylesheets.
-- `app/page.tsx` is the application shell. It owns navigation between views (home, topics, lesson, quiz, results, progress and the equation solver) and the state of the multiple-choice quiz.
-- `app/globals.css` defines the shared visual system, responsive layouts, topic colours and exercise states.
-- `app/solver.css` styles the equation solver. Everything is scoped under `.solver`.
-- `components/solver/` contains the equation solver interface. See [the equation solver](EQUATION_SOLVER.md).
-- `content/` holds the topic catalogue (`topics.ts`) and the multiple-choice question bank (`questions.ts`), separate from presentation.
-- `lib/equations/` is the equation engine: exact arithmetic, parsing, validated operations, solving, the tutor, the session state machine and the level catalogue. It has no React or browser code.
-- `lib/progress.ts` and `hooks/useProgress.ts` parse, update and store learner progress.
-- `public/` contains static assets served with the exported site.
-- `docs/` contains product, architecture, content and deployment documentation.
+- `app/layout.tsx` defines the document language, global fonts, metadata and shared stylesheets. `app/page.tsx` only renders `<App />`.
+- `app/globals.css` is the design system: tokens, shell, cards, buttons, practice screens. `app/solver.css` styles the equation solver and is scoped under `.solver`.
+- `components/app/App.tsx` is the application shell. It reads the current screen from the address (`hooks/useRoute.ts`), renders the header, the screen and the footer, and moves focus and scroll when the screen changes.
+- `components/shell/` the header (pill navigation, level coin, phone menu), the logo and the footer.
+- `components/screens/` the home, learn, lesson, practice hub, progress and solver screens.
+- `components/practice/` practice sessions: the task card for every kind of task, the session runner and the results.
+- `components/solver/` the equation solver interface. See [the equation solver](EQUATION_SOLVER.md).
+- `components/ui/` shared pieces: module and mode cards, the maths line renderer, the Lucide icon map.
+- `content/` the topic catalogue (`topics.ts`) and the fixed quiz questions (`questions.ts`), separate from presentation.
+- `lib/equations/` the equation engine: exact arithmetic, parsing, validated operations, solving, the tutor, the session state machine and the level catalogue.
+- `lib/tasks/` the practice task generators, grading and session builder. See [practice](PRACTICE.md).
+- `lib/routes.ts`, `lib/progress.ts` and `hooks/` addresses, saved progress and the hooks that connect them to the browser.
+- `public/` static assets. `docs/` documentation.
 
 ```text
-app/page.tsx ──────────────┐
-   │                       ▼
-   │              components/solver/*  ── render ──►  lib/equations (engine)
-   ▼                       │                              ▲
-content/ (topics, quiz)    └── dispatch actions ──► session reducer
-   ▲
-   └── hooks/useProgress ◄── lib/progress ◄── localStorage
+address (#/practice/exam?...) ──► useRoute ──► App ──► screen
+                                                       │
+content/ (topics, quiz) ───────────────────────────────┤
+lib/tasks (generate, grade) ──► practice components ◄──┤
+lib/equations (engine) ──► solver components ◄─────────┘
+                    │
+        hooks/useProgress ◄──► lib/progress ◄──► localStorage
 ```
 
-The rule that keeps this maintainable: **mathematics lives in `lib/equations/`, components only present it.** A component never decides whether a move is correct; it asks the engine.
+Two rules keep this maintainable. **Mathematics lives in `lib/equations/` and `lib/tasks/`; components only present it.** A component never decides whether an answer is correct; it asks the engine. And **every icon is a Lucide icon**; a test fails if an emoji or a text symbol is used as an icon.
+
+## Navigation
+
+Screens are addressed with the URL hash (`#/learn/two-step`, `#/practice/exam?topic=both&n=20&seed=5`). Going to a screen adds a history entry, so the browser's Back button and the phone's back gesture work; a refresh or a shared link returns to the same screen. The server render and the first client render both show the home screen, so there is no hydration mismatch. See `lib/routes.ts` and `hooks/useRoute.ts`.
 
 ## Learning flow
 
-1. The home view introduces the learning path and displays a progress summary. Its main button opens the first solver level the learner has not finished.
-2. The topic catalogue lets a learner choose a subject. Topics that have an interactive solver offer **Solve step by step** next to the quiz.
-3. A topic lesson presents concise key ideas.
-4. The equation solver takes a learner through a level: learn, worked example, practice round and completion.
-5. A multiple-choice practice round filters the question bank to the selected topic, or uses the mixed set. Each answer is checked immediately and receives an explanation.
-6. The results view summarises a quiz round and offers a retry or a route back to learning.
+1. The home screen introduces MathLab, its **Start learning** button opens the first solver level that is not finished, and its cards lead to topics and to the ten ways to practise.
+2. A topic lesson presents concise key ideas. Topics with a solver offer **Solve step by step**; every topic offers varied practice.
+3. The equation solver takes a learner through a level: learn, worked example, practice round and completion.
+4. Practice sessions mix kinds of task (typed answers, true or false, which step, find the mistake, write the equation, multiple choice), explain every answer and record XP.
+5. Missed tasks wait in a queue to be retried, and the progress screen shows accuracy by topic and by type of task.
 
 ## Topics
 
@@ -66,10 +72,13 @@ Summary only; [EQUATION_SOLVER.md](EQUATION_SOLVER.md) has the details.
 The application state is held in React state. Aggregate progress is saved in browser `localStorage` under the versioned key `mathlab:progress:v1`, exposed to React through `useSyncExternalStore` in `hooks/useProgress.ts`. The server render uses empty progress and the client switches to the stored value, so the static HTML and the first client render always agree.
 
 Stored fields:
-- `completed`: topic identifiers whose quiz round a learner has finished.
-- `attempts`: number of submitted quiz answers.
-- `correct`: number of correct quiz answers.
-- `solverLevels`: identifiers of equation solver levels the learner has finished.
+- `completed`: topic identifiers whose older quiz round a learner has finished.
+- `attempts`, `correct`: practice answers given and how many were right.
+- `byTopic`, `byGroup`: the same tallies per topic and per type of task.
+- `solverLevels`: equation solver levels the learner has finished.
+- `xp`: experience points; every 100 is a level.
+- `missed`: recipes (kind, topic, seed) of tasks answered wrongly, newest first, at most 30.
+- `dailyDone`, `bestTime`: the date of the last daily challenge and the best time attack score.
 
 Storage is optional. If browser storage is unavailable, full or contains invalid data, the app continues with empty or in-memory progress. Changes made in another tab are picked up. No password, personal profile or authentication token is collected.
 
@@ -81,8 +90,8 @@ Next.js uses `output: "export"` to create the `out/` directory. Wrangler serves 
 
 ## Testing
 
-Vitest runs two projects (see `vitest.config.mts`): `engine` (Node) for `lib/` and `content/`, and `ui` (jsdom) for components, hooks and the page. `npm test` runs both. CI runs lint, type checks, tests and the production build.
+Vitest runs two projects (see `vitest.config.mts`): `engine` (Node) for `lib/` and `content/`, and `ui` (jsdom) for components and hooks, including an end-to-end suite for the whole app. `npm test` runs both. CI runs lint, type checks, tests and the production build.
 
 ## Design references
 
-MathLab follows the same product direction as the author's GeoMaster and Master-Modus learning projects: clear navigation, topic-first learning, colourful flat cards, friendly display typography and immediate practice feedback. Toporopa is a reference for direct exercise discovery and low-friction interactions. MathLab uses its own code, copy, examples and visual assets.
+MathLab is built to look and feel like the author's GeoMaster and MasterModus learning apps: sky-blue stripes, a chunky outlined wordmark with a round logo mark, white pill navigation with a yellow level coin, white rounded cards, big uppercase teal buttons with a darker bottom edge, coloured cards with a darker label band, and varied "play" modes with numbered answers. The values (colours, radius, shadows, fonts) were measured from those apps and live as tokens at the top of `app/globals.css`. Toporopa is a reference for direct exercise discovery. MathLab uses its own code, copy, examples and visual assets.

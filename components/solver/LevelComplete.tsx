@@ -45,7 +45,7 @@ export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQ
         })}
       </ul>
 
-      <div className="results-actions">
+      <div className="action-row action-center">
         {next ? (
           <button type="button" className="button-primary" onClick={() => onNextLevel(next.id)}>
             Next: {next.title} <ArrowRight size={16} aria-hidden="true" />
