@@ -37,6 +37,23 @@ The project uses Next.js static export. A production build writes the deployable
 
 Every screen is a real exported page in both languages (`/fi/learn/two-step/`, `/en/practice/`, ...), so no rewrite rules are needed: Cloudflare serves `fi/learn/two-step/index.html` directly. `wrangler.jsonc` keeps `html_handling: "auto-trailing-slash"` (so `/fi` goes to `/fi/`) and `not_found_handling: "404-page"` (so an unknown address gets the bilingual `404.html`). The bare address `/` is `public/index.html`, a small page that redirects to `/fi/` or `/en/` and upgrades old `#/` links. See [languages and addresses](LANGUAGES_AND_ROUTING.md).
 
+## Coolify (Docker + Nginx)
+
+The repository includes a multi-stage `Dockerfile` and an Nginx configuration. Coolify can build the image directly from GitHub; no separate Docker Compose file or Node.js runtime container is needed.
+
+1. In Coolify, create a **Public Repository** or connect the GitHub repository.
+2. Select the `main` branch.
+3. Set the Build Pack to **Dockerfile**.
+4. Set the Dockerfile location to `/Dockerfile` (the repository root).
+5. Leave the exposed port as **80**.
+6. Deploy. Coolify builds the app with Node.js 22, then serves the generated `out/` directory with Nginx.
+
+The container listens on port 80. Attach your domain in Coolify and route it through your existing Cloudflare Tunnel to the Coolify application's exposed HTTP service. Do not point the tunnel at the build container or the Node.js build stage.
+
+Every route is exported as a directory containing `index.html`, matching the project's `trailingSlash: true` setting. The Nginx configuration serves these files directly and returns the exported `404.html` page for unknown paths.
+
+The Docker image is rebuilt whenever Coolify deploys a new commit. Configure automatic deployments/webhooks in Coolify if you want pushes to `main` to trigger deployments.
+
 ## Cloudflare Workers
 
 Authenticate Wrangler:
