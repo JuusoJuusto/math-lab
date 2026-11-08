@@ -2,7 +2,8 @@
 
 ## Requirements
 
-- Node.js 20.9 or newer (Node.js 22 is recommended).
+- Node.js 20.9 or newer to build and deploy (Node.js 22 is recommended).
+- Node.js 22.22 or newer to run the test suite.
 - npm.
 - A Cloudflare account authenticated with Wrangler for deployment.
 
@@ -20,10 +21,11 @@ Open the local address printed by Next.js.
 ```bash
 npm run lint
 npm run typecheck
+npm test
 npm run build
 ```
 
-The `check` script runs all three checks in sequence:
+The `check` script runs all four checks in sequence:
 
 ```bash
 npm run check
@@ -51,7 +53,7 @@ The `wrangler.jsonc` configuration points the Workers static-assets binding at `
 
 ## GitHub Actions
 
-The CI workflow in `.github/workflows/ci.yml` runs lint, TypeScript checks and a production build for pushes and pull requests targeting `main`. It does not deploy the application.
+The CI workflow in `.github/workflows/ci.yml` runs lint, TypeScript checks, the test suite and a production build for pushes and pull requests targeting `main`. It does not deploy the application.
 
 ## Custom domain
 

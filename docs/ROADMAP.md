@@ -4,17 +4,22 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 
 ## Learning experience
 
-- [x] Topic catalogue with six introductory learning areas
+- [x] Topic catalogue with seven introductory learning areas
 - [x] Short lesson notes and worked explanations
 - [x] Multiple-choice practice with immediate feedback
 - [x] End-of-round results screen
 - [x] Browser-local progress summary
-- [ ] Step-by-step equation balance interaction
+- [x] Step-by-step equation solver with the same operation applied to both sides (one-step, two-step and both-sides levels)
+- [x] Hints that reveal one reasoning step at a time
+- [x] Verification of a solution by substitution
 - [ ] Typed numeric and algebraic answers
-- [ ] Hints that reveal one reasoning step at a time
+- [ ] Brackets in the equation solver (an "expand brackets" operation)
+- [ ] Solver equations with fractions and decimals
+- [ ] Optional challenge: equations with no solution or infinitely many solutions (the engine already supports them)
+- [ ] Solver word problems: write the equation, then solve it
 - [ ] Mistake review and retry queue
 - [ ] Difficulty selection and adaptive practice
-- [ ] More exercises per topic with validated answer keys
+- [ ] More exercises per topic with validated answer keys (equation exercises and quiz equations are already validated by tests)
 
 ## Visual mathematics
 
@@ -22,10 +27,11 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 - [ ] Proportionality tables with editable values
 - [ ] Coordinate-plane graphs for direct and inverse proportion
 - [ ] Visual fraction and ratio models
-- [ ] Equation transformation history
+- [x] Equation transformation history with undo
 
 ## Platform
 
+- [x] Automated tests for the equation engine, content and learning interactions
 - [ ] Topic-level mastery and learning streaks
 - [ ] Export and import local progress
 - [ ] Optional account sync, only if a backend is introduced
