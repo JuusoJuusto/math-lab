@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useI18n } from "@/hooks/useLang";
-import { useRoute } from "@/hooks/useRoute";
-import { toHash, type Route } from "@/lib/routes";
+import { LangProvider, useI18n } from "@/hooks/useLang";
+import { replaceRoute, useAddress } from "@/hooks/useRoute";
+import { DEFAULT_LANG, type Lang } from "@/lib/lang";
+import { parseHash, parseLocation, toPath, type Route } from "@/lib/routes";
 import { Footer } from "@/components/shell/Footer";
 import { Header } from "@/components/shell/Header";
 import { PracticeSession } from "@/components/practice/PracticeSession";
@@ -27,21 +28,19 @@ function Screen({ route }: { route: Route }) {
     case "practice":
       return <PracticeHub modeId={route.mode} />;
     case "session":
-      return <PracticeSession key={toHash(route)} route={route} />;
+      return <PracticeSession key={toPath(route, DEFAULT_LANG)} route={route} />;
     case "progress":
       return <ProgressScreen />;
   }
 }
 
-/** The whole application: header, the current screen, footer. */
-export function App() {
-  const route = useRoute();
+function Shell({ route }: { route: Route }) {
   const { lang, t } = useI18n();
   const main = useRef<HTMLElement>(null);
-  const hash = toHash(route);
+  const key = toPath(route, DEFAULT_LANG);
   const first = useRef(true);
 
-  // The page language and title follow the learner's choice, for screen readers and the tab.
+  // The page language and title follow the address, for screen readers and the tab.
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title = t.titles[route.name];
@@ -55,8 +54,8 @@ export function App() {
     }
     document.documentElement.scrollTop = 0;
     main.current?.focus({ preventScroll: true });
-    // The screen is identified by its address.
-  }, [hash]);
+    // The screen is identified by its address; the language alone does not move focus.
+  }, [key]);
 
   return (
     <div className="shell">
@@ -69,5 +68,39 @@ export function App() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+interface AppProps {
+  /** The language of the page that was built. The address decides afterwards. */
+  lang?: Lang;
+  /** The path segments after the language that the page was built for, e.g. `["learn", "two-step"]`. */
+  path?: readonly string[];
+}
+
+/**
+ * The whole application: header, the current screen, footer.
+ *
+ * The page's address is the single source of truth for the screen and the
+ * language. The server build and the first client render use the address the
+ * page was built for; the learner's query (practice settings) is read right after.
+ */
+export function App({ lang: builtLang = DEFAULT_LANG, path = [] }: AppProps) {
+  const built = `/${[builtLang, ...path].join("/")}/`;
+  const address = useAddress(built);
+  const { lang: urlLang, route } = parseLocation(address);
+  const lang = urlLang ?? builtLang;
+
+  // Links from before the languages had their own addresses (`#/learn/two-step`) are upgraded in place.
+  useEffect(() => {
+    if (window.location.hash.startsWith("#/")) replaceRoute(parseHash(window.location.hash), lang);
+    // Only once, when the page opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <LangProvider lang={lang}>
+      <Shell route={route} />
+    </LangProvider>
   );
 }

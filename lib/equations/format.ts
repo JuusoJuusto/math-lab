@@ -163,8 +163,9 @@ export function formatAmount(op: Operation): string {
   const magnitude = abs(op.amount);
   const sign = isNegative(op.amount) ? MINUS : "";
   if (op.withVariable) {
-    const coefficient = isOne(magnitude) ? "" : formatFraction(magnitude);
-    return `${sign}${coefficient}x`;
+    // x/4 and 3x/4, never 1/4x (which would read as 1 over 4x).
+    const top = magnitude.n === 1 ? "" : String(magnitude.n);
+    return `${sign}${top}x${magnitude.d === 1 ? "" : `/${magnitude.d}`}`;
   }
   return formatFraction(op.amount);
 }

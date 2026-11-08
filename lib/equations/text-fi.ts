@@ -103,6 +103,8 @@ export const fi: EngineText = {
     undoMultiply: (words, amount) =>
       `x on ${words}. Kertolasku kumoaa jakolaskun, joten kun kerrot luvulla ${amount}, x jää yksin.`,
     simpler: "Tämä pitää molemmat puolet yhtä suurina ja yksinkertaistaa yhtälöä.",
+    clearsFractions: (amount) =>
+      `Luku ${amount} on pienin luku, johon jokainen nimittäjä sopii. Kun molemmat puolet kerrotaan luvulla ${amount}, jokaisesta murtoluvusta tulee kokonaisluku, ja puolet pysyvät yhtä suurina.`,
 
     solved: (value, sameAs) =>
       `x on yksin, joten x = ${value}${sameAs ? ` (${sameAs} tarkoittaa samaa kuin x = ${value})` : ""}. Tarkista vastaus sijoittamalla se alkuperäiseen yhtälöön.`,
@@ -110,6 +112,7 @@ export const fi: EngineText = {
       `x on kadonnut, eikä ${equation} pidä koskaan paikkaansa. Mikään x:n arvo ei kelpaa, joten yhtälöllä ei ole ratkaisua.`,
     infinite: (equation) =>
       `x on kadonnut, ja ${equation} pitää aina paikkansa. Kaikki x:n arvot kelpaavat, joten ratkaisuja on äärettömän monta.`,
+    nextClear: "Seuraavaksi: yhtälössä on yhä murtolukuja. Kerro molemmat puolet yhteisellä nimittäjällä, niin ne häviävät.",
     nextCollect: "Seuraavaksi: x on yhä kummallakin puolella, joten kokoa x-termit yhdelle puolelle.",
     nextConstant: "Seuraavaksi: x-termiin on yhä lisätty tai siitä on vähennetty jokin luku. Kumoa se.",
     nextCoefficient: (words) => `Seuraavaksi: x on yhä ${words}. Kumoa se käänteisoperaatiolla.`,
@@ -157,6 +160,9 @@ export const fi: EngineText = {
         "Molemmat puolet ovat yhä yhtä suuret, mutta x ei ole sen lähempänä sitä, että se olisi yksin. Mieti, mikä on kiinni x:ssä ja mikä laskutoimitus sen kumoaa.",
     },
 
+    hintClear1: "Yhtälössä on murtolukuja. Kokonaisluvuilla on helpompi laskea, joten poista ensin nimittäjät.",
+    hintClear2: (amount) =>
+      `Etsi luku, johon jokainen nimittäjä sopii. Pienin on ${amount}. Kerro molemmat puolet sillä, ja kerro jokainen termi.`,
     hintCollect1: "x on molemmilla puolilla. Kokoa ensin kaikki x-termit yhdelle puolelle yhtäsuuruusmerkkiä.",
     hintCollect2: (subtract) =>
       `Valitse yksi poistettava x-termi. Pienemmän poistaminen pitää jäljelle jäävän x-termin positiivisena. ${
@@ -193,6 +199,25 @@ export const fi: EngineText = {
     repeatedTitle: "Tämä on jo kokeiltu",
     repeatedBody: "Katso, mikä on kiinni x:ssä, tai käytä vihjepainiketta, jos haluat apua.",
     nowWeHave: (equation) => `Nyt meillä on ${equation}`,
+  },
+
+  prelude: {
+    expandStage: "Poista sulut",
+    simplifyStage: "Sievennä",
+    expandQuestion: (part) => `Poista sulut lausekkeesta ${part}. Mitä saat?`,
+    simplifyQuestion: (part) => `Sievennä ${part}. Mitä saat?`,
+    expandRight: (part, result) =>
+      `Jokainen sulkujen sisällä oleva termi kerrotaan sulkujen edessä olevalla luvulla: ${part} = ${result}.`,
+    simplifyRight: (part, result) => `Yhdistä samanmuotoiset termit: ${part} = ${result}.`,
+    wrongTitle: "Ei ihan",
+    wrong: {
+      "forgot-term": "Sulkujen edessä oleva luku kertoo jokaisen sulkujen sisällä olevan termin, ei vain yhtä.",
+      sign: "Tarkista merkit: miinus kertaa plus on miinus, ja miinus kertaa miinus on plus.",
+      denominators:
+        "Murtolukuja ei lasketa yhteen laskemalla nimittäjät yhteen. Käytä yhteistä nimittäjää ja laske sitten osoittajat yhteen.",
+      arithmetic: "Tarkista laskut: käy termit läpi yksi kerrallaan.",
+    },
+    done: "Yhtälö on nyt yksinkertaisessa muodossa. Ratkaise se.",
   },
 
   flip: {

@@ -1,15 +1,17 @@
 "use client";
 
-import { Flag, RotateCcw, Undo2 } from "lucide-react";
+import { Check, Flag, RotateCcw, Undo2 } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   describeOperation,
+  engineText,
   findFlipTerm,
   formatAppliedEquation,
   formatBar,
   formatEquation,
   formatFlipPreview,
   type Equation,
+  type Prelude,
   type StepRecord,
 } from "@/lib/equations";
 
@@ -20,6 +22,10 @@ interface StepHistoryProps {
   onUndo?: () => void;
   onRestart?: () => void;
   canUndo?: boolean;
+  /** The equation as written and its clean-up questions, for equations with brackets or fractions. */
+  prelude?: Prelude | null;
+  /** How many of the prelude's questions have been answered. */
+  preludeDone?: number;
 }
 
 /**
@@ -28,9 +34,11 @@ interface StepHistoryProps {
  * (`3x − 5 = 6 | + 5`), how it looked on both sides (or after the flip), and
  * the simplified result.
  */
-export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false }: StepHistoryProps) {
+export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false, prelude = null, preludeDone = 0 }: StepHistoryProps) {
   const { lang, t } = useI18n();
   const text = t.solver.history;
+  const words = engineText(lang).prelude;
+  const cleaned = prelude ? prelude.steps.slice(0, preludeDone) : [];
 
   return (
     <section className="history" aria-label={text.title}>
@@ -42,9 +50,23 @@ export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false }
           </span>
           <div>
             <span className="history-label">{text.start}</span>
-            <p className="history-equation">{formatEquation(start)}</p>
+            <p className="history-equation">{prelude ? prelude.source : formatEquation(start)}</p>
           </div>
         </li>
+        {cleaned.map((step, index) => (
+          <li className="history-item" key={`prelude-${index}`}>
+            <span className="history-badge" aria-hidden="true">
+              <Check size={13} />
+            </span>
+            <div>
+              <span className="history-label">{step.kind === "expand" ? words.expandStage : words.simplifyStage}</span>
+              <p className="history-applied">
+                {step.part} = {step.result}
+              </p>
+              <p className="history-equation">{step.after}</p>
+            </div>
+          </li>
+        ))}
         {steps.map((step, index) => {
           const term = step.flip ? findFlipTerm(step.before, step.flip, lang) : null;
           const moved = step.flip ? formatFlipPreview(step.before, step.flip, lang) : null;
@@ -68,7 +90,7 @@ export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false }
           );
         })}
       </ol>
-      {steps.length === 0 && <p className="history-empty">{text.empty}</p>}
+      {steps.length === 0 && cleaned.length === 0 && <p className="history-empty">{text.empty}</p>}
 
       {(onUndo || onRestart) && (
         <div className="history-actions">

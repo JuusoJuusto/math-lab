@@ -1,25 +1,44 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { createContext, createElement, useContext, type ReactNode } from "react";
 import { uiMessages, type UiMessages } from "@/lib/i18n";
 import { DEFAULT_LANG, isLang, langFromTag, type Lang } from "@/lib/lang";
 
 /**
- * The learner's language, kept in `localStorage` and exposed as an external store.
+ * The language of the page. It comes from the address (`/fi/...`, `/en/...`), so
+ * the server-built HTML and the first client render always agree, and a link
+ * always opens in the language it was shared in.
  *
- * Like the progress store, the server snapshot is the default language, so the
- * static HTML and the first client render agree. After hydration the stored
- * choice (or, if there is none, the browser's language) takes over.
- *
- * If storage is blocked the choice is kept in memory for the session.
+ * The learner's last choice is only a *preference* kept in `localStorage`. It
+ * decides where the bare address `/` leads, and nothing else.
  */
 
 export const LANG_KEY = "mathlab:lang:v1";
 
-const listeners = new Set<() => void>();
-let memoryLang: Lang | undefined;
+const LangContext = createContext<Lang>(DEFAULT_LANG);
 
-function detect(): Lang {
+export function LangProvider({ lang, children }: { lang: Lang; children: ReactNode }) {
+  return createElement(LangContext.Provider, { value: lang }, children);
+}
+
+export function useLang(): Lang {
+  return useContext(LangContext);
+}
+
+/** The current language and its interface text. */
+export function useI18n(): { lang: Lang; t: UiMessages } {
+  const lang = useLang();
+  return { lang, t: uiMessages(lang) };
+}
+
+/** The language the learner chose last, or the browser's language, or the default. */
+export function preferredLang(): Lang {
+  try {
+    const stored = window.localStorage.getItem(LANG_KEY);
+    if (isLang(stored)) return stored;
+  } catch {
+    // Storage is blocked: use the browser's language.
+  }
   try {
     return langFromTag(window.navigator.language);
   } catch {
@@ -27,67 +46,11 @@ function detect(): Lang {
   }
 }
 
-function getSnapshot(): Lang {
-  if (memoryLang) return memoryLang;
-  try {
-    const stored = window.localStorage.getItem(LANG_KEY);
-    if (isLang(stored)) return stored;
-  } catch {
-    // Storage is blocked: fall through to the browser's language.
-  }
-  return detect();
-}
-
-function getServerSnapshot(): Lang {
-  return DEFAULT_LANG;
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-
-  // Another tab changed the language.
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === LANG_KEY || event.key === null) {
-      memoryLang = undefined;
-      listener();
-    }
-  };
-  window.addEventListener("storage", onStorage);
-
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener("storage", onStorage);
-  };
-}
-
-/** Chooses the language for the whole app. */
-export function setLang(lang: Lang): void {
+/** Remembers the learner's choice for the next visit. Failing to remember is harmless. */
+export function rememberLang(lang: Lang): void {
   try {
     window.localStorage.setItem(LANG_KEY, lang);
-    memoryLang = undefined;
   } catch {
-    memoryLang = lang;
+    // The choice just is not remembered.
   }
-  listeners.forEach((listener) => listener());
-}
-
-/** Forgets the choice, so the browser's language applies again. Used by tests. */
-export function clearLang(): void {
-  memoryLang = undefined;
-  try {
-    window.localStorage.removeItem(LANG_KEY);
-  } catch {
-    // Nothing to clear.
-  }
-  listeners.forEach((listener) => listener());
-}
-
-export function useLang(): Lang {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-}
-
-/** The current language, its interface text and a way to change it. */
-export function useI18n(): { lang: Lang; t: UiMessages; setLang: (lang: Lang) => void } {
-  const lang = useLang();
-  return { lang, t: uiMessages(lang), setLang };
 }

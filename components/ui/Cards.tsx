@@ -4,16 +4,16 @@ import type { ReactNode } from "react";
 import { Check } from "lucide-react";
 import type { Topic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
-import { toHash } from "@/lib/routes";
 import type { ModeInfo } from "@/lib/tasks";
 import { ModeIcon, TopicIcon } from "./icons";
+import { AppLink } from "@/components/ui/AppLink";
 
 /** A topic as a coloured card: large formula, darker title band, short description. */
 export function ModuleCard({ topic, done }: { topic: Topic; done: boolean }) {
   const { t } = useI18n();
   const { before, mark, after, caption } = topic.formula;
   return (
-    <a className={`module mod-${topic.colour}`} href={toHash({ name: "lesson", topic: topic.id })}>
+    <AppLink className={`module mod-${topic.colour}`} route={{ name: "lesson", topic: topic.id }}>
       <span className="module-art">
         <span className="module-formula">
           {before}
@@ -30,7 +30,7 @@ export function ModuleCard({ topic, done }: { topic: Topic; done: boolean }) {
       </span>
       <span className="module-band">{topic.title}</span>
       <span className="module-text">{topic.subtitle}</span>
-    </a>
+    </AppLink>
   );
 }
 
@@ -56,9 +56,9 @@ export function ModeCard({ mode, caption, selected = false }: { mode: ModeInfo; 
   const { t } = useI18n();
   const text = t.modes[mode.id];
   return (
-    <a
+    <AppLink
       className={`game ${modeTone(mode.id)}`}
-      href={toHash({ name: "practice", mode: mode.id })}
+      route={{ name: "practice", mode: mode.id }}
       aria-current={selected ? "true" : undefined}
     >
       <span className="game-art">
@@ -69,7 +69,7 @@ export function ModeCard({ mode, caption, selected = false }: { mode: ModeInfo; 
       </span>
       <span className="game-band">{text.title}</span>
       <span className="game-text">{text.description}</span>
-    </a>
+    </AppLink>
   );
 }
 

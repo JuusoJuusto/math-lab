@@ -3,15 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { questionsFor } from "@/content/questions";
 import { STORAGE_KEY, type Progress } from "@/lib/progress";
+import { parseHash, toPath } from "@/lib/routes";
 import { buildSession, dateSeed, generateTask, getMode, type ModeId, type Task } from "@/lib/tasks";
 import { localDate } from "@/hooks/useToday";
 import { App } from "../App";
 
 type User = ReturnType<typeof userEvent.setup>;
 
+/** Opens a screen by its short legacy address (`#/learn/both`), which the test turns into the page address (`/en/learn/both/`). */
 function open(hash = "", saved?: Partial<Progress>) {
   if (saved) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-  window.location.hash = hash;
+  window.history.replaceState(null, "", toPath(parseHash(hash), "en"));
   const user = userEvent.setup();
   render(<App />);
   return { user };
@@ -73,11 +75,11 @@ describe("home", () => {
     const { user } = open("", { solverLevels: ["one-step"] });
     await user.click(screen.getByRole("button", { name: /Continue learning/ }));
     expect(await screen.findByRole("heading", { level: 1, name: "Two-step equations" })).toBeTruthy();
-    expect(window.location.hash).toBe("#/solve/two-step");
+    expect(window.location.pathname).toBe("/en/solve/two-step/");
   });
 
   it("sends a learner who finished every level to the practice hub", async () => {
-    const { user } = open("", { solverLevels: ["one-step", "two-step", "both", "word"] });
+    const { user } = open("", { solverLevels: ["one-step", "two-step", "both", "brackets", "fractions", "word", "special", "hard-word", "challenge"] });
     await user.click(screen.getByRole("button", { name: /Continue learning/ }));
     expect(await screen.findByRole("heading", { level: 1, name: "Practice" })).toBeTruthy();
   });
@@ -117,7 +119,7 @@ describe("navigation", () => {
   it("opens a screen straight from its address", () => {
     open("#/learn/both");
     expect(screen.getByRole("heading", { level: 1, name: "Variables on both sides" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Solve step by step/ }).getAttribute("href")).toBe("#/solve/both");
+    expect(screen.getByRole("link", { name: /Solve step by step/ }).getAttribute("href")).toBe("/en/solve/both/");
   });
 
   it("falls back to the home screen for an address that does not exist", () => {
@@ -154,16 +156,16 @@ describe("navigation", () => {
 describe("learning", () => {
   it("lists every topic and marks the ones that are finished", () => {
     open("#/learn", { solverLevels: ["one-step"], completed: ["simple"] });
-    expect(document.querySelectorAll(".module")).toHaveLength(7);
+    expect(document.querySelectorAll(".module")).toHaveLength(11);
     // "one-step" is finished twice over (solver and an old quiz round) but is still one topic.
     expect(screen.getAllByText("Finished")).toHaveLength(1);
   });
 
   it("offers the solver where there is one, and varied practice for every topic", async () => {
-    const { user } = open("#/learn/brackets");
+    const { user } = open("#/learn/proportion");
     expect(screen.queryByRole("link", { name: /Solve step by step/ })).toBeNull();
     await user.click(screen.getByRole("button", { name: /Practise this topic/ }));
-    expect(window.location.hash).toMatch(/^#\/practice\/exam\?topic=brackets&n=10&seed=\d+$/);
+    expect(`${window.location.pathname}${window.location.search}`).toMatch(/^\/en\/practice\/exam\/\?topic=proportion&n=10&seed=\d+$/);
     expect(await screen.findByText("Task 1 / 10")).toBeTruthy();
   });
 
@@ -193,7 +195,7 @@ describe("the practice hub", () => {
     await user.click(screen.getByRole("radio", { name: "5" }));
     await user.click(screen.getByRole("button", { name: "Start" }));
 
-    expect(window.location.hash).toMatch(/^#\/practice\/solve\?topic=two-step&n=5&seed=\d+$/);
+    expect(`${window.location.pathname}${window.location.search}`).toMatch(/^\/en\/practice\/solve\/\?topic=two-step&n=5&seed=\d+$/);
     expect(await screen.findByText("Task 1 / 5")).toBeTruthy();
   });
 
@@ -369,7 +371,7 @@ describe("a practice session", () => {
 
     // Playing it again is allowed, but earns no second bonus.
     document.body.innerHTML = "";
-    window.location.hash = `#/practice/daily?topic=all&n=5&seed=${seed + 0}`;
+    window.history.replaceState(null, "", `/en/practice/daily/?topic=all&n=5&seed=${seed}`);
     const again = userEvent.setup();
     render(<App />);
     await play(again);
@@ -427,7 +429,7 @@ describe("progress", () => {
     // Two-step (by topic) and Solve it (by type of task) both read 6 of 6.
     expect(screen.getAllByText("6 of 6 correct (100 %)", { selector: ".row-sub" })).toHaveLength(2);
     expect(screen.getAllByText("1 of 4 correct (25 %)", { selector: ".row-sub" })).toHaveLength(2);
-    expect(screen.getByRole("link", { name: "Variables on both sides" }).getAttribute("href")).toBe("#/learn/both");
+    expect(screen.getByRole("link", { name: "Variables on both sides" }).getAttribute("href")).toBe("/en/learn/both/");
     expect(screen.getAllByText("Solver")).toHaveLength(1);
     expect(screen.getAllByText("Practised")).toHaveLength(1);
 
@@ -437,7 +439,7 @@ describe("progress", () => {
 
   it("treats progress saved before the topic split as finished one-step work", () => {
     open("#/progress", { completed: ["simple"], attempts: 3, correct: 3 });
-    expect(screen.getByText("1 / 7")).toBeTruthy();
+    expect(screen.getByText("1 / 11")).toBeTruthy();
   });
 
   it("asks before deleting everything, and can be cancelled", async () => {

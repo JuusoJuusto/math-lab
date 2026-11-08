@@ -209,6 +209,8 @@ export const fi: UiMessages = {
       "Sinun vuorosi. Valitse laskutoimitus ja luku ja tee se molemmille puolille. Mitä teetkin toiselle puolelle, tee myös toiselle.",
     emptyFlip:
       "Sinun vuorosi. Napauta yhtälön termiä, niin se siirtyy yhtäsuuruusmerkin yli. Sen merkki vaihtuu, ja yhtälö pysyy tosi.",
+    written: "Yhtälö kirjoitettuna",
+    preludeEmpty: "Tämä yhtälö ei ole vielä yksinkertaisessa muodossa. Vastaa kysymykseen, niin saat sen siistittyä, ja ratkaise sitten.",
     simplifyLabel: "Sievennä",
     simplifyText: "Laske nyt kumpikin puoli, niin saat seuraavan yhtälön.",
     simplify: "Sievennä molemmat puolet",
@@ -312,6 +314,8 @@ export const fi: UiMessages = {
         `Ratkaisit ${n} ${word ? plural(n, "tehtävän", "tehtävää") : plural(n, "yhtälön", "yhtälöä")}. ${
           hints === 0 ? "Vihjeitä ei tarvittu." : `Käytit ${hints} ${plural(hints, "vihjeen", "vihjettä")}, ja juuri sitä varten ne ovat.`
         }`,
+      noSolution: "ei ratkaisua",
+      infinite: "äärettömän monta",
       hintTag: (n) => `${n} ${plural(n, "vihje", "vihjettä")}`,
       next: (title) => `Seuraava: ${title}`,
       explore: "Tutustu muihin aiheisiin",

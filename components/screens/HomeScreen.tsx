@@ -8,10 +8,10 @@ import { useProgress } from "@/hooks/useProgress";
 import { LEVELS } from "@/lib/equations";
 import { accuracyOf, finishedTopics, levelOf, overallProgress, xpIntoLevel, XP_PER_LEVEL } from "@/lib/progress";
 import { getMode, type ModeId } from "@/lib/tasks";
-import { toHash } from "@/lib/routes";
 import { LogoMark, Wordmark } from "@/components/shell/Logo";
 import { ModeCard, ModuleCard } from "@/components/ui/Cards";
 import { TryItNow } from "@/components/ui/TryItNow";
+import { AppLink } from "@/components/ui/AppLink";
 
 const HOME_MODES: readonly ModeId[] = ["daily", "quiz", "solve", "truefalse", "step", "mistake", "equation", "exam"];
 export function HomeScreen() {
@@ -37,10 +37,10 @@ export function HomeScreen() {
         </div>
         <h1 id="hero-title">{t.home.heroTitle}</h1>
         <p>{t.home.heroText}</p>
-        <a className="mastery" href={toHash({ name: "progress" })}>
+        <AppLink className="mastery" route={{ name: "progress" }}>
           <span>{t.home.overall}</span>
           <strong>{overall} %</strong>
-        </a>
+        </AppLink>
       </section>
 
       <div className="panel">
@@ -51,9 +51,9 @@ export function HomeScreen() {
         <section className="block" aria-labelledby="learn-title">
           <div className="block-head">
             <h2 id="learn-title">{t.home.learnTitle}</h2>
-            <a className="inline-link" href={toHash({ name: "learn" })}>
+            <AppLink className="inline-link" route={{ name: "learn" }}>
               {t.home.allTopics}
-            </a>
+            </AppLink>
           </div>
           <div className="grid-4">
             {topics.slice(0, 4).map((topic) => (
@@ -65,9 +65,9 @@ export function HomeScreen() {
         <section className="block" aria-labelledby="practise-title">
           <div className="block-head">
             <h2 id="practise-title">{t.home.practiseTitle}</h2>
-            <a className="inline-link" href={toHash({ name: "practice" })}>
+            <AppLink className="inline-link" route={{ name: "practice" }}>
               {t.home.allWays}
-            </a>
+            </AppLink>
           </div>
           <div className="grid-4">
             {HOME_MODES.map((id) => {
@@ -80,10 +80,10 @@ export function HomeScreen() {
         <section className="progress-note" aria-labelledby="note-title">
           <div className="block-head">
             <h2 id="note-title">{t.home.progressTitle}</h2>
-            <a className="inline-link" href={toHash({ name: "progress" })}>
+            <AppLink className="inline-link" route={{ name: "progress" }}>
               {t.home.allStats}
               <ArrowRight size={14} aria-hidden="true" />
-            </a>
+            </AppLink>
           </div>
           {progress.attempts === 0 ? (
             <p>{t.home.notStarted}</p>

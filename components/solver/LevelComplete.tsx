@@ -39,8 +39,10 @@ export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQ
           return (
             <li key={exercise.id}>
               <CircleCheck size={18} aria-hidden="true" />
-              <span className="recap-equation">{formatEquation(exercise.equation)}</span>
-              <span className="recap-answer">{solution.kind === "one" ? `x = ${formatFraction(solution.value)}` : ""}</span>
+              <span className="recap-equation">{exercise.prelude.steps.length > 0 ? exercise.prelude.source : formatEquation(exercise.equation)}</span>
+              <span className="recap-answer">
+                {solution.kind === "one" ? `x = ${formatFraction(solution.value)}` : solution.kind === "none" ? words.noSolution : words.infinite}
+              </span>
               {result && result.hints > 0 && <span className="recap-note">{words.hintTag(result.hints)}</span>}
             </li>
           );

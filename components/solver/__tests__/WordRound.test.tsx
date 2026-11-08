@@ -84,9 +84,8 @@ describe("the word-problem level", () => {
     expect(screen.getByRole("heading", { name: "Word problems: done!" })).toBeTruthy();
     // The test helper asks for hints to play each move, so hints are mentioned.
     expect(screen.getByText(/You solved 5 problems\. You used \d+ hints/)).toBeTruthy();
-    // The last level has no next level, so it points back to the topics.
-    expect(screen.queryByRole("button", { name: /^Next:/ })).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: /Explore more topics/ }));
+    // The next level is the special cases.
+    expect(screen.getByRole("button", { name: /^Next: No solution or infinitely many/ })).toBeTruthy();
   });
 
   it("starts with the easy problems and ends with the ones that have x on both sides or two steps", () => {

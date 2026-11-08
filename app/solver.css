@@ -389,3 +389,17 @@
   .build-input { flex: 1; width: auto; max-width: 88px; }
   .answer-line { font-size: 26px; }
 }
+
+/* ---------- Equations as written: brackets and fractions to tidy up first ---------- */
+
+.eq-written { padding-bottom: 20px; }
+.eq-written .mathline { margin-top: 10px; }
+.eq-written .mathline-row { font-size: clamp(22px, calc(100cqi / (0.54 * var(--eq-chars, 10) + 3.2)), 60px); }
+.eq-written .eq-side { display: inline-flex; align-items: center; gap: 0.26em; padding: 0.1em 0.42em; border-radius: 0.34em; background: #f1f8fa; white-space: nowrap; }
+.prelude { display: grid; gap: 12px; padding: 18px; border: 2px solid var(--s-card-line); border-radius: var(--radius); background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08); }
+.prelude-question { margin: 0; color: var(--s-ink); font: 600 20px/1.35 var(--font-display); }
+.answers-prelude { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.intro-prelude { display: grid; gap: 8px; padding-bottom: 14px; margin-bottom: 4px; border-bottom: 2px dashed var(--s-card-line); }
+@media (max-width: 560px) {
+  .answers-prelude { grid-template-columns: minmax(0, 1fr); }
+}

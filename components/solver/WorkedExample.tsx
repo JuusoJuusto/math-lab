@@ -5,15 +5,19 @@ import { ArrowRight, Play, RotateCcw } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   createSession,
+  currentPreludeStep,
   describeOperation,
   levelText,
+  makePrelude,
   mustParseEquation,
+  preludeShown,
   sessionReducer,
   solutionOf,
   suggestNextMove,
   type Equation,
   type LevelDefinition,
 } from "@/lib/equations";
+import { MathLine } from "@/components/ui/MathLine";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
 import { StepHistory } from "./StepHistory";
@@ -31,14 +35,19 @@ interface WorkedExampleProps {
 export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
   const { lang, t } = useI18n();
   const equation = useMemo(() => mustParseEquation(level.example.equation), [level.example.equation]);
-  const [state, dispatch] = useReducer(sessionReducer, equation, (start: Equation) => createSession(start, lang));
+  const prelude = useMemo(() => makePrelude(level.example.equation), [level.example.equation]);
+  const [state, dispatch] = useReducer(sessionReducer, equation, (start: Equation) => createSession(start, lang, prelude));
 
   const suggestion = suggestNextMove(state.current);
   const solution = solutionOf(state);
-  const started = state.steps.length > 0 || state.pending !== null;
+  const started = state.steps.length > 0 || state.pending !== null || state.preludeIndex > 0;
+
+  const preludeStep = currentPreludeStep(state);
+  const written = preludeShown(state);
 
   function advance() {
-    if (state.pending) dispatch({ type: "simplify" });
+    if (preludeStep) dispatch({ type: "prelude", choice: preludeStep.correct });
+    else if (state.pending) dispatch({ type: "simplify" });
     else if (suggestion) dispatch({ type: "apply", operation: suggestion.operation });
   }
 
@@ -51,12 +60,21 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
   return (
     <div className="workspace">
       <div className="workspace-main">
-        <EquationDisplay
-          equation={state.current}
-          applied={state.pending?.operation ?? null}
-          solved={state.outcome === "solved"}
-          label={t.solver.display.worked}
-        />
+        {written !== null ? (
+          <section className="eq eq-written" aria-label={t.solver.display.worked}>
+            <div className="eq-caption" aria-hidden="true">
+              {t.solver.written}
+            </div>
+            <MathLine text={written} />
+          </section>
+        ) : (
+          <EquationDisplay
+            equation={state.current}
+            applied={state.pending?.operation ?? null}
+            solved={state.outcome === "solved"}
+            label={t.solver.display.worked}
+          />
+        )}
 
         <FeedbackPanel notice={notice} hints={[]} emptyText={levelText(level, lang).exampleLead} />
 
@@ -90,7 +108,7 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
       </div>
 
       <div className="workspace-side">
-        <StepHistory start={state.start} steps={state.steps} />
+        <StepHistory start={state.start} steps={state.steps} prelude={state.prelude} preludeDone={state.preludeIndex} />
       </div>
     </div>
   );

@@ -4,9 +4,9 @@ import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
 import { getTopic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
 import { getLevel } from "@/lib/equations";
-import { toHash } from "@/lib/routes";
 import { startSession } from "@/components/practice/start";
 import { TopicIcon } from "@/components/ui/icons";
+import { AppLink } from "@/components/ui/AppLink";
 
 export function LessonScreen({ topicId }: { topicId: string }) {
   const { lang, t } = useI18n();
@@ -17,9 +17,9 @@ export function LessonScreen({ topicId }: { topicId: string }) {
 
   return (
     <div className="panel">
-      <a className="back-link" href={toHash({ name: "learn" })}>
+      <AppLink className="back-link" route={{ name: "learn" }}>
         <ArrowLeft size={16} aria-hidden="true" /> {t.lesson.back}
-      </a>
+      </AppLink>
 
       <header className={`lesson-top mod-${topic.colour}`}>
         <span className="lesson-art" aria-hidden="true">
@@ -58,9 +58,9 @@ export function LessonScreen({ topicId }: { topicId: string }) {
 
       <div className="action-row">
         {hasSolver && (
-          <a className="cta cta-inline" href={toHash({ name: "solver", level: topic.id })}>
+          <AppLink className="cta cta-inline" route={{ name: "solver", level: topic.id }}>
             {t.lesson.solve} <ArrowRight size={18} aria-hidden="true" />
-          </a>
+          </AppLink>
         )}
         <button type="button" className={hasSolver ? "button-secondary" : "cta cta-inline"} onClick={() => startSession("exam", topic.id, 10)}>
           {t.lesson.practiseTopic}

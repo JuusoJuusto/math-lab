@@ -19,6 +19,7 @@ import type { Equation } from "./expression";
 import { evaluateFlip, flipOperation, formatFlipPreview, type FlipTarget } from "./flip";
 import { formatBar, formatEquation } from "./format";
 import { operationKey, type AppliedStep, type Operation } from "./operations";
+import type { Prelude, PreludeStep } from "./prelude";
 import { solvedValue, terminalState, type TerminalState } from "./solve";
 import { engineText } from "./text";
 import {
@@ -55,6 +56,12 @@ export type HintLevel = 0 | 1 | 2 | 3;
 export interface SessionState {
   /** The language of every message in this session. */
   readonly lang: Lang;
+  /** The clean-up questions (open brackets, simplify) that come before the balance moves, if the equation has any. */
+  readonly prelude: Prelude | null;
+  /** How many of the prelude's questions have been answered. */
+  readonly preludeIndex: number;
+  /** The wrong options already tried on the current prelude question. */
+  readonly preludeWrong: readonly number[];
   /** The equation the exercise started with. */
   readonly start: Equation;
   readonly current: Equation;
@@ -75,6 +82,8 @@ export interface SessionState {
 }
 
 export type SessionAction =
+  /** Answer the current prelude question by choosing one of its options. */
+  | { readonly type: "prelude"; readonly choice: number }
   | { readonly type: "apply"; readonly operation: Operation }
   /** Flip a term across the equals sign. */
   | { readonly type: "flip"; readonly target: FlipTarget }
@@ -84,9 +93,12 @@ export type SessionAction =
   | { readonly type: "restart" }
   | { readonly type: "check" };
 
-export function createSession(start: Equation, lang: Lang = "en"): SessionState {
+export function createSession(start: Equation, lang: Lang = "en", prelude: Prelude | null = null): SessionState {
   return {
     lang,
+    prelude: prelude && prelude.steps.length > 0 ? prelude : null,
+    preludeIndex: 0,
+    preludeWrong: [],
     start,
     current: start,
     steps: [],
@@ -106,12 +118,23 @@ export function solutionOf(state: SessionState): Fraction | null {
   return state.outcome === "solved" ? solvedValue(state.current) : null;
 }
 
+/** The prelude question waiting to be answered, or `null` once the equation is in simple form. */
+export function currentPreludeStep(state: SessionState): PreludeStep | null {
+  return state.prelude?.steps[state.preludeIndex] ?? null;
+}
+
+/** The equation as it is written right now, while the prelude is being worked through. */
+export function preludeShown(state: SessionState): string | null {
+  if (!state.prelude || state.preludeIndex >= state.prelude.steps.length) return null;
+  return state.preludeIndex === 0 ? state.prelude.source : state.prelude.steps[state.preludeIndex - 1].after;
+}
+
 export function canUndo(state: SessionState): boolean {
-  return state.pending !== null || state.steps.length > 0;
+  return currentPreludeStep(state) === null && (state.pending !== null || state.steps.length > 0);
 }
 
 export function canGetHint(state: SessionState): boolean {
-  return state.outcome === "solving" && state.pending === null && state.hintLevel < 3;
+  return state.outcome === "solving" && state.pending === null && currentPreludeStep(state) === null && state.hintLevel < 3;
 }
 
 function terminalNotice(outcome: TerminalState, equation: Equation, lang: Lang): Notice {
@@ -193,6 +216,36 @@ function applyFlip(state: SessionState, target: FlipTarget): SessionState {
   return resolveMove(state, evaluation, `flip|${operation ? operationKey(operation) : target.kind}`, target);
 }
 
+function answerPrelude(state: SessionState, choice: number): SessionState {
+  const step = currentPreludeStep(state);
+  if (!step || !step.options[choice] || state.preludeWrong.includes(choice)) return state;
+  const text = engineText(state.lang);
+
+  if (choice !== step.correct) {
+    const reason = step.options[choice].reason ?? "arithmetic";
+    return {
+      ...state,
+      mistakes: state.mistakes + 1,
+      preludeWrong: [...state.preludeWrong, choice],
+      notice: { tone: "error", title: text.prelude.wrongTitle, body: [text.prelude.wrong[reason]] },
+    };
+  }
+
+  const explain = step.kind === "expand" ? text.prelude.expandRight : text.prelude.simplifyRight;
+  const index = state.preludeIndex + 1;
+  const last = index >= (state.prelude?.steps.length ?? 0);
+  return {
+    ...state,
+    preludeIndex: index,
+    preludeWrong: [],
+    notice: {
+      tone: "success",
+      title: text.tutor.praise[(index - 1) % text.tutor.praise.length],
+      body: [explain(step.part, step.result), ...(last ? [text.prelude.done] : [])],
+    },
+  };
+}
+
 function simplifyPending(state: SessionState): SessionState {
   const { pending } = state;
   if (!pending) return state;
@@ -235,7 +288,12 @@ function undoLast(state: SessionState): SessionState {
 }
 
 export function sessionReducer(state: SessionState, action: SessionAction): SessionState {
+  // Until the equation is in simple form, only the prelude's questions can be answered.
+  if (currentPreludeStep(state) !== null && action.type !== "prelude" && action.type !== "restart") return state;
+
   switch (action.type) {
+    case "prelude":
+      return answerPrelude(state, action.choice);
     case "apply":
       return state.outcome === "solving" && state.pending === null ? applyMove(state, action.operation) : state;
     case "flip":
@@ -249,7 +307,14 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "undo":
       return undoLast(state);
     case "restart":
-      return { ...createSession(state.start, state.lang), hintsUsed: state.hintsUsed, mistakes: state.mistakes };
+      // Starting over keeps the effort so far, and skips the prelude that has already been done.
+      return {
+        ...createSession(state.start, state.lang),
+        prelude: state.prelude,
+        preludeIndex: state.prelude?.steps.length ?? 0,
+        hintsUsed: state.hintsUsed,
+        mistakes: state.mistakes,
+      };
     case "check":
       return state.outcome === "solved" ? { ...state, checked: true } : state;
   }

@@ -16,7 +16,18 @@ import type { Lang, Localised } from "../lib/lang";
 
 export type TopicColour = "blue" | "red" | "purple" | "orange" | "teal" | "magenta" | "navy";
 
-export type TopicIconName = "Scale" | "Search" | "Footprints" | "ArrowLeftRight" | "Parentheses" | "TrendingUp" | "MessageSquareText";
+export type TopicIconName =
+  | "Scale"
+  | "Search"
+  | "Footprints"
+  | "ArrowLeftRight"
+  | "Parentheses"
+  | "TrendingUp"
+  | "MessageSquareText"
+  | "Divide"
+  | "Infinity"
+  | "Puzzle"
+  | "Flame";
 
 /** A formula shown large on the topic card, with one highlighted part. */
 export interface Formula {
@@ -219,6 +230,70 @@ export const topicDefinitions: readonly TopicDefinition[] = [
     },
   },
   {
+    id: "fractions",
+    colour: "magenta",
+    icon: "Divide",
+    formula: { before: "", mark: "x/2", after: " + x/3 = 5" },
+    text: {
+      en: {
+        title: "Fractions and ratios",
+        subtitle: "Clear the denominators first",
+        caption: "multiply by the common denominator",
+        description: "Solve equations with fractions by multiplying both sides by the common denominator.",
+        lesson: [
+          "Find the smallest number that every denominator divides into: the common denominator.",
+          "Multiply both sides, and every term, by it. Now there are no fractions left.",
+          "Solve the whole-number equation as usual.",
+          "A ratio such as x/6 = 4/3 is solved the same way: multiply both sides by 6.",
+        ],
+      },
+      fi: {
+        title: "Murtolausekkeet ja verranto",
+        subtitle: "Poista ensin nimittäjät",
+        caption: "kerro yhteisellä nimittäjällä",
+        description: "Ratkaise murtolukuja sisältäviä yhtälöitä kertomalla molemmat puolet yhteisellä nimittäjällä.",
+        lesson: [
+          "Etsi pienin luku, johon jokainen nimittäjä sopii: yhteinen nimittäjä.",
+          "Kerro sillä molemmat puolet ja jokainen termi. Murtoluvut häviävät.",
+          "Ratkaise kokonaislukuyhtälö tavalliseen tapaan.",
+          "Verranto, kuten x/6 = 4/3, ratkeaa samalla tavalla: kerro molemmat puolet luvulla 6.",
+        ],
+      },
+    },
+  },
+  {
+    id: "special",
+    colour: "blue",
+    icon: "Infinity",
+    formula: { before: "2x + 3 = ", mark: "2x", after: " + 7" },
+    text: {
+      en: {
+        title: "No solution or infinitely many",
+        subtitle: "When x disappears",
+        caption: "x cancels out",
+        description: "Some equations are never true and some are always true. Learn to recognise them.",
+        lesson: [
+          "If x disappears and the two sides are different (3 = 5), the equation has no solution.",
+          "If x disappears and the two sides are the same (4 = 4), every number is a solution.",
+          "Check by trying two different values of x in the original equation.",
+          "These cases show that solving an equation is more than finding one number.",
+        ],
+      },
+      fi: {
+        title: "Ei ratkaisua tai äärettömän monta",
+        subtitle: "Kun x katoaa",
+        caption: "x supistuu pois",
+        description: "Jotkin yhtälöt eivät pidä koskaan paikkaansa, ja jotkin pitävät aina. Opi tunnistamaan ne.",
+        lesson: [
+          "Jos x katoaa ja puolet ovat erisuuret (3 = 5), yhtälöllä ei ole ratkaisua.",
+          "Jos x katoaa ja puolet ovat samat (4 = 4), jokainen luku on ratkaisu.",
+          "Tarkista kokeilemalla alkuperäiseen yhtälöön kahta eri x:n arvoa.",
+          "Nämä tapaukset osoittavat, että yhtälön ratkaiseminen on enemmän kuin yhden luvun löytämistä.",
+        ],
+      },
+    },
+  },
+  {
     id: "proportion",
     colour: "magenta",
     icon: "TrendingUp",
@@ -276,6 +351,70 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Kirjoita tehtävän tiedoista yhtälö.",
           "Ratkaise yhtälö ja vastaa kysymykseen kokonaisella lauseella.",
           "Tarkista, että vastaus on järkevä tilanteessa.",
+        ],
+      },
+    },
+  },
+  {
+    id: "hard-word",
+    colour: "teal",
+    icon: "Puzzle",
+    formula: { before: "", mark: "x", after: " + (x + 1) + (x + 2) = 48" },
+    text: {
+      en: {
+        title: "Hard word problems",
+        subtitle: "Brackets, percentages and speed",
+        caption: "write it all yourself",
+        description: "Longer stories with brackets, percentages, consecutive numbers and things that move. You write the whole equation yourself.",
+        lesson: [
+          "Say in words what each part of the story is worth.",
+          "Turn the words into expressions with x. Consecutive numbers are x, x + 1, x + 2.",
+          "A percentage is a decimal: 25 % off leaves 0.75 of the price.",
+          "Distance = speed × time. Two things moving towards each other add their distances.",
+        ],
+      },
+      fi: {
+        title: "Vaativat sanalliset tehtävät",
+        subtitle: "Sulkuja, prosentteja ja nopeutta",
+        caption: "kirjoita kaikki itse",
+        description: "Pidempiä tarinoita, joissa on sulkuja, prosentteja, peräkkäisiä lukuja ja liikettä. Kirjoitat koko yhtälön itse.",
+        lesson: [
+          "Kerro sanoin, mitä jokainen tarinan osa on.",
+          "Muuta sanat lausekkeiksi, joissa on x. Peräkkäiset luvut ovat x, x + 1, x + 2.",
+          "Prosentti on desimaaliluku: 25 %:n alennus jättää 0,75-osan hinnasta.",
+          "Matka = nopeus · aika. Toisiaan kohti kulkevien matkat lasketaan yhteen.",
+        ],
+      },
+    },
+  },
+  {
+    id: "challenge",
+    colour: "red",
+    icon: "Flame",
+    formula: { before: "", mark: "3(x − 2)", after: " − (x + 1)/2 = 7" },
+    text: {
+      en: {
+        title: "Challenge",
+        subtitle: "The hardest equations",
+        caption: "every method together",
+        description: "Brackets on both sides, fractions and negative numbers in one equation. Use every method you know.",
+        lesson: [
+          "Open the brackets first, and simplify each side.",
+          "If there are fractions, multiply both sides by the common denominator.",
+          "Collect x on one side and the numbers on the other.",
+          "Always check the answer by substituting it.",
+        ],
+      },
+      fi: {
+        title: "Haastetaso",
+        subtitle: "Vaikeimmat yhtälöt",
+        caption: "kaikki menetelmät yhdessä",
+        description: "Sulkuja molemmilla puolilla, murtolukuja ja negatiivisia lukuja samassa yhtälössä. Käytä kaikkia tuntemiasi menetelmiä.",
+        lesson: [
+          "Poista ensin sulut ja sievennä kumpikin puoli.",
+          "Jos mukana on murtolukuja, kerro molemmat puolet yhteisellä nimittäjällä.",
+          "Kokoa x yhdelle puolelle ja luvut toiselle.",
+          "Tarkista vastaus aina sijoittamalla se.",
         ],
       },
     },

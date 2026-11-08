@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MathLab</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#9be6f3" />
+    <noscript><meta http-equiv="refresh" content="0; url=/en/" /></noscript>
+    <script>
+      // The bare address picks a language and carries on to its page: the language
+      // chosen last, else the browser's. Links from before the languages had their
+      // own addresses (/#/learn/two-step) are carried over to the new ones.
+      (function () {
+        var lang = "en";
+        try {
+          var saved = window.localStorage.getItem("mathlab:lang:v1");
+          if (saved === "fi" || saved === "en") lang = saved;
+          else if ((navigator.language || "").toLowerCase().indexOf("fi") === 0) lang = "fi";
+        } catch (error) {
+          if ((navigator.language || "").toLowerCase().indexOf("fi") === 0) lang = "fi";
+        }
+        var rest = location.hash.indexOf("#/") === 0 ? location.hash.slice(2) : "";
+        var parts = rest.split("?");
+        var path = parts[0].replace(/^\/+|\/+$/g, "");
+        var target = "/" + lang + "/" + (path ? path + "/" : "") + (parts[1] ? "?" + parts[1] : "");
+        location.replace(target);
+      })();
+    </script>
+  </head>
+  <body style="font-family: system-ui, sans-serif; text-align: center; padding: 4rem 1rem; background: #9be6f3">
+    <h1>MathLab</h1>
+    <p><a href="/en/">English</a> · <a href="/fi/">Suomi</a></p>
+  </body>
+</html>

@@ -4,12 +4,15 @@ import { ArrowRight, ArrowLeftRight, Lightbulb } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   flipTerms,
+  engineText,
   levelText,
+  makePrelude,
   mustParseEquation,
   operationsEqual,
   solveWithTutor,
   type LevelDefinition,
 } from "@/lib/equations";
+import { MathLine } from "@/components/ui/MathLine";
 import { EquationDisplay } from "./EquationDisplay";
 
 interface LevelIntroProps {
@@ -27,6 +30,9 @@ export function LevelIntro({ level, onNext, onSkip }: LevelIntroProps) {
   const text = levelText(level, lang);
   const equation = mustParseEquation(level.example.equation);
   const [firstStep] = solveWithTutor(equation);
+  const prelude = makePrelude(level.example.equation);
+  const cleanUp = prelude.steps[0];
+  const words = engineText(lang).prelude;
 
   // The flip that does the same as the first step, so the two ways can be compared.
   const { left, right } = flipTerms(equation, lang);
@@ -56,6 +62,19 @@ export function LevelIntro({ level, onNext, onSkip }: LevelIntroProps) {
       </div>
 
       <div className="intro-demo">
+        {cleanUp && (
+          <div className="intro-prelude">
+            <section className="eq eq-written" aria-label={t.solver.written}>
+              <div className="eq-caption" aria-hidden="true">
+                {cleanUp.kind === "expand" ? words.expandStage : words.simplifyStage}
+              </div>
+              <MathLine text={prelude.source} />
+            </section>
+            <p className="intro-demo-note">
+              {cleanUp.kind === "expand" ? words.expandRight(cleanUp.part, cleanUp.result) : words.simplifyRight(cleanUp.part, cleanUp.result)}
+            </p>
+          </div>
+        )}
         {firstStep && <EquationDisplay equation={firstStep.before} applied={firstStep.operation} label={t.solver.display.example} />}
         <p className="intro-demo-note">{t.solver.intro.demoNote}</p>
 

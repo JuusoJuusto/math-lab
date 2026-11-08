@@ -214,6 +214,8 @@ export const en = {
       "Your move. Choose an operation and a number, then apply it to both sides. Whatever you do to one side, do to the other too.",
     emptyFlip:
       "Your move. Tap a term in the equation to flip it across the equals sign. Its sign changes, and the equation stays true.",
+    written: "The equation as it is written",
+    preludeEmpty: "This equation is not in simple form yet. Answer the question to tidy it up, then solve it.",
     simplifyLabel: "Simplify",
     simplifyText: "Now work out each side to get the next equation.",
     simplify: "Simplify both sides",
@@ -317,6 +319,8 @@ export const en = {
         `You solved ${n} ${word ? plural(n, "problem", "problems") : plural(n, "equation", "equations")}. ${
           hints === 0 ? "No hints needed." : `You used ${hints} ${plural(hints, "hint", "hints")}, which is exactly what they are for.`
         }`,
+      noSolution: "no solution",
+      infinite: "infinitely many",
       hintTag: (n: number) => `${n} ${plural(n, "hint", "hints")}`,
       next: (title: string) => `Next: ${title}`,
       explore: "Explore more topics",

@@ -9,17 +9,29 @@
 import type { TaskKind } from "./types";
 
 /** Easiest to hardest, used to order exam practice. */
-export const TOPIC_ORDER = ["basics", "one-step", "two-step", "both", "brackets", "proportion", "word"] as const;
+export const TOPIC_ORDER = [
+  "basics",
+  "one-step",
+  "two-step",
+  "both",
+  "brackets",
+  "fractions",
+  "special",
+  "proportion",
+  "word",
+  "hard-word",
+  "challenge",
+] as const;
 
 const ALL: readonly string[] = TOPIC_ORDER;
 
 export const KIND_TOPICS: Record<TaskKind, readonly string[]> = {
   bank: ALL,
-  choose: ["basics", "one-step", "two-step", "both", "brackets"],
-  solve: ["one-step", "two-step", "both", "brackets", "proportion", "word"],
-  check: ["basics", "one-step", "two-step", "both", "brackets"],
-  step: ["one-step", "two-step", "both"],
-  mistake: ["two-step", "both"],
+  choose: ["basics", "one-step", "two-step", "both", "brackets", "fractions", "challenge"],
+  solve: ["one-step", "two-step", "both", "brackets", "fractions", "proportion", "word", "challenge"],
+  check: ["basics", "one-step", "two-step", "both", "brackets", "fractions", "challenge"],
+  step: ["one-step", "two-step", "both", "fractions"],
+  mistake: ["two-step", "both", "fractions"],
   equation: ["word"],
 };
 

@@ -151,13 +151,13 @@ describe("SolverView: a level from introduction to completion", () => {
     expect(onExit).toHaveBeenCalled();
   });
 
-  it("leads from the both-sides level on to word problems", async () => {
+  it("leads from the both-sides level on to brackets", async () => {
     vi.spyOn(Math, "random").mockImplementation(createRng(1));
     const { user, onOpenLevel } = setup("both");
     await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
     await playRound(user);
-    await user.click(screen.getByRole("button", { name: /Next: Word problems/ }));
-    expect(onOpenLevel).toHaveBeenCalledWith("word");
+    await user.click(screen.getByRole("button", { name: /Next: Equations with brackets/ }));
+    expect(onOpenLevel).toHaveBeenCalledWith("brackets");
   });
 
   it("can leave a round part-way without recording completion", async () => {

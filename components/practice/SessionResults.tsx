@@ -4,8 +4,8 @@ import { ArrowRight, RotateCcw, Trophy } from "lucide-react";
 import { getTopic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
 import { generateTask, groupOf, type ModeInfo, type TaskGroup, type TaskSpec } from "@/lib/tasks";
-import { toHash } from "@/lib/routes";
 import { TaskDisplayView } from "./TaskCard";
+import { AppLink } from "@/components/ui/AppLink";
 
 export interface AnswerRecord {
   readonly spec: TaskSpec;
@@ -75,7 +75,7 @@ export function SessionResults({ mode, records, bonus, queued, onAgain, onMistak
 
       {weak && (
         <p className="revise">
-          {t.results.revise} <a href={toHash({ name: "lesson", topic: weak[0] })}>{getTopic(weak[0], lang)?.title}</a>
+          {t.results.revise} <AppLink route={{ name: "lesson", topic: weak[0] }}>{getTopic(weak[0], lang)?.title}</AppLink>
         </p>
       )}
 
@@ -88,9 +88,9 @@ export function SessionResults({ mode, records, bonus, queued, onAgain, onMistak
             {t.results.fix(queued)} <ArrowRight size={16} aria-hidden="true" />
           </button>
         )}
-        <a className="button-secondary" href={toHash({ name: "practice" })}>
+        <AppLink className="button-secondary" route={{ name: "practice" }}>
           {t.results.other}
-        </a>
+        </AppLink>
       </div>
 
       {missed.length > 0 && (

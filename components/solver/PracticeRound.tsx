@@ -82,6 +82,7 @@ export function PracticeRound({ level, avoid, onComplete, onEquationSolved, onEx
         // A change of language starts the equation again, so every message is in one language.
         key={`${exercise.id}-${lang}`}
         equation={exercise.equation}
+        prelude={exercise.prelude}
         continueLabel={isLast ? t.solver.finishLevel : t.solver.nextEquation}
         moveMode={moveMode}
         onMoveModeChange={setMoveMode}

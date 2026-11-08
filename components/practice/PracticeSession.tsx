@@ -7,11 +7,12 @@ import { navigate } from "@/hooks/useRoute";
 import { useProgress, updateProgress } from "@/hooks/useProgress";
 import { localDate } from "@/hooks/useToday";
 import { XP, recordDailyDone, recordTask, recordTimeAttack } from "@/lib/progress";
-import { toHash, type Route } from "@/lib/routes";
+import { type Route } from "@/lib/routes";
 import { buildSession, generateTask, getMode, gradeChoice, gradeNumber, isInvalid, type Grade } from "@/lib/tasks";
 import { startSession } from "./start";
 import { SessionResults, type AnswerRecord } from "./SessionResults";
 import { TaskCard, type Phase } from "./TaskCard";
+import { AppLink } from "@/components/ui/AppLink";
 
 type SessionRoute = Extract<Route, { name: "session" }>;
 
@@ -134,15 +135,15 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
   if (specs.length === 0) {
     return (
       <div className="panel">
-        <a className="back-link" href={toHash({ name: "practice" })}>
+        <AppLink className="back-link" route={{ name: "practice" }}>
           <ArrowLeft size={16} aria-hidden="true" /> {t.session.practice}
-        </a>
+        </AppLink>
         <div className="empty">
           <h1>{mode.id === "mistakes" ? t.session.noMistakesTitle : t.session.noTasksTitle}</h1>
           <p>{mode.id === "mistakes" ? t.session.noMistakesText : t.session.noTasksText}</p>
-          <a className="cta cta-inline" href={toHash({ name: "practice", mode: mode.id })}>
+          <AppLink className="cta cta-inline" route={{ name: "practice", mode: mode.id }}>
             {t.session.backToPractice}
-          </a>
+          </AppLink>
         </div>
       </div>
     );
@@ -168,9 +169,9 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
   return (
     <div className="panel session">
       <div className="session-top">
-        <a className="back-link" href={toHash({ name: "practice", mode: mode.id })}>
+        <AppLink className="back-link" route={{ name: "practice", mode: mode.id }}>
           <ArrowLeft size={16} aria-hidden="true" /> {modeText.title}
-        </a>
+        </AppLink>
         <span className="session-xp">{t.xp.gain(answeredXp)}</span>
       </div>
 

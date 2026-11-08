@@ -7,12 +7,17 @@ import {
   canGetHint,
   canUndo,
   createSession,
+  currentPreludeStep,
   hintsWithFlip,
+  preludeShown,
   sessionReducer,
   solutionOf,
   type Equation,
   type ExerciseResult,
+  type Prelude,
 } from "@/lib/equations";
+import { MathLine } from "@/components/ui/MathLine";
+import { PreludeCard } from "./PreludeCard";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
 import { MoveTabs, type MoveMode } from "./MoveTabs";
@@ -24,6 +29,8 @@ export type WorkspaceOutcome = Omit<ExerciseResult, "id">;
 
 interface SolverWorkspaceProps {
   equation: Equation;
+  /** The questions that bring the equation as written (brackets, fractions) into simple form, if it needs them. */
+  prelude?: Prelude;
   /** Called when the learner moves on from this equation. */
   onContinue: (outcome: WorkspaceOutcome) => void;
   /** Label for the button that moves on, for example "Next equation" or "Finish level". */
@@ -45,13 +52,14 @@ interface SolverWorkspaceProps {
  */
 export function SolverWorkspace({
   equation,
+  prelude,
   onContinue,
   continueLabel,
   moveMode: controlledMode,
   onMoveModeChange,
 }: SolverWorkspaceProps) {
   const { lang, t } = useI18n();
-  const [state, dispatch] = useReducer(sessionReducer, equation, (start: Equation) => createSession(start, lang));
+  const [state, dispatch] = useReducer(sessionReducer, equation, (start: Equation) => createSession(start, lang, prelude ?? null));
   const [ownMode, setOwnMode] = useState<MoveMode>("balance");
   const moveMode = controlledMode ?? ownMode;
   const changeMode = onMoveModeChange ?? setOwnMode;
@@ -80,6 +88,8 @@ export function SolverWorkspace({
     if (state.checked) continueButton.current?.focus();
   }, [state.checked]);
 
+  const preludeStep = currentPreludeStep(state);
+  const written = preludeShown(state);
   const hints = hintsWithFlip(state.current, lang);
   const shownHints = hints ? hints.slice(0, state.hintLevel) : [];
   const solution = solutionOf(state);
@@ -102,6 +112,19 @@ export function SolverWorkspace({
   return (
     <div className="workspace" ref={root}>
       <div className="workspace-main">
+        {preludeStep && written !== null ? (
+          <>
+            <section className="eq eq-written" aria-label={t.solver.written}>
+              <div className="eq-caption" aria-hidden="true">
+                {t.solver.written}
+              </div>
+              <MathLine text={written} />
+            </section>
+            <FeedbackPanel notice={state.notice} hints={[]} emptyText={t.solver.preludeEmpty} />
+            <PreludeCard step={preludeStep} wrong={state.preludeWrong} onChoose={(choice) => dispatch({ type: "prelude", choice })} />
+          </>
+        ) : (
+        <>
         <EquationDisplay
           equation={state.current}
           applied={state.pending && !state.pending.flip ? state.pending.operation : null}
@@ -165,11 +188,15 @@ export function SolverWorkspace({
             )}
           </>
         )}
+        </>
+        )}
       </div>
 
       <div className="workspace-side">
         <StepHistory
           start={state.start}
+          prelude={state.prelude}
+          preludeDone={state.preludeIndex}
           steps={state.steps}
           canUndo={canUndo(state)}
           onUndo={() => dispatch({ type: "undo" })}

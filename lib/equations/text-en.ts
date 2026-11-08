@@ -103,6 +103,8 @@ export const en: EngineText = {
     undoMultiply: (words, amount) =>
       `x is ${words}. Multiplying is the inverse of dividing, so multiplying by ${amount} leaves x on its own.`,
     simpler: "This keeps both sides equal and makes the equation simpler.",
+    clearsFractions: (amount) =>
+      `${amount} is the smallest number that every denominator divides into. Multiplying both sides by ${amount} turns every fraction into a whole number, and both sides stay equal.`,
 
     solved: (value, sameAs) =>
       `x is on its own, so x = ${value}${sameAs ? ` (${sameAs} means the same as x = ${value})` : ""}. Check it by putting it back into the original equation.`,
@@ -110,6 +112,7 @@ export const en: EngineText = {
       `x has disappeared, and ${equation} is never true. No value of x can work, so this equation has no solution.`,
     infinite: (equation) =>
       `x has disappeared, and ${equation} is always true. Every value of x works, so there are infinitely many solutions.`,
+    nextClear: "Next: the equation still has fractions. Multiply both sides by the common denominator to get rid of them.",
     nextCollect: "Next: x is still on both sides, so collect the x-terms on one side.",
     nextConstant: "Next: there is still a number added to or subtracted from the x-term. Undo it.",
     nextCoefficient: (words) => `Next: x is still ${words}. Undo that with the inverse operation.`,
@@ -154,6 +157,9 @@ export const en: EngineText = {
         "Both sides are still equal, but x is no closer to being alone. Think about what is attached to x and which operation undoes it.",
     },
 
+    hintClear1: "The equation has fractions. Whole numbers are easier, so get rid of the denominators first.",
+    hintClear2: (amount) =>
+      `Find a number that every denominator divides into. The smallest one is ${amount}. Multiply both sides by it, and every term too.`,
     hintCollect1: "x appears on both sides. First, get all the x-terms onto one side of the equals sign.",
     hintCollect2: (subtract) =>
       `Choose one x-term to remove. Removing the smaller one keeps the remaining x-term positive. ${
@@ -187,6 +193,24 @@ export const en: EngineText = {
     repeatedTitle: "You have tried that one already",
     repeatedBody: "Look at what is attached to x, or use the hint button if you would like some help.",
     nowWeHave: (equation) => `Now we have ${equation}`,
+  },
+
+  prelude: {
+    expandStage: "Open the brackets",
+    simplifyStage: "Simplify",
+    expandQuestion: (part) => `Open the brackets in ${part}. What do you get?`,
+    simplifyQuestion: (part) => `Simplify ${part}. What do you get?`,
+    expandRight: (part, result) =>
+      `Every term inside the brackets is multiplied by the number outside: ${part} = ${result}.`,
+    simplifyRight: (part, result) => `Combine the like terms: ${part} = ${result}.`,
+    wrongTitle: "Not quite",
+    wrong: {
+      "forgot-term": "The number outside multiplies every term inside the brackets, not just one of them.",
+      sign: "Check the signs: a minus times a plus gives a minus, and a minus times a minus gives a plus.",
+      denominators: "You cannot add fractions by adding the denominators. Use a common denominator, then add the numerators.",
+      arithmetic: "Check the arithmetic: work through the terms one at a time.",
+    },
+    done: "The equation is now in simple form. Now solve it.",
   },
 
   flip: {

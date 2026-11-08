@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS, isSolution, parseEquation, parseExpression, getLevel, type Fraction } from "@/lib/equations";
-import { questions, questionsFor } from "../questions";
+import { SOLVE_PREFIX, getQuestions, questions, questionsFor } from "../questions";
 import { getTopic, topics } from "../topics";
 
 /** "x = −5" or "x = 8.5" -> an exact number, or null when the choice is not an answer to an equation. */
 function valueOfChoice(choice: string): Fraction | null {
   const match = choice.match(/^x\s*=\s*(.+)$/);
   if (!match) return null;
-  const result = parseExpression(match[1]);
+  // A Finnish decimal comma is read as a point.
+  const result = parseExpression(match[1].replace(/(\d),(\d)/g, "$1.$2"));
   return result.ok && result.value.x.n === 0 ? result.value.c : null;
 }
 
@@ -29,7 +30,17 @@ describe("topics", () => {
     for (const level of LEVELS) {
       expect(getTopic(level.id), `topic for level ${level.id}`).toBeDefined();
     }
-    expect(topics.filter((topic) => getLevel(topic.id)).map((topic) => topic.id)).toEqual(["one-step", "two-step", "both", "word"]);
+    expect(topics.filter((topic) => getLevel(topic.id)).map((topic) => topic.id)).toEqual([
+      "one-step",
+      "two-step",
+      "both",
+      "brackets",
+      "fractions",
+      "special",
+      "word",
+      "hard-word",
+      "challenge",
+    ]);
   });
 
   it("no longer contains the retired combined 'simple' topic", () => {
@@ -69,7 +80,7 @@ describe("question bank", () => {
 
     it("covers one-step, two-step, both-sides and bracket questions", () => {
       const covered = new Set(solvable.map((question) => question.topic));
-      expect([...covered].sort()).toEqual(["both", "brackets", "one-step", "two-step"]);
+      expect([...covered].sort()).toEqual(["both", "brackets", "challenge", "fractions", "one-step", "two-step"]);
     });
 
     it.each(solvable.map((question) => [question.id, question] as const))("%s", (_id, question) => {
@@ -86,6 +97,26 @@ describe("question bank", () => {
         const value = valueOfChoice(choice);
         expect(value, `${question.id} distractor ${choice}`).not.toBeNull();
         expect(isSolution(parsed.value, value!), `${question.id}: ${choice} must not be a solution`).toBe(false);
+      }
+    });
+  });
+
+  describe("the Finnish questions are right too", () => {
+    const solvable = getQuestions("fi").filter((question) => question.prompt.startsWith(SOLVE_PREFIX.fi));
+
+    it("has the same equations to solve as the English bank", () => {
+      expect(solvable.map((question) => question.id)).toEqual(
+        questions.filter((question) => question.prompt.startsWith(SOLVE_PREFIX.en)).map((question) => question.id),
+      );
+    });
+
+    it.each(solvable.map((question) => [question.id, question] as const))("%s", (_id, question) => {
+      const parsed = parseEquation(question.prompt.replace(SOLVE_PREFIX.fi, ""));
+      expect(parsed.ok, `${question.id} prompt should parse`).toBe(true);
+      if (!parsed.ok) return;
+      expect(isSolution(parsed.value, valueOfChoice(question.answer)!), question.id).toBe(true);
+      for (const choice of question.choices.filter((item) => item !== question.answer)) {
+        expect(isSolution(parsed.value, valueOfChoice(choice)!), `${question.id}: ${choice}`).toBe(false);
       }
     });
   });

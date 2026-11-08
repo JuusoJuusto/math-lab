@@ -7,9 +7,9 @@ import { useI18n } from "@/hooks/useLang";
 import { resetProgress, useProgress } from "@/hooks/useProgress";
 import { accuracyOf, finishedTopics, levelOf, overallProgress, practisedTopics, weakestTopic, xpIntoLevel, XP_PER_LEVEL } from "@/lib/progress";
 import type { TaskGroup } from "@/lib/tasks";
-import { toHash } from "@/lib/routes";
 import { startSession } from "@/components/practice/start";
 import { TopicIcon } from "@/components/ui/icons";
+import { AppLink } from "@/components/ui/AppLink";
 
 const GROUPS: readonly TaskGroup[] = ["quiz", "solve", "check", "step", "mistake", "equation"];
 
@@ -77,7 +77,7 @@ export function ProgressScreen() {
           )}
           {weak && (
             <p>
-              {t.progress.revise} <a href={toHash({ name: "lesson", topic: weak })}>{getTopic(weak, lang)?.title}</a> ({t.progress.correctPercent(accuracyOf(progress.byTopic[weak]))}).
+              {t.progress.revise} <AppLink route={{ name: "lesson", topic: weak }}>{getTopic(weak, lang)?.title}</AppLink> ({t.progress.correctPercent(accuracyOf(progress.byTopic[weak]))}).
             </p>
           )}
         </section>
@@ -93,7 +93,7 @@ export function ProgressScreen() {
             const percent = tally ? accuracyOf(tally) : 0;
             return (
               <li key={topic.id}>
-                <a className="row" href={toHash({ name: "lesson", topic: topic.id })}>
+                <AppLink className="row" route={{ name: "lesson", topic: topic.id }}>
                   <span className={`row-icon mod-${topic.colour}`}>
                     <TopicIcon name={topic.icon} size={20} />
                   </span>
@@ -118,7 +118,7 @@ export function ProgressScreen() {
                       </span>
                     )}
                   </span>
-                </a>
+                </AppLink>
               </li>
             );
           })}

@@ -293,6 +293,118 @@ export const questionDefinitions: readonly QuestionDefinition[] = [
         "Työntekijöiden määrä ja aika ovat kääntäen verrannolliset. Kun työntekijöitä on kaksi kertaa enemmän, aika puolittuu: 12 : 2 = 6 tuntia.",
     },
   ),
+  equationQuestion(
+    "q18",
+    "fractions",
+    "Intermediate",
+    "x / 2 + x / 3 = 5",
+    { en: ["x = 6", "x = 5", "x = 10", "x = 2.5"], fi: ["x = 6", "x = 5", "x = 10", "x = 2,5"] },
+    0,
+    {
+      en: "The common denominator is 6. Multiply both sides by 6: 3x + 2x = 30, so 5x = 30 and x = 6.",
+      fi: "Yhteinen nimittäjä on 6. Kerro molemmat puolet luvulla 6: 3x + 2x = 30, joten 5x = 30 ja x = 6.",
+    },
+  ),
+  equationQuestion(
+    "q19",
+    "fractions",
+    "Advanced",
+    "(x + 1) / 2 = 4",
+    ["x = 7", "x = 8", "x = 3", "x = 9"],
+    0,
+    {
+      en: "Multiply both sides by 2: x + 1 = 8. Subtract 1: x = 7.",
+      fi: "Kerro molemmat puolet luvulla 2: x + 1 = 8. Vähennä 1: x = 7.",
+    },
+  ),
+  def(
+    "q20",
+    "special",
+    "Intermediate",
+    0,
+    {
+      prompt: "How many solutions does 2x + 3 = 2x + 7 have?",
+      choices: ["None", "One", "Two", "Infinitely many"],
+      explanation: "Subtract 2x from both sides: 3 = 7. That is never true, so the equation has no solution.",
+    },
+    {
+      prompt: "Montako ratkaisua yhtälöllä 2x + 3 = 2x + 7 on?",
+      choices: ["Ei yhtään", "Yksi", "Kaksi", "Äärettömän monta"],
+      explanation: "Vähennä molemmilta puolilta 2x: 3 = 7. Se ei pidä koskaan paikkaansa, joten yhtälöllä ei ole ratkaisua.",
+    },
+  ),
+  def(
+    "q21",
+    "special",
+    "Advanced",
+    3,
+    {
+      prompt: "How many solutions does 3(x + 1) = 3x + 3 have?",
+      choices: ["None", "One", "Two", "Infinitely many"],
+      explanation: "Open the brackets: 3x + 3 = 3x + 3. Both sides are always the same, so every number is a solution.",
+    },
+    {
+      prompt: "Montako ratkaisua yhtälöllä 3(x + 1) = 3x + 3 on?",
+      choices: ["Ei yhtään", "Yksi", "Kaksi", "Äärettömän monta"],
+      explanation: "Poista sulut: 3x + 3 = 3x + 3. Puolet ovat aina samat, joten jokainen luku on ratkaisu.",
+    },
+  ),
+  def(
+    "q22",
+    "hard-word",
+    "Advanced",
+    1,
+    {
+      prompt: "The sum of three consecutive whole numbers is 48. What is the smallest of them?",
+      choices: ["14", "15", "16", "17"],
+      explanation: "Let the numbers be x, x + 1 and x + 2. Then 3x + 3 = 48, so 3x = 45 and x = 15.",
+    },
+    {
+      prompt: "Kolmen peräkkäisen kokonaisluvun summa on 48. Mikä on pienin niistä?",
+      choices: ["14", "15", "16", "17"],
+      explanation: "Olkoot luvut x, x + 1 ja x + 2. Silloin 3x + 3 = 48, joten 3x = 45 ja x = 15.",
+    },
+  ),
+  def(
+    "q23",
+    "hard-word",
+    "Advanced",
+    1,
+    {
+      prompt: "A jacket costs €60 after a 25 % discount. What was the price before the discount?",
+      choices: ["75 €", "80 €", "85 €", "90 €"],
+      explanation: "After a 25 % discount the price is 0.75 of the original: 0.75x = 60, so x = 80.",
+    },
+    {
+      prompt: "Takki maksaa 60 € 25 %:n alennuksen jälkeen. Mikä oli hinta ennen alennusta?",
+      choices: ["75 €", "80 €", "85 €", "90 €"],
+      explanation: "25 %:n alennuksen jälkeen hinta on 0,75-kertainen alkuperäiseen: 0,75x = 60, joten x = 80.",
+    },
+  ),
+  equationQuestion(
+    "q24",
+    "challenge",
+    "Advanced",
+    "2(x + 3) − 4 = x + 9",
+    ["x = 7", "x = 5", "x = 11", "x = 3"],
+    0,
+    {
+      en: "Open the brackets: 2x + 6 − 4 = x + 9, so 2x + 2 = x + 9. Subtract x and 2: x = 7.",
+      fi: "Poista sulut: 2x + 6 − 4 = x + 9, joten 2x + 2 = x + 9. Vähennä x ja 2: x = 7.",
+    },
+  ),
+  equationQuestion(
+    "q25",
+    "challenge",
+    "Advanced",
+    "(x + 2) / 3 = (x − 1) / 2",
+    ["x = 7", "x = 1", "x = 4", "x = 8"],
+    0,
+    {
+      en: "Multiply both sides by 6: 2(x + 2) = 3(x − 1). Open the brackets: 2x + 4 = 3x − 3, so x = 7.",
+      fi: "Kerro molemmat puolet luvulla 6: 2(x + 2) = 3(x − 1). Poista sulut: 2x + 4 = 3x − 3, joten x = 7.",
+    },
+  ),
 ];
 
 const cache: Partial<Record<Lang, Question[]>> = {};

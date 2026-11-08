@@ -5,9 +5,10 @@ import { Menu, X } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import { useProgress } from "@/hooks/useProgress";
 import { levelOf } from "@/lib/progress";
-import { sectionOf, toHash, type Route } from "@/lib/routes";
+import { sectionOf, toPath, type Route } from "@/lib/routes";
 import { LanguageSwitch } from "./LanguageSwitch";
 import { LogoMark, Wordmark } from "./Logo";
+import { AppLink } from "@/components/ui/AppLink";
 
 const LINKS = [
   { section: "home", route: { name: "home" } },
@@ -21,14 +22,14 @@ export function XpBadge() {
   const { xp } = useProgress();
   const { t } = useI18n();
   return (
-    <a className="xp-badge" href={toHash({ name: "progress" })} aria-label={t.xp.badge(levelOf(xp), xp)}>
+    <AppLink className="xp-badge" route={{ name: "progress" }} aria-label={t.xp.badge(levelOf(xp), xp)}>
       <span className="xp-coin" aria-hidden="true">
         {levelOf(xp)}
       </span>
       <span className="xp-total" aria-hidden="true">
         {t.xp.short(xp)}
       </span>
-    </a>
+    </AppLink>
   );
 }
 
@@ -39,7 +40,7 @@ export function XpBadge() {
  * closes it without any effect that sets state.
  */
 export function Header({ route }: { route: Route }) {
-  const here = toHash(route);
+  const here = toPath(route, "en");
   const { t } = useI18n();
   const [openOn, setOpenOn] = useState<string | null>(null);
   const open = openOn === here;
@@ -56,21 +57,21 @@ export function Header({ route }: { route: Route }) {
 
   return (
     <header className="topbar">
-      <a className={section === "home" ? "brand brand-hidden" : "brand"} href={toHash({ name: "home" })} aria-label={t.nav.homeLabel}>
+      <AppLink className={section === "home" ? "brand brand-hidden" : "brand"} route={{ name: "home" }} aria-label={t.nav.homeLabel}>
         <LogoMark size={44} />
         <Wordmark />
-      </a>
+      </AppLink>
 
       <nav className="pills" aria-label={t.nav.main}>
         {LINKS.map((link) => (
-          <a key={link.section} className="pill" href={toHash(link.route)} aria-current={section === link.section ? "page" : undefined}>
+          <AppLink key={link.section} className="pill" route={link.route} aria-current={section === link.section ? "page" : undefined}>
             {t.nav[link.section]}
-          </a>
+          </AppLink>
         ))}
       </nav>
 
-      <LanguageSwitch className="lang-switch-bar" />
       <XpBadge />
+      <LanguageSwitch route={route} />
 
       <button
         type="button"
@@ -88,9 +89,9 @@ export function Header({ route }: { route: Route }) {
           <button type="button" className="menu-backdrop" aria-label={t.nav.closeMenu} tabIndex={-1} onClick={() => setOpenOn(null)} />
           <nav className="menu-sheet" id="mobile-menu" aria-label={t.nav.menu}>
             {LINKS.map((link) => (
-              <a key={link.section} className="menu-link" href={toHash(link.route)} aria-current={section === link.section ? "page" : undefined}>
+              <AppLink key={link.section} className="menu-link" route={link.route} aria-current={section === link.section ? "page" : undefined}>
                 {t.nav[link.section]}
-              </a>
+              </AppLink>
             ))}
           </nav>
         </>

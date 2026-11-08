@@ -75,10 +75,13 @@ export interface EngineText {
     readonly undoDivide: (words: string, amount: string) => string;
     readonly undoMultiply: (words: string, amount: string) => string;
     readonly simpler: string;
+    /** Multiplying through by the common denominator, so that every fraction becomes a whole number. */
+    readonly clearsFractions: (amount: string) => string;
 
     readonly solved: (value: string, sameAs: string | null) => string;
     readonly noSolution: (equation: string) => string;
     readonly infinite: (equation: string) => string;
+    readonly nextClear: string;
     readonly nextCollect: string;
     readonly nextConstant: string;
     readonly nextCoefficient: (words: string) => string;
@@ -93,6 +96,8 @@ export interface EngineText {
     readonly movesAway: (differentKind: boolean) => ProblemText;
     readonly noProgress: ProblemText;
 
+    readonly hintClear1: string;
+    readonly hintClear2: (amount: string) => string;
     readonly hintCollect1: string;
     readonly hintCollect2: (subtract: boolean) => string;
     readonly hintConstant1: string;
@@ -114,6 +119,18 @@ export interface EngineText {
     readonly repeatedTitle: string;
     readonly repeatedBody: string;
     readonly nowWeHave: (equation: string) => string;
+  };
+
+  readonly prelude: {
+    readonly expandStage: string;
+    readonly simplifyStage: string;
+    readonly expandQuestion: (part: string) => string;
+    readonly simplifyQuestion: (part: string) => string;
+    readonly expandRight: (part: string, result: string) => string;
+    readonly simplifyRight: (part: string, result: string) => string;
+    readonly wrongTitle: string;
+    readonly wrong: Record<"forgot-term" | "sign" | "denominators" | "arithmetic", string>;
+    readonly done: string;
   };
 
   readonly flip: FlipExplanation;

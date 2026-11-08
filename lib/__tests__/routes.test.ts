@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { topics } from "@/content/topics";
 import { MODES } from "@/lib/tasks";
-import { HOME, parseHash, sectionOf, toHash, type Route } from "../routes";
+import { LANGS } from "../lang";
+import { HOME, parseAddress, parseHash, parseLocation, sectionOf, staticSegments, toHash, toPath, type Route } from "../routes";
 
 describe("routes", () => {
   const routes: Route[] = [
@@ -59,5 +60,57 @@ describe("routes", () => {
 
   it("maps every screen to a navigation item", () => {
     expect(routes.map(sectionOf)).toEqual(["home", "learn", "learn", "learn", "practice", "practice", "practice", "practice", "progress"]);
+  });
+});
+
+describe("page addresses (/fi/..., /en/...)", () => {
+  const routes: Route[] = [
+    { name: "home" },
+    { name: "learn" },
+    { name: "lesson", topic: "two-step" },
+    { name: "solver", level: "word" },
+    { name: "practice" },
+    { name: "practice", mode: "time" },
+    { name: "session", mode: "exam", topic: "all", count: 20, seed: 1234 },
+    { name: "progress" },
+  ];
+
+  it.each(routes.flatMap((route) => LANGS.map((lang) => [toPath(route, lang), lang, route] as const)))(
+    "round-trips %s",
+    (path, lang, route) => {
+      expect(parseLocation(path)).toEqual({ lang, route });
+    },
+  );
+
+  it("writes pages as the static export names them, with a trailing slash", () => {
+    expect(toPath({ name: "home" }, "fi")).toBe("/fi/");
+    expect(toPath({ name: "lesson", topic: "both" }, "en")).toBe("/en/learn/both/");
+    expect(toPath({ name: "practice", mode: "time" }, "fi")).toBe("/fi/practice/?mode=time");
+    expect(toPath({ name: "session", mode: "quiz", topic: "all", count: 5, seed: 9 }, "en")).toBe("/en/practice/quiz/?topic=all&n=5&seed=9");
+  });
+
+  it("reads the language from the first segment and rejects anything else", () => {
+    expect(parseLocation("/fi/progress/")).toEqual({ lang: "fi", route: { name: "progress" } });
+    expect(parseLocation("/de/progress/").lang).toBeNull();
+    expect(parseLocation("/").lang).toBeNull();
+    expect(parseLocation("/fi/nonsense/")).toEqual({ lang: "fi", route: HOME });
+  });
+
+  it("upgrades a legacy hash address to the same screen", () => {
+    expect(parseHash("#/learn/two-step")).toEqual({ name: "lesson", topic: "two-step" });
+    expect(toPath(parseHash("#/practice/exam?topic=both&n=20&seed=5"), "fi")).toBe("/fi/practice/exam/?topic=both&n=20&seed=5");
+  });
+
+  it("lists exactly the pages that are built, and every one of them is a screen", () => {
+    const segments = staticSegments();
+    const keys = segments.map((path) => path.join("/"));
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys).toContain("");
+    expect(keys).toContain("solve/word");
+    expect(keys).toContain("practice/exam");
+    for (const path of segments) {
+      const route = parseAddress(path.join("/"));
+      if (path.length > 0) expect(route.name, path.join("/")).not.toBe("home");
+    }
   });
 });

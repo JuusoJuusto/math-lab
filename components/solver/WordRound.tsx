@@ -8,6 +8,7 @@ import {
   formatFraction,
   frac,
   mustParseEquation,
+  toExercise,
   type Exercise,
   type ExerciseResult,
   type LevelDefinition,
@@ -120,7 +121,7 @@ interface WordRoundProps {
 }
 
 function storyExercise(story: Story, index: number): Exercise {
-  return { id: `${story.id}-${index}`, source: story.equations[0], equation: mustParseEquation(story.equations[0]) };
+  return toExercise({ id: `${story.id}-${index}`, equation: story.equations[0] });
 }
 
 /** A run of word problems, easy ones first. Each one: write the equation, solve it, answer in words. */
