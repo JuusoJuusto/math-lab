@@ -93,6 +93,26 @@ npm run deploy
 
 These were tested against `wrangler dev` (the same runtime Cloudflare uses) on the real `out/` build: every page in both languages loads with no console errors; the bare address `/` goes to `/fi/` for a Finnish browser and `/en/` for anything else; an old `#/learn/two-step` link becomes `/fi/learn/two-step/`; an unknown address returns 404 with the app's own page; the content security policy is enforced (an outside script is refused); and the headers above are present.
 
+## Coolify (or any server with Docker)
+
+The repository has a `Dockerfile` that builds the static site and serves it with nginx (`deploy/nginx.conf`). The nginx configuration does the same jobs as Cloudflare's: `/en` goes to `/en/`, an unknown address returns the app's 404 page with status 404, the same security headers, a one-year cache for the hashed files and a one-day cache for the logo and icons, and `/healthz` for health checks.
+
+In Coolify: **New Resource → Public or Private Repository → `JuusoJuusto/math-lab`**, then
+
+| Setting | Value |
+| --- | --- |
+| Build pack | **Dockerfile** |
+| Port (Ports Exposes) | `80` |
+| Health check path | `/healthz` |
+| Domain | your address, for example `https://mathlab.example.com` |
+| Build argument (optional) | `NEXT_PUBLIC_SITE_URL` = the same address, so that a shared link shows the MathLab picture card |
+
+Coolify puts HTTPS in front of the container, so nothing else is needed. The logo is a normal file at the usual addresses (`/favicon.ico`, `/favicon.svg`, `/apple-touch-icon.png`, `/manifest.webmanifest`), so the browser tab icon, the home-screen icon on a phone and the installed-app icon all work the same on every host.
+
+To try it on your own computer: `docker build -t mathlab . && docker run --rm -p 8080:80 mathlab`, then open http://localhost:8080/.
+
+The nginx configuration was tested with a real nginx against the built site (redirects, 404, icons, caching, headers, the manifest's type). The Docker image itself could not be built in the environment this was written in, because it has no Docker daemon, so the first Coolify build is the first time the image is built.
+
 ## Rolling back
 
 ```bash

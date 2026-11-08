@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Timer } from "lucide-react";
+import { ArrowLeft, Target, Timer } from "lucide-react";
+import { getTopic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
 import { navigate } from "@/hooks/useRoute";
 import { useProgress, updateProgress } from "@/hooks/useProgress";
@@ -174,6 +175,12 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
         </AppLink>
         <span className="session-xp">{t.xp.gain(answeredXp)}</span>
       </div>
+
+      {route.topic !== "all" && (
+        <p className="topic-banner" data-testid="topic-banner">
+          <Target size={16} aria-hidden="true" /> {t.session.onlyTopic(getTopic(route.topic, lang)?.title ?? route.topic)}
+        </p>
+      )}
 
       {quick ? (
         <div className="timer" role="timer" aria-label={t.session.timer(secondsLeft)}>

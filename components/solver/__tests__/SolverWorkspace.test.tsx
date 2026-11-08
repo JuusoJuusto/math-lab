@@ -68,14 +68,14 @@ describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
     expect(feedback().textContent).toContain("Left side: 2x + 5 − 5 = 2x");
     expect(feedback().textContent).toContain("Right side: 17 − 5 = 12");
     expect(feedback().textContent).toContain("inverse");
-    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Simplify both sides" }));
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Work out both sides" }));
     expect(screen.queryByRole("radio")).toBeNull(); // cannot pile a second move on top
   });
 
   it("simplifies into the next equation, records the step and says what comes next", async () => {
     const { user } = setup("2x + 5 = 17");
     await applyOperation(user, "Subtract", 5);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
     expect(spokenEquation()).toBe("Current equation: 2x equals 12");
     expect(feedback().textContent).toContain("x is still multiplied by 2");
@@ -91,9 +91,9 @@ describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
     await applyOperation(user, "Add", 5); // a mistake
     await user.click(screen.getByRole("button", { name: "Hint" }));
     await applyOperation(user, "Subtract", 5);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await applyOperation(user, "Divide", 2);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
     expect(spokenEquation()).toBe("Current equation: x equals 6");
     expect(screen.getByText("Solved")).toBeTruthy();
@@ -118,7 +118,7 @@ describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
   it("lets a learner skip the check", async () => {
     const { onContinue, user } = setup("x + 5 = 12");
     await applyOperation(user, "Subtract", 5);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: /Skip the check/ }));
     expect(onContinue).toHaveBeenCalledWith({ steps: 1, mistakes: 0, hints: 0 });
   });
@@ -127,23 +127,23 @@ describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
     const { onContinue, user } = setup("2x + 5 = 17");
     await user.click(screen.getByRole("button", { name: "Hint" }));
     await applyOperation(user, "Subtract", 5);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(spokenEquation()).toContain("2x equals 12");
 
     await user.click(screen.getByRole("button", { name: /Undo/ }));
     expect(spokenEquation()).toBe("Current equation: 2x plus 5 equals 17");
 
     await applyOperation(user, "Subtract", 5);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: /Start over/ }));
     expect(spokenEquation()).toBe("Current equation: 2x plus 5 equals 17");
     expect(historyItems()).toHaveLength(1);
 
     // Finish quickly and confirm the hint is still remembered.
     await applyOperation(user, "Subtract", 5);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await applyOperation(user, "Divide", 2);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: /Skip the check/ }));
     expect(onContinue).toHaveBeenCalledWith({ steps: 2, mistakes: 0, hints: 1 });
   });
@@ -162,12 +162,12 @@ describe("SolverWorkspace: other kinds of equation", () => {
   it("collects x terms with an x amount, then finishes with negative numbers handled", async () => {
     const { user } = setup("-2x + 3 = 11");
     await applyOperation(user, "Subtract", 3);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(spokenEquation()).toBe("Current equation: minus 2x equals 8");
 
     await applyOperation(user, "Divide", -2);
     expect(feedback().textContent).toContain("flips the sign");
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(spokenEquation()).toBe("Current equation: x equals minus 4");
     expect(screen.getByText("Solved")).toBeTruthy();
   });
@@ -182,11 +182,11 @@ describe("SolverWorkspace: other kinds of equation", () => {
   it("accepts the answer written with x on the right", async () => {
     const { user } = setup("2x + 3 = 5x - 9");
     await applyOperation(user, "Subtract", 2, true);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await applyOperation(user, "Add", 9);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await applyOperation(user, "Divide", 3);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
     expect(spokenEquation()).toBe("Current equation: 4 equals x");
     expect(feedback().textContent).toContain("4 = x means the same as x = 4");
@@ -197,7 +197,7 @@ describe("SolverWorkspace: other kinds of equation", () => {
   it("reports an equation with no solution instead of pretending there is an answer", async () => {
     const { onContinue, user } = setup("2x + 3 = 2x + 5");
     await applyOperation(user, "Subtract", 2, true);
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
     expect(feedback().textContent).toContain("This equation has no solution");
     expect(screen.queryByRole("button", { name: "Check by substituting" })).toBeNull();

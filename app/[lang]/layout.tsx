@@ -30,11 +30,36 @@ const COPY = {
   },
 } as const;
 
+/**
+ * The address the site is served from, for the social-sharing picture. It is only known at build time:
+ * set NEXT_PUBLIC_SITE_URL (for example https://mathlab.example.com) when building for a host. Without it
+ * the page has no social card, and everything else works the same.
+ */
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "");
+
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return {};
   const copy = COPY[lang];
   return {
+    ...(SITE_URL
+      ? {
+          metadataBase: new URL(SITE_URL),
+          openGraph: { title: copy.title, description: copy.description, siteName: "MathLab", type: "website", images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "MathLab" }] },
+          twitter: { card: "summary_large_image", title: copy.title, description: copy.description, images: ["/og-image.png"] },
+        }
+      : {}),
+    // The icons are plain files in the root, so every host (Cloudflare, Coolify, a plain web server) serves them at the same addresses.
+    icons: {
+      icon: [
+        { url: "/favicon.svg", type: "image/svg+xml" },
+        { url: "/favicon.ico", sizes: "48x48" },
+        { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      ],
+      shortcut: "/favicon.ico",
+      apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    },
+    manifest: "/manifest.webmanifest",
     title: { default: copy.title, template: "%s | MathLab" },
     description: copy.description,
     applicationName: "MathLab",

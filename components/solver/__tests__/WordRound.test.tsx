@@ -43,9 +43,9 @@ describe("the word-problem level", () => {
     expect(screen.getByText("2. Solve it")).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "Show the first step" }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: "Show the next step" }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(screen.getByText("The ride was 6 km long.")).toBeTruthy();
   });
 

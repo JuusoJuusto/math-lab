@@ -35,7 +35,7 @@ export async function playHintedMove(user: UserEvent) {
   const [, kind, withX, plain] = match;
   const amount = Number((withX ?? plain).replace("−", "-"));
   await applyOperation(user, kind as Kind, amount, withX !== undefined);
-  await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+  await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 }
 
 /** Solves the equation on screen, then verifies it, and returns when "Next"/"Finish" is available. */

@@ -201,7 +201,7 @@ describe("the app in Finnish", () => {
     expect(spoken).toBe("Esimerkkiratkaisu: 2x plus 5 miinus 5 on yhtä suuri kuin 17 miinus 5");
     expect(document.querySelector(".notice")?.textContent).toContain("Termi + 5 on yhteenlasku. Vähennyslasku kumoaa yhteenlaskun");
     // The notebook line uses Finnish division and multiplication signs.
-    await user.click(screen.getByRole("button", { name: "Sievennä molemmat puolet" }));
+    await user.click(screen.getByRole("button", { name: "Laske molemmat puolet" }));
     await user.click(screen.getByRole("button", { name: "Näytä seuraava askel" }));
     expect(screen.getByText("Askel 2: Jaa molemmat puolet luvulla 2")).toBeTruthy();
     expect(document.querySelector(".eq-bar")?.textContent).toBe("|| : 2");

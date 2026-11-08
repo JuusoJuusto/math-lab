@@ -52,10 +52,10 @@ describe("SolverView: a level from introduction to completion", () => {
     expect(screen.getByText("Step 1: Subtract 5 from both sides")).toBeTruthy();
     expect(spokenEquation()).toBe("Worked example: 2x plus 5 minus 5 equals 17 minus 5");
 
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: "Show the next step" }));
     expect(screen.getByText("Step 2: Divide both sides by 2")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
     expect(spokenEquation()).toBe("Worked example: x equals 6");
     await user.click(screen.getByRole("button", { name: "Check by substituting" }));
@@ -73,7 +73,7 @@ describe("SolverView: a level from introduction to completion", () => {
     // 6x − 4 = 2x + 8 takes three steps; let the tutor do each one.
     for (let step = 1; step <= 3; step += 1) {
       await user.click(screen.getByRole("button", { name: step === 1 ? "Show the first step" : "Show the next step" }));
-      await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+      await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     }
 
     const card = screen.getByRole("region", { name: "Another way to solve it" });
@@ -87,7 +87,7 @@ describe("SolverView: a level from introduction to completion", () => {
     const { user } = setup();
     await user.click(screen.getByRole("button", { name: /See a worked example/ }));
     await user.click(screen.getByRole("button", { name: "Show the first step" }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: "Watch again" }));
     expect(screen.getByRole("button", { name: "Show the first step" })).toBeTruthy();
     expect(spokenEquation()).toBe("Worked example: x plus 5 equals 12");

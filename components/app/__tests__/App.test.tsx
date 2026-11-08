@@ -219,6 +219,22 @@ describe("the practice hub", () => {
 });
 
 describe("a practice session", () => {
+  it("practising one topic uses only that topic, says so on screen, and every task belongs to it", async () => {
+    const specs = buildSession({ mode: "exam", topic: "brackets", count: 10, seed: 31, missed: [] });
+    expect(specs.length).toBe(10);
+    expect(new Set(specs.map((spec) => spec.topic))).toEqual(new Set(["brackets"]));
+
+    open("#/practice/exam?topic=brackets&n=10&seed=31");
+    expect(await screen.findByText("Task 1 / 10")).toBeTruthy();
+    expect(screen.getByTestId("topic-banner").textContent).toContain("Only this topic: Equations with brackets");
+  });
+
+  it("practising everything has no topic banner", async () => {
+    open("#/practice/exam?topic=all&n=8&seed=31");
+    expect(await screen.findByText("Task 1 / 8")).toBeTruthy();
+    expect(screen.queryByTestId("topic-banner")).toBeNull();
+  });
+
   it("grades typed answers, explains mistakes by substitution, and records XP and the mistake queue", async () => {
     const [first, second] = tasksOf("solve", "two-step", 3, 11);
     const { user } = open("#/practice/solve?topic=two-step&n=3&seed=11");

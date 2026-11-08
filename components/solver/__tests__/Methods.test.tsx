@@ -131,7 +131,7 @@ describe("the graph", () => {
     fireEvent.change(screen.getByLabelText("By how much?"), { target: { value: "2" } });
     await user.click(screen.getByRole("button", { name: /Amount is an x term/ }));
     await user.click(screen.getByRole("button", { name: "Apply to both sides" }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(screen.getByText("This equation has no solution")).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "Show it on a graph" }));

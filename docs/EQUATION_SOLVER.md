@@ -62,7 +62,7 @@ Each level has the same four stages, switchable at any time from the stage bar:
 
 1. The learner picks an **operation** (add, subtract, multiply, divide) and a **number**. For add and subtract they can switch on the **x button**, so that the amount is an x term such as `3x`.
 2. If the choice is good, the operation appears **written on both sides in the same highlighted colour**: `2x + 5 − 5 = 17 − 5`. The feedback panel explains why it works and shows the arithmetic on each side.
-3. The learner presses **Simplify both sides** to collapse it into the next equation, `2x = 12`.
+3. The learner presses **Work out both sides** to collapse it into the next equation, `2x = 12`.
 4. If the choice is not good, nothing changes. The learner gets an explanation and tries again; the full solution is never revealed.
 5. When x is alone the learner can **check by substituting** the answer into the original equation.
 

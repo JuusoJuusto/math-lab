@@ -7,6 +7,8 @@ import {
   canGetHint,
   canUndo,
   chainOf,
+  formatAppliedEquation,
+  formatEquation,
   solveEquation,
   createSession,
   currentPreludeStep,
@@ -152,6 +154,21 @@ export function SolverWorkspace({
         {state.pending ? (
           <section className="action-card" aria-label={t.solver.simplifyLabel}>
             <p className="action-text">{t.solver.simplifyText}</p>
+            {state.pending && !state.pending.flip && (
+              <ul className="simplify-explain">
+                {(() => {
+                  const [leftFrom, rightFrom] = formatAppliedEquation(state.pending.before, state.pending.operation, lang).split(" = ");
+                  const [leftTo, rightTo] = formatEquation(state.pending.after).split(" = ");
+                  const lines = t.solver.simplifyExplain(leftFrom, leftTo, rightFrom, rightTo);
+                  return (
+                    <>
+                      <li>{lines.left}</li>
+                      <li>{lines.right}</li>
+                    </>
+                  );
+                })()}
+              </ul>
+            )}
             <div className="action-buttons">
               <button type="button" className="button-primary" ref={simplifyButton} onClick={() => dispatch({ type: "simplify" })}>
                 {t.solver.simplify}
