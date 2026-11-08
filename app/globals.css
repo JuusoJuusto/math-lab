@@ -680,7 +680,8 @@ button:disabled {
 .module-formula {
   position: relative;
   z-index: 1;
-  font: 600 clamp(20px, 15cqi, 40px) / 1.1 var(--font-display);
+  /* Long formulas shrink to fit the card: about half an em per character. */
+  font: 600 clamp(14px, calc(100cqi / (0.46 * var(--len, 10) + 1)), 40px) / 1.1 var(--font-display);
   white-space: nowrap;
 }
 
@@ -1831,5 +1832,74 @@ a.row:hover {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ----------------------------------------------------- Language switch */
+
+/* FI | EN on the right of the top bar: a globe, then the two languages as links. */
+.lang-switch {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  min-height: 40px;
+  padding: 3px 4px 3px 11px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: var(--shadow-pill);
+}
+
+.lang-globe {
+  margin-right: 5px;
+  color: var(--teal);
+}
+
+.lang-option {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--ink);
+  font: 800 0.76rem/1 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  transition: background var(--ease), color var(--ease);
+}
+
+.lang-option:hover {
+  background: var(--teal-tint);
+}
+
+.lang-option[aria-current="true"] {
+  background: var(--teal);
+  color: #fff;
+}
+
+.lang-option:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 899px) {
+  .xp-badge {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .lang-switch {
+    padding-left: 4px;
+  }
+
+  .lang-globe {
+    display: none;
+  }
+
+  .lang-option {
+    min-width: 36px;
+    padding: 0 8px;
   }
 }

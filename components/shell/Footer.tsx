@@ -1,8 +1,13 @@
+"use client";
+
+import { useI18n } from "@/hooks/useLang";
+
 export function Footer() {
+  const { t } = useI18n();
   return (
     <footer className="footer">
-      <strong>MathLab: algebra practice for lower-secondary students</strong>
-      <span>Your progress is saved in this browser only. No account needed.</span>
+      <strong>{t.footer.title}</strong>
+      <span>{t.footer.note}</span>
     </footer>
   );
 }

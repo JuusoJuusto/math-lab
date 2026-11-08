@@ -54,6 +54,7 @@ describe("EquationDisplay", () => {
   it("passes the equation length to the stylesheet so long equations shrink to fit", () => {
     const { container } = render(<EquationDisplay equation={eq("-2x + 3 = 11")} applied={operation("subtract", 3)} />);
     const section = container.querySelector<HTMLElement>(".eq");
-    expect(section?.style.getPropertyValue("--eq-chars")).toBe(String("−2x + 3 − 3 = 11 − 3".length));
+    // The notebook bar ("| − 3") sits in the same row, so it counts towards the length too.
+    expect(section?.style.getPropertyValue("--eq-chars")).toBe(String("−2x + 3 − 3 = 11 − 3".length + "| − 3".length + 2));
   });
 });

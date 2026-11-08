@@ -1,45 +1,62 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { HOME, parseHash, toHash, type Route } from "@/lib/routes";
+import { DEFAULT_LANG, type Lang } from "@/lib/lang";
+import { parseLocation, toPath, type Route } from "@/lib/routes";
 
 /**
- * The current screen, read from the address bar's hash.
+ * The address bar as an external store.
  *
- * Going to another screen adds a history entry, so the browser's Back button
- * (and the phone's back gesture) work as expected. The server render and the
- * first client render both show the home screen, so there is no mismatch.
+ * Going to another screen adds a history entry (`pushState`), so the browser's
+ * Back button and the phone's back gesture work as expected. The server render
+ * and the first client render both use the address the page was built for
+ * (without the query), so there is never a hydration mismatch; the real query
+ * is picked up right after.
  */
 
-let cachedHash: string | null = null;
-let cachedRoute: Route = HOME;
+const listeners = new Set<() => void>();
 
-function getSnapshot(): Route {
-  const hash = window.location.hash;
-  if (hash !== cachedHash) {
-    cachedHash = hash;
-    cachedRoute = parseHash(hash);
-  }
-  return cachedRoute;
+function notify() {
+  listeners.forEach((listener) => listener());
 }
 
 function subscribe(listener: () => void): () => void {
-  window.addEventListener("hashchange", listener);
-  return () => window.removeEventListener("hashchange", listener);
+  listeners.add(listener);
+  window.addEventListener("popstate", listener);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener("popstate", listener);
+  };
+}
+
+function getSnapshot(): string {
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+/** The current address (`/fi/learn/two-step/?x=1`). `initial` is what the server-built page was made for. */
+export function useAddress(initial: string): string {
+  return useSyncExternalStore(subscribe, getSnapshot, () => initial);
+}
+
+/** The language of the page the learner is on right now, read from the address. */
+export function currentLang(): Lang {
+  return parseLocation(window.location.pathname).lang ?? DEFAULT_LANG;
 }
 
 /** Goes to a screen, keeping the Back button useful. */
-export function navigate(route: Route): void {
-  const hash = toHash(route);
-  if (window.location.hash !== hash) window.location.hash = hash;
+export function navigate(route: Route, lang: Lang = currentLang()): void {
+  navigateToUrl(toPath(route, lang));
 }
 
-/** Changes the address without adding a history entry, for example when a session restarts. */
-export function replaceRoute(route: Route): void {
-  window.history.replaceState(null, "", toHash(route));
-  window.dispatchEvent(new HashChangeEvent("hashchange"));
+/** Goes to an address of this site. */
+export function navigateToUrl(url: string): void {
+  if (`${window.location.pathname}${window.location.search}` === url) return;
+  window.history.pushState(null, "", url);
+  notify();
 }
 
-export function useRoute(): Route {
-  return useSyncExternalStore(subscribe, getSnapshot, () => HOME);
+/** Changes the address without adding a history entry, for example when a session restarts or an old link is upgraded. */
+export function replaceRoute(route: Route, lang: Lang = currentLang()): void {
+  window.history.replaceState(null, "", toPath(route, lang));
+  notify();
 }

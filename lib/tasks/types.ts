@@ -76,15 +76,6 @@ export const TASK_GROUPS: Record<TaskKind, TaskGroup> = {
   equation: "equation",
 };
 
-export const GROUP_INFO: Record<TaskGroup, { readonly label: string; readonly hint: string }> = {
-  quiz: { label: "Quick quiz", hint: "Pick the right answer" },
-  solve: { label: "Solve it", hint: "Type your answer" },
-  check: { label: "True or false", hint: "Is it a solution?" },
-  step: { label: "Which step?", hint: "What was done to both sides?" },
-  mistake: { label: "Find the mistake", hint: "Spot the wrong line" },
-  equation: { label: "Write the equation", hint: "Turn a story into an equation" },
-};
-
 export function groupOf(kind: TaskKind): TaskGroup {
   return TASK_GROUPS[kind];
 }

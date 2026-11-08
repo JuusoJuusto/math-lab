@@ -6,7 +6,7 @@
  * produce a wrong or fractional answer is caught long before a learner sees it.
  */
 
-import { formatEquation, isSolution, frac, mustParseEquation, solveEquation, type Equation, type Rng } from "../equations";
+import { formatEquation, isSolution, frac, makePrelude, mustParseEquation, solveEquation, type Equation, type Rng } from "../equations";
 
 export interface Sample {
   /** Equation text as authored by the template, e.g. "2x + 5 = 17" or "3(x - 2) = 9". */
@@ -155,11 +155,103 @@ function brackets(rng: Rng): Sample {
   }
 }
 
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+const lcm = (a: number, b: number) => (a / gcd(a, b)) * b;
+
+/** An equation text with the expected whole-number solution, or `null` if it is not exactly that. */
+function attempt(text: string, expected: number): Sample | null {
+  try {
+    return finish(text, expected);
+  } catch {
+    return null;
+  }
+}
+
+/** Fractions: the common denominator is the first move, and brackets with a division are opened first. */
+function fractions(rng: Rng): Sample {
+  for (let tries = 0; tries < 100; tries += 1) {
+    let sample: Sample | null = null;
+    switch (int(rng, 0, 4)) {
+      case 0: {
+        // x/a + x/b = c
+        const [a, b] = pick(rng, [[2, 3], [2, 4], [3, 6], [2, 6], [3, 4], [4, 6], [2, 5]] as const);
+        const s = lcm(a, b) * int(rng, 1, 4);
+        sample = attempt(`x/${a} + x/${b} = ${s / a + s / b}`, s);
+        break;
+      }
+      case 1: {
+        // (x + p)/a = q
+        const a = int(rng, 2, 6);
+        const q = int(rng, 2, 8);
+        const p = int(rng, 1, 9);
+        sample = attempt(`(x + ${p})/${a} = ${q}`, a * q - p);
+        break;
+      }
+      case 2: {
+        // (x - p)/a = q
+        const a = int(rng, 2, 6);
+        const q = int(rng, 1, 8);
+        const p = int(rng, 1, 9);
+        sample = attempt(`(x - ${p})/${a} = ${q}`, a * q + p);
+        break;
+      }
+      case 3: {
+        // ax/b + p = q
+        const b = int(rng, 2, 5);
+        const a = pick(rng, [2, 3, 4, 5].filter((value) => value !== b));
+        const k = int(rng, 1, 6);
+        const p = int(rng, 1, 9);
+        sample = attempt(`${a}x/${b} + ${p} = ${a * k + p}`, b * k);
+        break;
+      }
+      default: {
+        // x/a = x/b + c with a < b
+        const [a, b] = pick(rng, [[2, 3], [3, 4], [2, 5], [3, 5], [4, 5]] as const);
+        const s = lcm(a, b) * int(rng, 1, 3);
+        sample = attempt(`x/${a} = x/${b} + ${s / a - s / b}`, s);
+      }
+    }
+    if (sample) return sample;
+  }
+  return finish("x/2 + x/3 = 5", 6);
+}
+
+/** The hardest equations: brackets on both sides, brackets after a minus, fractions together. */
+function challenge(rng: Rng): Sample {
+  for (let tries = 0; tries < 300; tries += 1) {
+    const s = int(rng, -4, 12) || 1;
+    let sample: Sample | null = null;
+    if (rng() < 0.65) {
+      // a(x + b) - c(x + d) = e x + f
+      const a = int(rng, 2, 5);
+      const c = int(rng, 1, 4);
+      const b = int(rng, 1, 6) * (rng() < 0.5 ? 1 : -1);
+      const d = int(rng, 1, 6) * (rng() < 0.5 ? 1 : -1);
+      const e = int(rng, 0, 3);
+      const f = a * (s + b) - c * (s + d) - e * s;
+      if (a - c - e !== 0 && Math.abs(f) <= 40) {
+        const bracket = (n: number) => (n < 0 ? `x - ${-n}` : `x + ${n}`);
+        sample = attempt(`${a}(${bracket(b)}) - ${c}(${bracket(d)}) = ${e === 0 ? "" : `${e}x`}${e === 0 ? f : signed(f)}`, s);
+      }
+    } else {
+      // (x + p)/a + (x - q)/b = r, with r a whole number
+      const a = int(rng, 2, 5);
+      const b = int(rng, 2, 5);
+      const p = int(rng, 1, 8);
+      const q = int(rng, 1, 8);
+      const total = (s + p) * b + (s - q) * a;
+      if (a !== b && total % (a * b) === 0) sample = attempt(`(x + ${p})/${a} + (x - ${q})/${b} = ${total / (a * b)}`, s);
+    }
+    if (sample) return sample;
+  }
+  return finish("4(x - 3) - 2(x - 5) = x + 6", 8);
+}
+
 /** Topics that have generated equations. */
-export type EquationTopic = "basics" | "one-step" | "two-step" | "both" | "brackets";
+export type EquationTopic = "basics" | "one-step" | "two-step" | "both" | "brackets" | "fractions" | "challenge";
 
 export function isEquationTopic(topic: string): topic is EquationTopic {
-  return topic === "basics" || topic === "one-step" || topic === "two-step" || topic === "both" || topic === "brackets";
+  return ["basics", "one-step", "two-step", "both", "brackets", "fractions", "challenge"].includes(topic);
 }
 
 export function sampleEquation(topic: EquationTopic, rng: Rng): Sample {
@@ -174,14 +266,19 @@ export function sampleEquation(topic: EquationTopic, rng: Rng): Sample {
       return bothSides(rng);
     case "brackets":
       return brackets(rng);
+    case "fractions":
+      return fractions(rng);
+    case "challenge":
+      return challenge(rng);
   }
 }
 
 /**
- * The equation as the learner should see it. Equations without brackets are
- * shown in the same standard form as the solver; bracketed ones keep their
- * brackets, since expanding them would give the answer away.
+ * The equation as the learner should see it. Equations that are already in
+ * simple form are shown in the same standard form as the solver; equations with
+ * brackets or fractions to deal with keep the way they are written, since
+ * simplifying them would hide the first steps.
  */
 export function displayEquation(sample: Sample): string {
-  return sample.text.includes("(") ? sample.text.replace(/-/g, "−") : formatEquation(sample.equation);
+  return makePrelude(sample.text).steps.length > 0 ? sample.text.replace(/-/g, "−") : formatEquation(sample.equation);
 }

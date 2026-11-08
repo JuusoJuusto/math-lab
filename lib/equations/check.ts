@@ -6,9 +6,11 @@
  * laid out as the lines a learner would write in their notebook.
  */
 
+import type { Lang } from "../lang";
 import { abs, equals, isNegative, isOne, isUnitFraction, isZero, mul, type Fraction } from "./fraction";
 import { evaluate, type Equation, type LinearExpr } from "./expression";
 import { MINUS, formatEquation, formatFraction } from "./format";
+import { engineText } from "./text";
 
 export interface SubstitutionLine {
   /** Short description of what happened on this line. */
@@ -92,22 +94,23 @@ function productSide(side: LinearExpr, value: Fraction): string {
  * Substitutes `value` for x in both sides of `eq` and reports every line of
  * working. Consecutive identical lines are merged so the layout stays short.
  */
-export function checkSolution(eq: Equation, value: Fraction): SubstitutionCheck {
+export function checkSolution(eq: Equation, value: Fraction, lang: Lang = "en"): SubstitutionCheck {
+  const words = engineText(lang).check;
   const leftValue = evaluate(eq.left, value);
   const rightValue = evaluate(eq.right, value);
 
   const candidates: SubstitutionLine[] = [
-    { label: "Original equation", text: formatEquation(eq) },
+    { label: words.original, text: formatEquation(eq) },
     {
-      label: `Replace x with ${formatFraction(value)}`,
+      label: words.replace(formatFraction(value)),
       text: `${substituteSide(eq.left, value)} = ${substituteSide(eq.right, value)}`,
     },
     {
-      label: "Do the multiplication first",
+      label: words.multiplyFirst,
       text: `${productSide(eq.left, value)} = ${productSide(eq.right, value)}`,
     },
     {
-      label: "Work out each side",
+      label: words.workOut,
       text: `${formatFraction(leftValue)} = ${formatFraction(rightValue)}`,
     },
   ];

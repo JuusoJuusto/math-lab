@@ -2,14 +2,10 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Check, Minus, Plus } from "lucide-react";
-import { MAX_AMOUNT, describeOperation, operation, type Operation, type OperationKind } from "@/lib/equations";
+import { useI18n } from "@/hooks/useLang";
+import { MAX_AMOUNT, describeOperation, engineText, operation, operatorSymbol, type Operation, type OperationKind } from "@/lib/equations";
 
-const KINDS: readonly { kind: OperationKind; label: string; symbol: string }[] = [
-  { kind: "add", label: "Add", symbol: "+" },
-  { kind: "subtract", label: "Subtract", symbol: "−" },
-  { kind: "multiply", label: "Multiply", symbol: "×" },
-  { kind: "divide", label: "Divide", symbol: "÷" },
-];
+const KINDS: readonly OperationKind[] = ["add", "subtract", "multiply", "divide"];
 
 /** Whole numbers only, within the range the engine can handle exactly. */
 function parseAmount(text: string): number | null {
@@ -35,6 +31,8 @@ interface OperationPickerProps {
  * readers work without extra code, and the form submits on Enter.
  */
 export function OperationPicker({ onApply, autoFocus = false, extra }: OperationPickerProps) {
+  const { lang, t } = useI18n();
+  const words = engineText(lang);
   const name = useId();
   const amountId = useId();
   const errorId = useId();
@@ -51,7 +49,7 @@ export function OperationPicker({ onApply, autoFocus = false, extra }: Operation
   const canUseX = kind === "add" || kind === "subtract";
   const amount = parseAmount(amountText);
   const sentence =
-    kind && amount !== null ? describeOperation(operation(kind, amount, withVariable && canUseX)) : "Choose an operation and a number.";
+    kind && amount !== null ? describeOperation(operation(kind, amount, withVariable && canUseX), lang) : t.solver.picker.choose;
 
   function chooseKind(next: OperationKind) {
     setKind(next);
@@ -69,11 +67,11 @@ export function OperationPicker({ onApply, autoFocus = false, extra }: Operation
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!kind) {
-      setError("First choose what to do: add, subtract, multiply or divide.");
+      setError(t.solver.picker.chooseKind);
       return;
     }
     if (amount === null) {
-      setError(`Type a whole number between −${MAX_AMOUNT} and ${MAX_AMOUNT}.`);
+      setError(t.solver.picker.wholeNumber(MAX_AMOUNT));
       return;
     }
     setError(null);
@@ -83,22 +81,22 @@ export function OperationPicker({ onApply, autoFocus = false, extra }: Operation
   return (
     <form className="picker" onSubmit={submit} noValidate>
       <fieldset className="picker-kinds">
-        <legend>What will you do to both sides?</legend>
+        <legend>{t.solver.picker.legend}</legend>
         <div className="picker-kind-grid">
-          {KINDS.map((option, index) => (
-            <label className="picker-kind" key={option.kind}>
+          {KINDS.map((kindId, index) => (
+            <label className="picker-kind" key={kindId}>
               <input
                 ref={index === 0 ? firstChoice : undefined}
                 type="radio"
                 name={name}
-                value={option.kind}
-                checked={kind === option.kind}
-                onChange={() => chooseKind(option.kind)}
+                value={kindId}
+                checked={kind === kindId}
+                onChange={() => chooseKind(kindId)}
               />
               <span className="picker-symbol" aria-hidden="true">
-                {option.symbol}
+                {operatorSymbol(operation(kindId, 1), lang)}
               </span>
-              <span className="picker-kind-label">{option.label}</span>
+              <span className="picker-kind-label">{words.kindNames[kindId]}</span>
               <Check className="picker-check" size={16} strokeWidth={3} aria-hidden="true" />
             </label>
           ))}
@@ -106,9 +104,9 @@ export function OperationPicker({ onApply, autoFocus = false, extra }: Operation
       </fieldset>
 
       <div className="picker-amount">
-        <label htmlFor={amountId}>By how much?</label>
+        <label htmlFor={amountId}>{t.solver.picker.amount}</label>
         <div className="picker-amount-row">
-          <button type="button" className="picker-step" onClick={() => bump(-1)} aria-label="Decrease the number">
+          <button type="button" className="picker-step" onClick={() => bump(-1)} aria-label={t.solver.picker.decrease}>
             <Minus size={18} />
           </button>
           <input
@@ -127,7 +125,7 @@ export function OperationPicker({ onApply, autoFocus = false, extra }: Operation
             aria-invalid={error !== null && amount === null}
             aria-describedby={error ? errorId : undefined}
           />
-          <button type="button" className="picker-step" onClick={() => bump(1)} aria-label="Increase the number">
+          <button type="button" className="picker-step" onClick={() => bump(1)} aria-label={t.solver.picker.increase}>
             <Plus size={18} />
           </button>
           {canUseX && (
@@ -136,14 +134,14 @@ export function OperationPicker({ onApply, autoFocus = false, extra }: Operation
               className="picker-x"
               aria-pressed={withVariable}
               onClick={() => setWithVariable((on) => !on)}
-              title="Turn on if the amount is an x term, such as 3x"
+              title={t.solver.picker.xTitle}
             >
               <span aria-hidden="true">x</span>
-              <span className="sr-only">Amount is an x term: {withVariable ? "on" : "off"}</span>
+              <span className="sr-only">{t.solver.picker.xState(withVariable)}</span>
             </button>
           )}
         </div>
-        {canUseX && <p className="picker-note">Turn on the x button when the amount is an x term, like 3x.</p>}
+        {canUseX && <p className="picker-note">{t.solver.picker.xNote}</p>}
       </div>
 
       <p className="picker-sentence" aria-live="polite">
@@ -157,7 +155,7 @@ export function OperationPicker({ onApply, autoFocus = false, extra }: Operation
 
       <div className="picker-actions">
         <button type="submit" className="button-primary">
-          Apply to both sides
+          {t.solver.picker.apply}
         </button>
         {extra}
       </div>

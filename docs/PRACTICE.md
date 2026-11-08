@@ -27,7 +27,7 @@ Tasks are not stored. They are **generated** from a small recipe (`TaskSpec`: ki
 
 - endless variety (a new seed is a new task),
 - a **mistake queue** that stores only recipes and regenerates the exact task to retry,
-- reproducible sessions: the address `#/practice/exam?topic=both&n=20&seed=5` is the same exam every time.
+- reproducible sessions: the address `/en/practice/exam/?topic=both&n=20&seed=5` is the same exam every time, in either language (the words change, the numbers do not).
 
 The code is in `lib/tasks/` and has no React or browser code.
 
@@ -75,16 +75,16 @@ A topic counts as *practised* after at least five answers with 70% correct, and 
 
 ## Screens and addresses
 
-The app is a static export, so screens use hash addresses. They make the browser's Back button, refresh and shared links work.
+The app is a static export. Every screen is a real page under its language, which makes the browser's Back button, refresh and shared links work. The table shows the address without the language (`/fi/` or `/en/` in front); see [languages and addresses](LANGUAGES_AND_ROUTING.md).
 
 | Address | Screen |
 | --- | --- |
-| `#/` | Home |
-| `#/learn`, `#/learn/two-step` | Topics, a lesson |
-| `#/solve/two-step` | The equation solver |
-| `#/practice`, `#/practice?mode=time` | Practice hub, optionally with a mode's setup open |
-| `#/practice/exam?topic=all&n=20&seed=5` | A practice session |
-| `#/progress` | Progress |
+| `/` | Home |
+| `learn/`, `learn/two-step/` | Topics, a lesson |
+| `solve/two-step/` | The equation solver |
+| `practice/`, `practice/?mode=time` | Practice hub, optionally with a mode's setup open |
+| `practice/exam/?topic=all&n=20&seed=5` | A practice session |
+| `progress/` | Progress |
 
 Unknown addresses open the home screen. `lib/routes.ts` parses and builds them and is covered by tests.
 

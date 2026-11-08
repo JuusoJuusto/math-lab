@@ -15,10 +15,9 @@ import type { TaskKind, TaskSpec } from "./types";
 
 export type ModeId = "daily" | "quiz" | "solve" | "truefalse" | "step" | "mistake" | "equation" | "time" | "exam" | "mistakes";
 
+/** Where a mode's title and description live: `modes` in lib/i18n/ui-*.ts. */
 export interface ModeInfo {
   readonly id: ModeId;
-  readonly title: string;
-  readonly description: string;
   readonly kinds: readonly TaskKind[];
   readonly defaultCount: number;
   readonly counts: readonly number[];
@@ -31,8 +30,6 @@ export interface ModeInfo {
 export const MODES: readonly ModeInfo[] = [
   {
     id: "daily",
-    title: "Daily challenge",
-    description: "Five fresh tasks every day · +25 XP",
     kinds: ["solve", "check", "step", "choose", "equation"],
     defaultCount: 5,
     counts: [5],
@@ -40,8 +37,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "quiz",
-    title: "Quick quiz",
-    description: "Pick the right answer",
     kinds: ["bank", "choose"],
     defaultCount: 10,
     counts: [5, 10, 20],
@@ -49,8 +44,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "solve",
-    title: "Solve it",
-    description: "Work it out and type the answer",
     kinds: ["solve"],
     defaultCount: 10,
     counts: [5, 10, 20],
@@ -58,8 +51,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "truefalse",
-    title: "True or false",
-    description: "Is this value a solution?",
     kinds: ["check"],
     defaultCount: 10,
     counts: [5, 10, 20],
@@ -67,8 +58,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "step",
-    title: "Which step?",
-    description: "What was done to both sides?",
     kinds: ["step"],
     defaultCount: 10,
     counts: [5, 10, 20],
@@ -76,8 +65,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "mistake",
-    title: "Find the mistake",
-    description: "Spot the line that went wrong",
     kinds: ["mistake"],
     defaultCount: 8,
     counts: [5, 8, 12],
@@ -85,8 +72,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "equation",
-    title: "Write the equation",
-    description: "Turn a story into an equation",
     kinds: ["equation"],
     defaultCount: 8,
     counts: [5, 8, 12],
@@ -94,8 +79,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "time",
-    title: "Time attack",
-    description: "60 seconds. How many can you get?",
     kinds: ["solve", "check", "choose", "step"],
     defaultCount: 40,
     counts: [40],
@@ -104,8 +87,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "exam",
-    title: "Exam practice",
-    description: "A mixed test with every kind of task",
     kinds: ["bank", "choose", "solve", "check", "step", "mistake", "equation"],
     defaultCount: 20,
     counts: [10, 20, 30],
@@ -113,8 +94,6 @@ export const MODES: readonly ModeInfo[] = [
   },
   {
     id: "mistakes",
-    title: "Fix your mistakes",
-    description: "Try again what you missed",
     kinds: [],
     defaultCount: 10,
     counts: [10],

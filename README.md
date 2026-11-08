@@ -2,7 +2,7 @@
 
 **Learn mathematics by doing.**
 
-MathLab is a visual, interactive learning app for lower-secondary mathematics. It starts with equations, algebra and proportional relationships, turning each topic into a short learning path with explanations, practice and feedback.
+MathLab is a visual, interactive learning app for lower-secondary mathematics, in **Finnish and English** (`/fi/`, `/en/`). It starts with equations, algebra and proportional relationships, turning each topic into a short learning path with explanations, practice and feedback.
 
 The goal is simple: make mathematics feel clear, approachable and rewarding to practise.
 
@@ -12,7 +12,7 @@ The goal is simple: make mathematics feel clear, approachable and rewarding to p
 
 ## Learning experience
 
-The first learning collection contains seven topics:
+The learning collection contains eleven topics, and nine of them host a hands-on solver level:
 
 | Topic | What you will learn | Interactive solver |
 | --- | --- | --- |
@@ -20,17 +20,26 @@ The first learning collection contains seven topics:
 | One-step equations | Undo one operation to isolate a variable | Level 1 |
 | Two-step equations | Undo two operations, in the right order | Level 2 |
 | Variables on both sides | Collect variable terms and solve | Level 3 |
-| Equations with brackets | Expand brackets using the distributive property | |
+| Equations with brackets | Open brackets, mind the signs, then solve | Level 4 |
+| Fractions and ratios | Clear the denominators, then solve | Level 5 |
+| Word problems | Write the equation from a story, then solve it | Level 6 |
+| No solution or infinitely many | What it means when x disappears | Level 7 |
+| Hard word problems | Percentages, consecutive numbers, movement, ages, work | Level 8 |
+| Challenge | Brackets, fractions and negatives together | Level 9 |
 | Proportional relationships | Understand direct and inverse proportion | |
-| Word problems | Translate real situations into equations | |
 
 Each topic includes a short introduction and a multiple-choice practice round. Questions provide immediate feedback and an explanation, and the results screen summarises the round.
 
 ### Equation solver
 
-Three topics teach equation solving hands-on. In each level you learn the idea, watch a worked example, and then solve equations yourself by choosing what to do to **both sides**:
+Nine levels teach equation solving hands-on, from `x + 5 = 12` to equations with brackets on both sides, fractions and negative numbers. In each level you learn the idea, watch a worked example, and then solve equations yourself, in the way you prefer:
 
-- Pick an operation and a number. A good choice is shown written on both sides in the same highlight: `2x + 5 − 5 = 17 − 5`, then simplified to `2x = 12`.
+- **Both sides** (vaakamenetelmä): pick an operation and a number. A good choice is shown written on both sides in the same highlight, and in the notebook way: `3x − 5 = 6 | + 5`, then simplified.
+- **Flip a term** (siirtomenetelmä): tap `− 5` and it crosses the equals sign as `+ 5`: `3x = 6 + 5`.
+- **Work backwards** (käänteisoperaatiot): write what happens to x (`x → · 2 → + 5 → 17`) and undo it from the end.
+- **On a graph**: each side is a line, and the solution is where they cross.
+- Equations written with brackets or fractions start with clean-up questions (open the brackets, simplify) that explain the typical mistakes.
+- In the word-problem levels you write the **whole equation yourself** from a blank field before you solve it.
 - A mistake gets an explanation and another try, never the full answer.
 - Three hints reveal one at a time: what is in the way, which inverse operation to use, and a worked explanation.
 - Every step is kept in a history with undo.
@@ -120,9 +129,8 @@ math-lab/
 │       └── ci.yml
 ├── app/
 │   ├── globals.css
-│   ├── layout.tsx
-│   ├── not-found.tsx
-│   ├── page.tsx
+│   ├── [lang]/            # Every screen as a page, in each language
+│   ├── global-not-found.tsx
 │   └── solver.css
 ├── components/
 │   ├── app/               # Application shell and routing
@@ -137,16 +145,18 @@ math-lab/
 │   ├── CONTENT_GUIDE.md
 │   ├── DEPLOYMENT.md
 │   ├── EQUATION_SOLVER.md
+│   ├── LANGUAGES_AND_ROUTING.md
 │   ├── PRACTICE.md
 │   ├── README.md
 │   └── ROADMAP.md
-├── hooks/                 # Progress storage hook
+├── hooks/                 # Progress, language and address hooks
 ├── lib/
 │   ├── equations/         # Equation engine (no React)
-│   ├── tasks/             # Practice task generators and grading (no React)
+│   ├── i18n/              # Interface text in Finnish and English
+│   ├── tasks/             # Practice task generators, stories and grading (no React)
 │   ├── progress.ts
 │   └── routes.ts
-├── public/
+├── public/                # index.html: the redirect from the bare address
 ├── CONTRIBUTING.md
 ├── next.config.ts
 ├── package.json

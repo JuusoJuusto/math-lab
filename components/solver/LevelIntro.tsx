@@ -1,5 +1,18 @@
-import { ArrowRight, Lightbulb } from "lucide-react";
-import { mustParseEquation, solveWithTutor, type LevelDefinition } from "@/lib/equations";
+"use client";
+
+import { ArrowRight, ArrowLeftRight, Lightbulb } from "lucide-react";
+import { useI18n } from "@/hooks/useLang";
+import {
+  flipTerms,
+  engineText,
+  levelText,
+  makePrelude,
+  mustParseEquation,
+  operationsEqual,
+  solveWithTutor,
+  type LevelDefinition,
+} from "@/lib/equations";
+import { MathLine } from "@/components/ui/MathLine";
 import { EquationDisplay } from "./EquationDisplay";
 
 interface LevelIntroProps {
@@ -8,19 +21,32 @@ interface LevelIntroProps {
   onSkip: () => void;
 }
 
-/** A short introduction: the idea in three points, and the balance rule shown on a real equation. */
+/**
+ * A short introduction: the idea in three points, the balance rule shown on a
+ * real equation, and the same first step again as a flip.
+ */
 export function LevelIntro({ level, onNext, onSkip }: LevelIntroProps) {
-  const [firstStep] = solveWithTutor(mustParseEquation(level.example.equation));
+  const { lang, t } = useI18n();
+  const text = levelText(level, lang);
+  const equation = mustParseEquation(level.example.equation);
+  const [firstStep] = solveWithTutor(equation);
+  const prelude = makePrelude(level.example.equation);
+  const cleanUp = prelude.steps[0];
+  const words = engineText(lang).prelude;
+
+  // The flip that does the same as the first step, so the two ways can be compared.
+  const { left, right } = flipTerms(equation, lang);
+  const flip = firstStep ? [...left, ...right].find((term) => term.target && term.operation && operationsEqual(term.operation, firstStep.operation)) : undefined;
 
   return (
     <section className="intro" aria-labelledby="intro-heading">
       <div className="intro-copy">
         <h2 id="intro-heading" className="intro-heading">
-          The big idea
+          {t.solver.intro.heading}
         </h2>
-        <p className="intro-lead">{level.intro.lead}</p>
+        <p className="intro-lead">{text.intro.lead}</p>
         <ol className="lesson-list">
-          {level.intro.points.map((point, index) => (
+          {text.intro.points.map((point, index) => (
             <li key={point}>
               <span aria-hidden="true">{index + 1}</span>
               <p>{point}</p>
@@ -29,23 +55,46 @@ export function LevelIntro({ level, onNext, onSkip }: LevelIntroProps) {
         </ol>
         <div className="example-box">
           <div className="example-label">
-            <Lightbulb size={16} aria-hidden="true" /> REMEMBER
+            <Lightbulb size={16} aria-hidden="true" /> {t.solver.intro.remember}
           </div>
-          <p>{level.intro.keyIdea}</p>
+          <p>{text.intro.keyIdea}</p>
         </div>
       </div>
 
       <div className="intro-demo">
-        {firstStep && <EquationDisplay equation={firstStep.before} applied={firstStep.operation} label="Example" />}
-        <p className="intro-demo-note">The highlighted part is the same on both sides. That is what keeps the equation balanced.</p>
+        {cleanUp && (
+          <div className="intro-prelude">
+            <section className="eq eq-written" aria-label={t.solver.written}>
+              <div className="eq-caption" aria-hidden="true">
+                {cleanUp.kind === "expand" ? words.expandStage : words.simplifyStage}
+              </div>
+              <MathLine text={prelude.source} />
+            </section>
+            <p className="intro-demo-note">
+              {cleanUp.kind === "expand" ? words.expandRight(cleanUp.part, cleanUp.result) : words.simplifyRight(cleanUp.part, cleanUp.result)}
+            </p>
+          </div>
+        )}
+        {firstStep && <EquationDisplay equation={firstStep.before} applied={firstStep.operation} label={t.solver.display.example} />}
+        <p className="intro-demo-note">{t.solver.intro.demoNote}</p>
+
+        {firstStep && flip?.target && (
+          <div className="intro-flip">
+            <h3 className="intro-flip-title">
+              <ArrowLeftRight size={18} aria-hidden="true" /> {t.solver.intro.flipHeading}
+            </h3>
+            <EquationDisplay equation={firstStep.before} flipped={flip.target} label={t.solver.display.example} />
+            <p className="intro-demo-note">{t.solver.intro.flipText(flip.text, flip.becomes)}</p>
+          </div>
+        )}
       </div>
 
       <div className="action-buttons intro-actions">
         <button type="button" className="button-primary" onClick={onNext}>
-          See a worked example <ArrowRight size={17} aria-hidden="true" />
+          {t.solver.intro.seeExample} <ArrowRight size={17} aria-hidden="true" />
         </button>
         <button type="button" className="text-link" onClick={onSkip}>
-          Skip to practice
+          {t.solver.intro.skip}
         </button>
       </div>
     </section>

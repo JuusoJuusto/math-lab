@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { formatEquation } from "../format";
-import { LEVELS, getLevel, getNextLevel, isLevelId, toExercise, type LevelDefinition } from "../levels";
+import { LEVELS as ALL_LEVELS, getLevel, getNextLevel, isLevelId, levelText, toExercise, type LevelDefinition } from "../levels";
 import { mustParseEquation } from "../parse";
+import { makePrelude } from "../prelude";
 import { createRng, pickRound, shuffle, summariseRound } from "../round";
 import { isSolution, solveEquation, terminalState } from "../solve";
 import { evaluateMove, solveWithTutor } from "../tutor";
@@ -13,18 +14,37 @@ const level = (id: string): LevelDefinition => {
   return found;
 };
 
+/** The levels that draw from a pool of equations. Word problems are covered in the story tests. */
+const LEVELS = ALL_LEVELS.filter((l) => l.kind === "equations");
+
 /** Authors type "-" and "x/4"; the workspace shows "−" and "x/4". Compare ignoring that. */
 const asAuthored = (text: string) => text.replace(/−/g, "-");
 
+/** The only levels whose exercises are plain equations in simple form, shown exactly as authored. */
+const SIMPLE = new Set(["one-step", "two-step", "both"]);
+
 describe("level catalogue", () => {
-  it("defines the three levels in order", () => {
-    expect(LEVELS.map((l) => l.id)).toEqual(["one-step", "two-step", "both"]);
-    expect(LEVELS.map((l) => l.number)).toEqual([1, 2, 3]);
+  it("defines the nine levels in order, from one step to the hardest", () => {
+    expect(ALL_LEVELS.map((l) => l.id)).toEqual([
+      "one-step",
+      "two-step",
+      "both",
+      "brackets",
+      "fractions",
+      "word",
+      "special",
+      "hard-word",
+      "challenge",
+    ]);
+    expect(ALL_LEVELS.map((l) => l.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(ALL_LEVELS.filter((l) => l.kind === "stories").map((l) => l.id)).toEqual(["word", "hard-word"]);
     expect(getNextLevel("one-step")?.id).toBe("two-step");
-    expect(getNextLevel("two-step")?.id).toBe("both");
-    expect(getNextLevel("both")).toBeUndefined();
+    expect(getNextLevel("both")?.id).toBe("brackets");
+    expect(getNextLevel("fractions")?.id).toBe("word");
+    expect(getNextLevel("challenge")).toBeUndefined();
     expect(isLevelId("two-step")).toBe(true);
-    expect(isLevelId("brackets")).toBe(false);
+    expect(isLevelId("brackets")).toBe(true);
+    expect(isLevelId("banana")).toBe(false);
   });
 
   it("has unique exercise ids across all levels", () => {
@@ -47,14 +67,40 @@ describe("level catalogue", () => {
     }
   });
 
-  it("writes every intro in plain, short copy", () => {
-    for (const l of LEVELS) {
-      expect(l.intro.points).toHaveLength(3);
-      expect(l.intro.lead.length).toBeLessThan(260);
-      for (const point of l.intro.points) expect(point.length).toBeLessThan(120);
+  it("writes every intro in plain, short copy, in both languages", () => {
+    for (const l of ALL_LEVELS) {
+      for (const lang of ["en", "fi"] as const) {
+        const { intro } = levelText(l, lang);
+        expect(intro.points).toHaveLength(3);
+        expect(intro.lead.length).toBeLessThan(300);
+        for (const point of intro.points) expect(point.length).toBeLessThan(140);
+      }
+    }
+  });
+
+  it("has a Finnish version of every text that differs from the English one", () => {
+    for (const l of ALL_LEVELS) {
+      const en = levelText(l, "en");
+      const fi = levelText(l, "fi");
+      expect(fi.title).not.toBe(en.title);
+      expect(fi.intro.lead).not.toBe(en.intro.lead);
+      expect(fi.intro.points).toHaveLength(en.intro.points.length);
+      expect(fi.exampleLead).not.toBe(en.exampleLead);
+    }
+  });
+
+  it("has a worked example that parses and has a whole-number solution, for every level", () => {
+    for (const l of ALL_LEVELS) {
+      const solution = solveEquation(mustParseEquation(l.example.equation));
+      expect(solution.kind).toBe(l.expects === "special" ? "none" : "one");
     }
   });
 });
+
+/** What the tutor ends at for an equation whose x cancels only after a move. */
+function terminalAfterTutor(equation: ReturnType<typeof mustParseEquation>) {
+  return terminalState(solveWithTutor(equation).at(-1)?.after ?? equation);
+}
 
 describe.each(LEVELS.map((l) => [l.id, l] as const))("exercises in %s", (_id, l) => {
   const all = [{ id: "worked example", equation: l.example.equation }, ...l.exercises];
@@ -62,8 +108,20 @@ describe.each(LEVELS.map((l) => [l.id, l] as const))("exercises in %s", (_id, l)
   it.each(all.map((e) => [e.id, e.equation] as const))("%s (%s) is valid, solvable and well-formed", (_name, text) => {
     const equation = mustParseEquation(text);
 
-    // Displayed exactly as authored, so authors see what learners see.
-    expect(asAuthored(formatEquation(equation))).toBe(text);
+    const prelude = makePrelude(text);
+    if (SIMPLE.has(l.id)) {
+      // Displayed exactly as authored, so authors see what learners see.
+      expect(asAuthored(formatEquation(equation))).toBe(text);
+      expect(prelude.steps).toEqual([]);
+    } else if (prelude.steps.length === 0) {
+      expect(asAuthored(formatEquation(equation)).replace(/\s/g, "")).toBe(text.replace(/\s/g, ""));
+    }
+
+    if (l.expects === "special") {
+      // x disappears: the equation has no solution, or every number is one.
+      expect(["no-solution", "infinite-solutions"]).toContain(terminalState(equation) ?? terminalAfterTutor(equation));
+      return;
+    }
 
     // One whole-number solution, and substituting it works.
     const solution = solveEquation(equation);
@@ -207,5 +265,95 @@ describe("summariseRound", () => {
       { id: "c", steps: 2, mistakes: 0, hints: 2 },
     ]);
     expect(summary).toEqual({ solved: 3, hintsUsed: 2, cleanSolves: 1 });
+  });
+});
+
+describe("the harder levels deliver what they promise", () => {
+  const equationsOf = (id: string) => level(id).exercises.map((e) => mustParseEquation(e.equation));
+
+  it("brackets: every exercise has brackets, and opening them is a question", () => {
+    for (const e of level("brackets").exercises) {
+      expect(e.equation, e.id).toContain("(");
+      expect(makePrelude(e.equation).steps.length, e.id).toBeGreaterThan(0);
+      // The unsupported shape: a bracket after a minus with no space ("-(x+1)") is not authored.
+      expect(e.equation, e.id).not.toMatch(/-\(/);
+    }
+    // Both a bracket on one side and brackets on both sides, and a negative number in front.
+    const texts = level("brackets").exercises.map((e) => e.equation);
+    expect(texts.some((t) => (t.match(/\(/g) ?? []).length === 2)).toBe(true);
+    expect(texts.some((t) => /^-\d\(/.test(t))).toBe(true);
+    expect(texts.some((t) => /- \d\(/.test(t))).toBe(true);
+  });
+
+  it("fractions: every exercise has a fraction, and the tutor clears them with one multiplication first", () => {
+    for (const e of level("fractions").exercises) {
+      expect(e.equation, e.id).toContain("/");
+      const equation = mustParseEquation(e.equation);
+      const [first] = solveWithTutor(equation);
+      // An equation that is only x/3 + 4 = 9 style needs no clearing, so look at the untidy ones.
+      if (first.operation.kind === "multiply" && first.before.left.c.d * first.before.right.c.d * first.before.left.x.d * first.before.right.x.d > 1) {
+        const after = first.after;
+        for (const value of [after.left.x, after.left.c, after.right.x, after.right.c]) expect(value.d, e.id).toBe(1);
+      }
+    }
+  });
+
+  it("fractions: the first move is the common denominator, as taught", () => {
+    const first = (text: string) => solveWithTutor(mustParseEquation(text))[0].operation;
+    expect(first("x/2 + x/3 = 5")).toMatchObject({ kind: "multiply", amount: { n: 6, d: 1 } });
+    expect(first("2x/3 = x/2 + 1")).toMatchObject({ kind: "multiply", amount: { n: 6, d: 1 } });
+    expect(first("x/2 + 1/3 = 5/6")).toMatchObject({ kind: "multiply", amount: { n: 6, d: 1 } });
+    expect(first("x/6 = 4/3")).toMatchObject({ kind: "multiply", amount: { n: 6, d: 1 } });
+  });
+
+  it("special: both kinds are there, and a learner who solves it gets the right explanation", () => {
+    const kinds = new Set(
+      equationsOf("special").map((equation) => terminalState(equation) ?? terminalState(solveWithTutor(equation).at(-1)!.after)),
+    );
+    expect(kinds).toEqual(new Set(["no-solution", "infinite-solutions"]));
+  });
+
+  it("challenge: has long equations (several steps), negative answers and brackets with fractions", () => {
+    // The work is the clean-up questions plus the balance moves.
+    const work = level("challenge").exercises.map(
+      (e) => makePrelude(e.equation).steps.length + solveWithTutor(mustParseEquation(e.equation)).length,
+    );
+    expect(Math.max(...work)).toBeGreaterThanOrEqual(6);
+    const solutions = equationsOf("challenge").map((equation) => solveEquation(equation));
+    expect(solutions.some((s) => s.kind === "one" && s.value.n < 0)).toBe(true);
+    const texts = level("challenge").exercises.map((e) => e.equation);
+    expect(texts.some((t) => t.includes("(") && t.includes("/"))).toBe(true);
+  });
+
+  it("each level is harder than the one before, by the number of moves its equations need on average", () => {
+    // The work is the clean-up questions plus the balance moves.
+    const moves = (id: string) => {
+      const counts = level(id).exercises.map(
+        (e) => makePrelude(e.equation).steps.length + solveWithTutor(mustParseEquation(e.equation)).length,
+      );
+      return counts.reduce((a, b) => a + b, 0) / counts.length;
+    };
+    expect(moves("one-step")).toBeLessThan(moves("two-step"));
+    expect(moves("two-step")).toBeLessThan(moves("both"));
+    expect(moves("both")).toBeLessThan(moves("brackets"));
+    expect(moves("brackets")).toBeLessThan(moves("challenge"));
+  });
+});
+
+describe("the word-problem levels", () => {
+  it("each has a worked example that is the story's own equation", async () => {
+    const { EXAMPLE_STORIES } = await import("../../tasks/stories");
+    for (const id of ["word", "hard-word"] as const) {
+      const story = EXAMPLE_STORIES[id];
+      const fromStory = mustParseEquation(story.equations[0]);
+      const fromLevel = mustParseEquation(level(id).example.equation);
+      expect(fromLevel).toEqual(fromStory);
+      expect(level(id).kind).toBe("stories");
+    }
+  });
+
+  it("climb through different tiers", () => {
+    expect(level("word").tiers).toEqual([1, 2, 3]);
+    expect(level("hard-word").tiers).toEqual([4, 5, 6]);
   });
 });

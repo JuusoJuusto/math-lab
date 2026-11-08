@@ -1,17 +1,21 @@
-import type { ReactNode } from "react";
+"use client";
+
+import type { CSSProperties, ReactNode } from "react";
 import { Check } from "lucide-react";
 import type { Topic } from "@/content/topics";
-import { toHash } from "@/lib/routes";
+import { useI18n } from "@/hooks/useLang";
 import type { ModeInfo } from "@/lib/tasks";
 import { ModeIcon, TopicIcon } from "./icons";
+import { AppLink } from "@/components/ui/AppLink";
 
 /** A topic as a coloured card: large formula, darker title band, short description. */
 export function ModuleCard({ topic, done }: { topic: Topic; done: boolean }) {
+  const { t } = useI18n();
   const { before, mark, after, caption } = topic.formula;
   return (
-    <a className={`module mod-${topic.colour}`} href={toHash({ name: "lesson", topic: topic.id })}>
+    <AppLink className={`module mod-${topic.colour}`} route={{ name: "lesson", topic: topic.id }}>
       <span className="module-art">
-        <span className="module-formula">
+        <span className="module-formula" style={{ "--len": before.length + mark.length + after.length } as CSSProperties}>
           {before}
           <mark>{mark}</mark>
           {after}
@@ -20,13 +24,13 @@ export function ModuleCard({ topic, done }: { topic: Topic; done: boolean }) {
         {done && (
           <span className="module-done">
             <Check size={14} aria-hidden="true" />
-            <span className="sr-only">Finished</span>
+            <span className="sr-only">{t.topic.finished}</span>
           </span>
         )}
       </span>
       <span className="module-band">{topic.title}</span>
       <span className="module-text">{topic.subtitle}</span>
-    </a>
+    </AppLink>
   );
 }
 
@@ -49,10 +53,12 @@ export function modeTone(id: string): string {
 
 /** A practice mode as a card, in the same style as the module cards. */
 export function ModeCard({ mode, caption, selected = false }: { mode: ModeInfo; caption: ReactNode; selected?: boolean }) {
+  const { t } = useI18n();
+  const text = t.modes[mode.id];
   return (
-    <a
+    <AppLink
       className={`game ${modeTone(mode.id)}`}
-      href={toHash({ name: "practice", mode: mode.id })}
+      route={{ name: "practice", mode: mode.id }}
       aria-current={selected ? "true" : undefined}
     >
       <span className="game-art">
@@ -61,9 +67,9 @@ export function ModeCard({ mode, caption, selected = false }: { mode: ModeInfo; 
         </span>
         <span className="game-caption">{caption}</span>
       </span>
-      <span className="game-band">{mode.title}</span>
-      <span className="game-text">{mode.description}</span>
-    </a>
+      <span className="game-band">{text.title}</span>
+      <span className="game-text">{text.description}</span>
+    </AppLink>
   );
 }
 

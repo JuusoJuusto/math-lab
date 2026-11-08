@@ -6,24 +6,26 @@
  * point. A wrong answer is shown to fail by substituting it back.
  */
 
-import { checkSolution, equals, formatFraction, parseEquation, parseExpression } from "../equations";
+import { checkSolution, equals, formatFraction, parseEquation, parseExpression, type Lang } from "../equations";
+import { taskText } from "./text";
 import type { Grade, ParsedAnswer, Task } from "./types";
 
 /** `x = 6`, `-3`, `2,5`, `7/2`, `12 km` and similar, as an exact number. */
-export function parseAnswer(text: string): ParsedAnswer {
+export function parseAnswer(text: string, lang: Lang = "en"): ParsedAnswer {
+  const words = taskText(lang);
   const cleaned = text
     .trim()
     .replace(/[−–]/g, "-")
     .replace(/(\d),(\d)/g, "$1.$2")
     .replace(/^x\s*=\s*/i, "");
 
-  if (cleaned === "") return { ok: false, message: "Type your answer first." };
+  if (cleaned === "") return { ok: false, message: words.typeFirst };
 
   const match = cleaned.match(/^(-?\d+(?:\.\d+)?(?:\s*\/\s*\d+)?)\s*(?:€|[a-wyz]+)?\.?$/i);
-  if (!match) return { ok: false, message: "Type just a number, like 6, −3 or 7/2." };
+  if (!match) return { ok: false, message: words.justNumber };
 
   const parsed = parseExpression(match[1]);
-  if (!parsed.ok || parsed.value.x.n !== 0) return { ok: false, message: "That does not look like a number." };
+  if (!parsed.ok || parsed.value.x.n !== 0) return { ok: false, message: words.notNumber };
   return { ok: true, value: parsed.value.c };
 }
 
@@ -33,10 +35,10 @@ export function gradeChoice(task: Task, index: number): Grade {
 }
 
 /** Grades a typed answer, or says why it cannot be read yet. */
-export function gradeNumber(task: Task, text: string): Grade | { readonly invalid: string } {
+export function gradeNumber(task: Task, text: string, lang: Lang = "en"): Grade | { readonly invalid: string } {
   if (task.input.type !== "number" || !task.answerValue) throw new Error("This task is answered by choosing");
 
-  const parsed = parseAnswer(text);
+  const parsed = parseAnswer(text, lang);
   if (!parsed.ok) return { invalid: parsed.message };
 
   const correct = equals(parsed.value, task.answerValue);
@@ -48,10 +50,8 @@ export function gradeNumber(task: Task, text: string): Grade | { readonly invali
   if (task.checkEquation) {
     const equation = parseEquation(task.checkEquation);
     if (equation.ok) {
-      const check = checkSolution(equation.value, parsed.value);
-      feedback.push(
-        `Check: with x = ${given} the left side is ${formatFraction(check.leftValue)} and the right side is ${formatFraction(check.rightValue)}. They are not equal.`,
-      );
+      const check = checkSolution(equation.value, parsed.value, lang);
+      feedback.push(taskText(lang).checkFeedback(given, formatFraction(check.leftValue), formatFraction(check.rightValue)));
     }
   }
   return { correct: false, given, feedback };

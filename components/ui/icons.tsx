@@ -2,12 +2,16 @@ import {
   ArrowLeftRight,
   CalendarCheck,
   CircleHelp,
+  Divide,
+  Flame,
   Footprints,
   GraduationCap,
+  Infinity,
   ListChecks,
   MessageSquareText,
   Parentheses,
   PenLine,
+  Puzzle,
   RotateCcw,
   Scale,
   Search,
@@ -34,6 +38,10 @@ const TOPIC_ICONS: Record<TopicIconName, LucideIcon> = {
   Parentheses,
   TrendingUp,
   MessageSquareText,
+  Divide,
+  Infinity,
+  Puzzle,
+  Flame,
 };
 
 const MODE_ICONS: Record<ModeId, LucideIcon> = {

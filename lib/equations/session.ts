@@ -7,14 +7,28 @@
  * A step has two visible moments, which is what makes "the same operation on
  * both sides" concrete for learners:
  *   1. apply     the operation is written on both sides: 2x + 5 − 5 = 17 − 5
+ *                (or, for a flip, the term has crossed over: 2x = 17 − 5)
  *   2. simplify  the learner collapses it into the next equation: 2x = 12
+ *
+ * A flip is the same step in a shorter form (see flip.ts), so both ways of
+ * moving share the validation, the tutor and the history.
  */
 
-import type { Equation } from "./expression";
-import { formatEquation } from "./format";
+import type { Lang } from "../lang";
+import { expr, type Equation } from "./expression";
+import { evaluateFlip, flipOperation, formatFlipPreview, type FlipTarget } from "./flip";
+import { formatBar, formatEquation } from "./format";
 import { operationKey, type AppliedStep, type Operation } from "./operations";
-import { solvedValue, terminalState, type TerminalState } from "./solve";
-import { describeNextStep, evaluateMove, type MovePreview, type StepExplanation } from "./tutor";
+import type { Prelude, PreludeStep } from "./prelude";
+import { isSolution, solvedValue, terminalState, type TerminalState } from "./solve";
+import { engineText } from "./text";
+import {
+  describeNextStep,
+  evaluateMove,
+  type MoveEvaluation,
+  type MovePreview,
+  type StepExplanation,
+} from "./tutor";
 import type { Fraction } from "./fraction";
 
 export type NoticeTone = "success" | "error" | "warning" | "info";
@@ -33,11 +47,21 @@ export interface Notice {
 
 export interface StepRecord extends AppliedStep {
   readonly explanation: StepExplanation;
+  /** Present when the step was made by flipping a term across the equals sign. */
+  readonly flip?: FlipTarget;
 }
 
 export type HintLevel = 0 | 1 | 2 | 3;
 
 export interface SessionState {
+  /** The language of every message in this session. */
+  readonly lang: Lang;
+  /** The clean-up questions (open brackets, simplify) that come before the balance moves, if the equation has any. */
+  readonly prelude: Prelude | null;
+  /** How many of the prelude's questions have been answered. */
+  readonly preludeIndex: number;
+  /** The wrong options already tried on the current prelude question. */
+  readonly preludeWrong: readonly number[];
   /** The equation the exercise started with. */
   readonly start: Equation;
   readonly current: Equation;
@@ -58,15 +82,27 @@ export interface SessionState {
 }
 
 export type SessionAction =
+  /** The learner found x another way (working backwards). Accepted only when it really is the solution. */
+  | { readonly type: "answer"; readonly value: Fraction }
+  /** A wrong try in another way of solving, which counts as a mistake. */
+  | { readonly type: "miss" }
+  /** Answer the current prelude question by choosing one of its options. */
+  | { readonly type: "prelude"; readonly choice: number }
   | { readonly type: "apply"; readonly operation: Operation }
+  /** Flip a term across the equals sign. */
+  | { readonly type: "flip"; readonly target: FlipTarget }
   | { readonly type: "simplify" }
   | { readonly type: "hint" }
   | { readonly type: "undo" }
   | { readonly type: "restart" }
   | { readonly type: "check" };
 
-export function createSession(start: Equation): SessionState {
+export function createSession(start: Equation, lang: Lang = "en", prelude: Prelude | null = null): SessionState {
   return {
+    lang,
+    prelude: prelude && prelude.steps.length > 0 ? prelude : null,
+    preludeIndex: 0,
+    preludeWrong: [],
     start,
     current: start,
     steps: [],
@@ -86,41 +122,58 @@ export function solutionOf(state: SessionState): Fraction | null {
   return state.outcome === "solved" ? solvedValue(state.current) : null;
 }
 
+/** The prelude question waiting to be answered, or `null` once the equation is in simple form. */
+export function currentPreludeStep(state: SessionState): PreludeStep | null {
+  return state.prelude?.steps[state.preludeIndex] ?? null;
+}
+
+/** The equation as it is written right now, while the prelude is being worked through. */
+export function preludeShown(state: SessionState): string | null {
+  if (!state.prelude || state.preludeIndex >= state.prelude.steps.length) return null;
+  return state.preludeIndex === 0 ? state.prelude.source : state.prelude.steps[state.preludeIndex - 1].after;
+}
+
 export function canUndo(state: SessionState): boolean {
-  return state.pending !== null || state.steps.length > 0;
+  return currentPreludeStep(state) === null && (state.pending !== null || state.steps.length > 0);
 }
 
 export function canGetHint(state: SessionState): boolean {
-  return state.outcome === "solving" && state.pending === null && state.hintLevel < 3;
+  return state.outcome === "solving" && state.pending === null && currentPreludeStep(state) === null && state.hintLevel < 3;
 }
 
-function terminalNotice(outcome: TerminalState, equation: Equation): Notice {
+function terminalNotice(outcome: TerminalState, equation: Equation, lang: Lang): Notice {
+  const text = engineText(lang).session;
   if (outcome === "solved") {
-    return { tone: "success", title: "x is on its own!", body: [describeNextStep(equation)] };
+    return { tone: "success", title: text.alone, body: [describeNextStep(equation, lang)] };
   }
   return {
     tone: "info",
-    title: outcome === "no-solution" ? "This equation has no solution" : "This equation has infinitely many solutions",
-    body: [describeNextStep(equation)],
+    title: outcome === "no-solution" ? text.noSolution : text.infinite,
+    body: [describeNextStep(equation, lang)],
   };
 }
 
-function applyMove(state: SessionState, operation: Operation): SessionState {
-  const evaluation = evaluateMove(state.current, operation, state.steps.length);
-  const key = operationKey(operation);
+/** Turns the tutor's verdict on a move into the next state. */
+function resolveMove(state: SessionState, evaluation: MoveEvaluation, key: string, flip?: FlipTarget): SessionState {
+  const text = engineText(state.lang);
 
   if (evaluation.verdict === "helpful") {
     const { explanation } = evaluation;
+    const operation = evaluation.step.operation;
+    const moved = flip ? formatFlipPreview(state.current, flip, state.lang) : null;
     return {
       ...state,
-      pending: { ...evaluation.step, explanation },
+      pending: { ...evaluation.step, explanation, ...(flip ? { flip } : {}) },
       hintLevel: 0,
       lastRejected: null,
       notice: {
         tone: "success",
         title: explanation.title,
         body: [explanation.why, ...(explanation.note ? [explanation.note] : [])],
-        work: [`Left side: ${explanation.leftWork}`, `Right side: ${explanation.rightWork}`],
+        work:
+          flip && moved
+            ? [text.flip.movedLine(moved), text.flip.sameAs(formatBar(operation, state.lang))]
+            : [text.session.leftSide(explanation.leftWork), text.session.rightSide(explanation.rightWork)],
       },
     };
   }
@@ -129,11 +182,7 @@ function applyMove(state: SessionState, operation: Operation): SessionState {
   if (state.lastRejected === key) {
     return {
       ...state,
-      notice: {
-        tone: "warning",
-        title: "You have tried that one already",
-        body: ["Look at what is attached to x, or use the hint button if you would like some help."],
-      },
+      notice: { tone: "warning", title: text.session.repeatedTitle, body: [text.session.repeatedBody] },
     };
   }
 
@@ -159,6 +208,62 @@ function applyMove(state: SessionState, operation: Operation): SessionState {
   };
 }
 
+function applyMove(state: SessionState, operation: Operation): SessionState {
+  const evaluation = evaluateMove(state.current, operation, state.steps.length, state.lang);
+  return resolveMove(state, evaluation, operationKey(operation));
+}
+
+function applyFlip(state: SessionState, target: FlipTarget): SessionState {
+  const evaluation = evaluateFlip(state.current, target, state.steps.length, state.lang);
+  if (!evaluation) return state;
+  const operation = flipOperation(state.current, target);
+  return resolveMove(state, evaluation, `flip|${operation ? operationKey(operation) : target.kind}`, target);
+}
+
+function answerPrelude(state: SessionState, choice: number): SessionState {
+  const step = currentPreludeStep(state);
+  if (!step || !step.options[choice] || state.preludeWrong.includes(choice)) return state;
+  const text = engineText(state.lang);
+
+  if (choice !== step.correct) {
+    const reason = step.options[choice].reason ?? "arithmetic";
+    return {
+      ...state,
+      mistakes: state.mistakes + 1,
+      preludeWrong: [...state.preludeWrong, choice],
+      notice: { tone: "error", title: text.prelude.wrongTitle, body: [text.prelude.wrong[reason]] },
+    };
+  }
+
+  const explain = step.kind === "expand" ? text.prelude.expandRight : text.prelude.simplifyRight;
+  const index = state.preludeIndex + 1;
+  const last = index >= (state.prelude?.steps.length ?? 0);
+  return {
+    ...state,
+    preludeIndex: index,
+    preludeWrong: [],
+    notice: {
+      tone: "success",
+      title: text.tutor.praise[(index - 1) % text.tutor.praise.length],
+      body: [explain(step.part, step.result), ...(last ? [text.prelude.done] : [])],
+    },
+  };
+}
+
+/** The learner reached x some other way. If it is the solution, the equation is solved. */
+function acceptAnswer(state: SessionState, value: Fraction): SessionState {
+  if (!isSolution(state.current, value)) return { ...state, mistakes: state.mistakes + 1 };
+  const solved: Equation = { left: expr(1, 0), right: expr(0, value) };
+  return {
+    ...state,
+    current: solved,
+    outcome: "solved",
+    hintLevel: 0,
+    lastRejected: null,
+    notice: terminalNotice("solved", solved, state.lang),
+  };
+}
+
 function simplifyPending(state: SessionState): SessionState {
   const { pending } = state;
   if (!pending) return state;
@@ -173,8 +278,12 @@ function simplifyPending(state: SessionState): SessionState {
     outcome: terminal ?? "solving",
     lastRejected: null,
     notice: terminal
-      ? terminalNotice(terminal, current)
-      : { tone: "info", title: `Now we have ${formatEquation(current)}`, body: [describeNextStep(current)] },
+      ? terminalNotice(terminal, current, state.lang)
+      : {
+          tone: "info",
+          title: engineText(state.lang).session.nowWeHave(formatEquation(current)),
+          body: [describeNextStep(current, state.lang)],
+        },
   };
 }
 
@@ -197,9 +306,20 @@ function undoLast(state: SessionState): SessionState {
 }
 
 export function sessionReducer(state: SessionState, action: SessionAction): SessionState {
+  // Until the equation is in simple form, only the prelude's questions can be answered.
+  if (currentPreludeStep(state) !== null && action.type !== "prelude" && action.type !== "restart") return state;
+
   switch (action.type) {
+    case "prelude":
+      return answerPrelude(state, action.choice);
+    case "miss":
+      return state.outcome === "solving" && state.pending === null ? { ...state, mistakes: state.mistakes + 1 } : state;
+    case "answer":
+      return state.outcome === "solving" && state.pending === null ? acceptAnswer(state, action.value) : state;
     case "apply":
       return state.outcome === "solving" && state.pending === null ? applyMove(state, action.operation) : state;
+    case "flip":
+      return state.outcome === "solving" && state.pending === null ? applyFlip(state, action.target) : state;
     case "simplify":
       return simplifyPending(state);
     case "hint":
@@ -209,7 +329,14 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "undo":
       return undoLast(state);
     case "restart":
-      return { ...createSession(state.start), hintsUsed: state.hintsUsed, mistakes: state.mistakes };
+      // Starting over keeps the effort so far, and skips the prelude that has already been done.
+      return {
+        ...createSession(state.start, state.lang),
+        prelude: state.prelude,
+        preludeIndex: state.prelude?.steps.length ?? 0,
+        hintsUsed: state.hintsUsed,
+        mistakes: state.mistakes,
+      };
     case "check":
       return state.outcome === "solved" ? { ...state, checked: true } : state;
   }

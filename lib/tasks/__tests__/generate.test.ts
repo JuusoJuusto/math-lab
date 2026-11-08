@@ -24,11 +24,11 @@ const eq = (text: string): Equation => {
 
 /** Reads "Subtract 5 from both sides" back into an operation, independently of the generator. */
 function operationFromText(text: string): Operation {
-  const additive = text.match(/^(Add|Subtract) (−?\d*)(x?) (?:to|from) both sides$/);
+  const additive = text.match(/^(Add|Subtract) (−?\d*)(x?)(?:\/(\d+))? (?:to|from) both sides$/);
   if (additive) {
     const digits = additive[2].replace("−", "-");
-    const amount = digits === "" ? 1 : digits === "-" ? -1 : Number(digits);
-    return operation(additive[1] === "Add" ? "add" : "subtract", amount, additive[3] === "x");
+    const top = digits === "" ? 1 : digits === "-" ? -1 : Number(digits);
+    return operation(additive[1] === "Add" ? "add" : "subtract", frac(top, additive[4] ? Number(additive[4]) : 1), additive[3] === "x");
   }
   const scaled = text.match(/^(Multiply|Divide) both sides by (−?\d+)$/);
   if (scaled) return operation(scaled[1] === "Multiply" ? "multiply" : "divide", Number(scaled[2].replace("−", "-")));
@@ -68,7 +68,7 @@ describe("task generation is sound for every kind and topic", () => {
           expect(text, task.prompt).not.toMatch(/NaN|undefined|Infinity|\[object|null/);
         }
         expect(task.explanation.length).toBeGreaterThan(0);
-        expect(task.topic).toBe(kind === "equation" ? "word" : topic);
+        expect(task.topic).toBe(topic);
       }
     });
 

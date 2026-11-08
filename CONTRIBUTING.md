@@ -44,7 +44,7 @@ MathLab should feel like part of the same family as GeoMaster and MasterModus: a
 ## Pull request checklist
 
 - [ ] The change has a clear learner benefit.
-- [ ] The interface is in English.
+- [ ] The interface text exists in both Finnish and English (`lib/i18n`, `lib/equations/text-*.ts`).
 - [ ] The layout works on mobile and desktop.
 - [ ] Keyboard focus and button labels remain usable.
 - [ ] New questions have verified answers and explanations.

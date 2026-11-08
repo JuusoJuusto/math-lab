@@ -2,15 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Timer } from "lucide-react";
+import { useI18n } from "@/hooks/useLang";
 import { navigate } from "@/hooks/useRoute";
 import { useProgress, updateProgress } from "@/hooks/useProgress";
 import { localDate } from "@/hooks/useToday";
 import { XP, recordDailyDone, recordTask, recordTimeAttack } from "@/lib/progress";
-import { toHash, type Route } from "@/lib/routes";
+import { type Route } from "@/lib/routes";
 import { buildSession, generateTask, getMode, gradeChoice, gradeNumber, isInvalid, type Grade } from "@/lib/tasks";
 import { startSession } from "./start";
 import { SessionResults, type AnswerRecord } from "./SessionResults";
 import { TaskCard, type Phase } from "./TaskCard";
+import { AppLink } from "@/components/ui/AppLink";
 
 type SessionRoute = Extract<Route, { name: "session" }>;
 
@@ -23,6 +25,8 @@ const QUICK_DELAY = 650;
  */
 export function PracticeSession({ route }: { route: SessionRoute }) {
   const mode = getMode(route.mode)!;
+  const { lang, t } = useI18n();
+  const modeText = t.modes[mode.id];
   const progress = useProgress();
   const quick = mode.seconds !== undefined;
 
@@ -46,7 +50,8 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
     progressRef.current = progress;
   });
 
-  const task = useMemo(() => (specs[index] ? generateTask(specs[index]) : null), [specs, index]);
+  // The words change with the language; the task itself (numbers, answers, option order) does not.
+  const task = useMemo(() => (specs[index] ? generateTask(specs[index], lang) : null), [specs, index, lang]);
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
@@ -121,7 +126,7 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
 
   function submit(text: string): string | null {
     if (!task || phase !== "answering") return null;
-    const result = gradeNumber(task, text);
+    const result = gradeNumber(task, text, lang);
     if (isInvalid(result)) return result.invalid;
     record(result);
     return null;
@@ -130,19 +135,15 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
   if (specs.length === 0) {
     return (
       <div className="panel">
-        <a className="back-link" href={toHash({ name: "practice" })}>
-          <ArrowLeft size={16} aria-hidden="true" /> Practice
-        </a>
+        <AppLink className="back-link" route={{ name: "practice" }}>
+          <ArrowLeft size={16} aria-hidden="true" /> {t.session.practice}
+        </AppLink>
         <div className="empty">
-          <h1>{mode.id === "mistakes" ? "No mistakes to fix" : "No tasks for this choice"}</h1>
-          <p>
-            {mode.id === "mistakes"
-              ? "Every task you miss is kept here for another try. Right now there is nothing waiting."
-              : "This way of practising does not have tasks for that topic. Choose another topic or another mode."}
-          </p>
-          <a className="cta cta-inline" href={toHash({ name: "practice", mode: mode.id })}>
-            Back to practice
-          </a>
+          <h1>{mode.id === "mistakes" ? t.session.noMistakesTitle : t.session.noTasksTitle}</h1>
+          <p>{mode.id === "mistakes" ? t.session.noMistakesText : t.session.noTasksText}</p>
+          <AppLink className="cta cta-inline" route={{ name: "practice", mode: mode.id }}>
+            {t.session.backToPractice}
+          </AppLink>
         </div>
       </div>
     );
@@ -168,28 +169,28 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
   return (
     <div className="panel session">
       <div className="session-top">
-        <a className="back-link" href={toHash({ name: "practice", mode: mode.id })}>
-          <ArrowLeft size={16} aria-hidden="true" /> {mode.title}
-        </a>
-        <span className="session-xp">+{answeredXp} XP</span>
+        <AppLink className="back-link" route={{ name: "practice", mode: mode.id }}>
+          <ArrowLeft size={16} aria-hidden="true" /> {modeText.title}
+        </AppLink>
+        <span className="session-xp">{t.xp.gain(answeredXp)}</span>
       </div>
 
       {quick ? (
-        <div className="timer" role="timer" aria-label={`${secondsLeft} seconds left`}>
+        <div className="timer" role="timer" aria-label={t.session.timer(secondsLeft)}>
           <Timer size={18} aria-hidden="true" />
           <strong>{secondsLeft}</strong>
           <span className="bar" aria-hidden="true">
             <span style={{ width: `${(secondsLeft / (mode.seconds ?? 1)) * 100}%` }} />
           </span>
-          <span>{records.filter((entry) => entry.correct).length} correct</span>
+          <span>{t.session.correctCount(records.filter((entry) => entry.correct).length)}</span>
         </div>
       ) : (
         <div className="session-progress">
-          <span className="bar" role="progressbar" aria-label="Session progress" aria-valuemin={0} aria-valuemax={specs.length} aria-valuenow={index}>
+          <span className="bar" role="progressbar" aria-label={t.session.progressLabel} aria-valuemin={0} aria-valuemax={specs.length} aria-valuenow={index}>
             <span style={{ width: `${(index / specs.length) * 100}%` }} />
           </span>
           <span className="session-count">
-            Task {index + 1} / {specs.length}
+            {t.session.taskOf(index + 1, specs.length)}
           </span>
         </div>
       )}

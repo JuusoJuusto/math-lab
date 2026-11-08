@@ -1,6 +1,7 @@
 "use client";
 
 import { getTopic } from "@/content/topics";
+import { useI18n } from "@/hooks/useLang";
 import { navigate } from "@/hooks/useRoute";
 import { updateProgress } from "@/hooks/useProgress";
 import { getLevel } from "@/lib/equations";
@@ -10,8 +11,9 @@ import { startSession } from "@/components/practice/start";
 
 /** Connects the solver to navigation and progress. */
 export function SolverScreen({ levelId }: { levelId: string }) {
+  const { lang } = useI18n();
   const level = getLevel(levelId);
-  const topic = getTopic(levelId);
+  const topic = getTopic(levelId, lang);
   if (!level || !topic) return null;
 
   return (

@@ -3,7 +3,8 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ArrowDown, ArrowRight, Check, CircleCheck, CircleX, X } from "lucide-react";
 import { getTopic } from "@/content/topics";
-import { GROUP_INFO, groupOf, type Grade, type Task, type TaskDisplay } from "@/lib/tasks";
+import { useI18n } from "@/hooks/useLang";
+import { groupOf, type Grade, type Task, type TaskDisplay } from "@/lib/tasks";
 import { GroupIcon } from "@/components/ui/icons";
 import { MathLine } from "@/components/ui/MathLine";
 
@@ -28,6 +29,7 @@ interface TaskCardProps {
 
 /** The equation, the before/after pair or the worked lines of a task. */
 export function TaskDisplayView({ display }: { display: TaskDisplay }) {
+  const { t } = useI18n();
   if (display.type === "equation") {
     return (
       <div className="task-equation">
@@ -54,7 +56,7 @@ export function TaskDisplayView({ display }: { display: TaskDisplay }) {
           <span className="worked-no" aria-hidden="true">
             {index + 1}
           </span>
-          <span className="sr-only">Line {index + 1}:</span>
+          <span className="sr-only">{t.task.line(index + 1)}</span>
           <span className="worked-body">
             <MathLine text={line.text} />
             {line.note && <span className="worked-note">{line.note}</span>}
@@ -67,6 +69,7 @@ export function TaskDisplayView({ display }: { display: TaskDisplay }) {
 
 /** One task, whatever its kind: choices, a typed answer, or a worked solution to inspect. */
 export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoose, onSubmit, onNext }: TaskCardProps) {
+  const { lang, t } = useI18n();
   const group = groupOf(task.kind);
   const fieldId = useId();
   const [text, setText] = useState("");
@@ -110,9 +113,9 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
     <article className="task" aria-labelledby={`${fieldId}-prompt`}>
       <div className="task-tags">
         <span className="tag tag-kind">
-          <GroupIcon group={group} /> {GROUP_INFO[group].label}
+          <GroupIcon group={group} /> {t.groups[group].label}
         </span>
-        <span className="tag">{getTopic(task.topic)?.title}</span>
+        <span className="tag">{getTopic(task.topic, lang)?.title}</span>
       </div>
 
       <h2 className="task-prompt" id={`${fieldId}-prompt`}>
@@ -133,8 +136,8 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
                     {state === "right" ? <Check size={16} /> : state === "wrong" ? <X size={16} /> : index + 1}
                   </span>
                   <span className="answer-text">{option}</span>
-                  {state === "right" && <span className="sr-only">Correct answer</span>}
-                  {state === "wrong" && <span className="sr-only">Your answer, incorrect</span>}
+                  {state === "right" && <span className="sr-only">{t.task.correctAnswer}</span>}
+                  {state === "wrong" && <span className="sr-only">{t.task.yourWrongAnswer}</span>}
                 </button>
               </li>
             );
@@ -145,7 +148,7 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
       {task.input.type === "number" && answering && (
         <form className="answer-form" onSubmit={submit} noValidate>
           <label className="sr-only" htmlFor={fieldId}>
-            Your answer
+            {t.task.yourAnswer}
           </label>
           <div className="answer-field">
             {isEquation && <span className="answer-prefix">x =</span>}
@@ -168,7 +171,7 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
               }}
             />
             {unit && <span className="answer-unit">{unit}</span>}
-            <button type="button" className="sign-button" onClick={toggleSign} aria-label="Switch between positive and negative">
+            <button type="button" className="sign-button" onClick={toggleSign} aria-label={t.task.sign}>
               ±
             </button>
           </div>
@@ -178,7 +181,7 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
             </p>
           )}
           <button type="submit" className="cta cta-inline">
-            Check
+            {t.task.check}
           </button>
         </form>
       )}
@@ -187,18 +190,18 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
         <>
           {quick ? (
             <p className={grade.correct ? "quick-result quick-good" : "quick-result quick-bad"} role="status">
-              {grade.correct ? `Correct +${xp} XP` : `Answer: ${task.answerText}`}
+              {grade.correct ? t.task.quickRight(xp) : t.task.quickWrong(task.answerText)}
             </p>
           ) : (
             <div className={grade.correct ? "feedback feedback-good" : "feedback feedback-bad"} role="status">
               <p className="feedback-title">
                 {grade.correct ? <CircleCheck size={22} aria-hidden="true" /> : <CircleX size={22} aria-hidden="true" />}
-                {grade.correct ? "Correct!" : "Not quite."}
-                {grade.correct && xp > 0 && <span className="xp-pop">+{xp} XP</span>}
+                {grade.correct ? t.task.correct : t.task.notQuite}
+                {grade.correct && xp > 0 && <span className="xp-pop">{t.xp.gain(xp)}</span>}
               </p>
               {!grade.correct && (
                 <p>
-                  The answer is <strong>{task.answerText}</strong>.
+                  {t.task.theAnswerIs} <strong>{task.answerText}</strong>.
                 </p>
               )}
               {grade.feedback.map((line) => (
@@ -213,7 +216,7 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
           )}
           {!quick && (
             <button type="button" className="cta cta-inline" ref={next} onClick={onNext}>
-              {isLast ? "See results" : "Next"} <ArrowRight size={18} aria-hidden="true" />
+              {isLast ? t.task.seeResults : t.task.next} <ArrowRight size={18} aria-hidden="true" />
             </button>
           )}
         </>

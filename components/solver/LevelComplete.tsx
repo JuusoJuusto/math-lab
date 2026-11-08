@@ -1,5 +1,8 @@
+"use client";
+
 import { ArrowRight, CircleCheck, RotateCcw, Trophy } from "lucide-react";
-import { formatEquation, formatFraction, getNextLevel, solveEquation, summariseRound, type LevelDefinition } from "@/lib/equations";
+import { useI18n } from "@/hooks/useLang";
+import { formatEquation, formatFraction, getNextLevel, levelText, solveEquation, summariseRound, type LevelDefinition } from "@/lib/equations";
 import type { RoundReport } from "./PracticeRound";
 
 interface LevelCompleteProps {
@@ -13,22 +16,21 @@ interface LevelCompleteProps {
 
 /** The completion state: a short recap, and clear next steps including practising again. */
 export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQuiz, onTopics }: LevelCompleteProps) {
+  const { lang, t } = useI18n();
   const summary = summariseRound(report.results);
   const next = getNextLevel(level.id);
+  const words = t.solver.complete;
 
   return (
     <section className="results-card level-complete" aria-labelledby="complete-heading">
       <div className="results-medal">
         <Trophy size={34} aria-hidden="true" />
       </div>
-      <span className="section-kicker">LEVEL {level.number} COMPLETE</span>
+      <span className="section-kicker">{words.kicker(level.number)}</span>
       <h2 id="complete-heading" className="complete-heading" tabIndex={-1}>
-        {level.title}: done!
+        {words.heading(levelText(level, lang).title)}
       </h2>
-      <p>
-        You solved {summary.solved} equations.{" "}
-        {summary.hintsUsed === 0 ? "No hints needed." : `You used ${summary.hintsUsed} hint${summary.hintsUsed === 1 ? "" : "s"}, which is exactly what they are for.`}
-      </p>
+      <p>{words.solved(summary.solved, summary.hintsUsed, level.kind === "stories")}</p>
 
       <ul className="recap">
         {report.exercises.map((exercise) => {
@@ -37,9 +39,11 @@ export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQ
           return (
             <li key={exercise.id}>
               <CircleCheck size={18} aria-hidden="true" />
-              <span className="recap-equation">{formatEquation(exercise.equation)}</span>
-              <span className="recap-answer">{solution.kind === "one" ? `x = ${formatFraction(solution.value)}` : ""}</span>
-              {result && result.hints > 0 && <span className="recap-note">{result.hints} hint{result.hints === 1 ? "" : "s"}</span>}
+              <span className="recap-equation">{exercise.prelude.steps.length > 0 ? exercise.prelude.source : formatEquation(exercise.equation)}</span>
+              <span className="recap-answer">
+                {solution.kind === "one" ? `x = ${formatFraction(solution.value)}` : solution.kind === "none" ? words.noSolution : words.infinite}
+              </span>
+              {result && result.hints > 0 && <span className="recap-note">{words.hintTag(result.hints)}</span>}
             </li>
           );
         })}
@@ -48,18 +52,18 @@ export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQ
       <div className="action-row action-center">
         {next ? (
           <button type="button" className="button-primary" onClick={() => onNextLevel(next.id)}>
-            Next: {next.title} <ArrowRight size={16} aria-hidden="true" />
+            {words.next(levelText(next, lang).title)} <ArrowRight size={16} aria-hidden="true" />
           </button>
         ) : (
           <button type="button" className="button-primary" onClick={onTopics}>
-            Explore more topics <ArrowRight size={16} aria-hidden="true" />
+            {words.explore} <ArrowRight size={16} aria-hidden="true" />
           </button>
         )}
         <button type="button" className="button-secondary" onClick={onPractiseAgain}>
-          <RotateCcw size={16} aria-hidden="true" /> Practise again
+          <RotateCcw size={16} aria-hidden="true" /> {words.again}
         </button>
         <button type="button" className="text-link" onClick={onQuiz}>
-          Take the quiz <ArrowRight size={16} aria-hidden="true" />
+          {words.quiz} <ArrowRight size={16} aria-hidden="true" />
         </button>
       </div>
     </section>

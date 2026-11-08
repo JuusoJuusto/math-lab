@@ -6,7 +6,6 @@ import {
   formatAmount,
   formatEquation,
   formatFraction,
-  operationGerund,
   operationLabel,
   sideTokens,
   toSpeech,
@@ -75,13 +74,16 @@ describe("operation wording", () => {
     expect(describeOperation(operation("add", 3, true))).toBe("Add 3x to both sides");
     expect(describeOperation(operation("multiply", 4))).toBe("Multiply both sides by 4");
     expect(describeOperation(operation("divide", -2))).toBe("Divide both sides by −2");
-    expect(operationGerund(operation("subtract", 5))).toBe("Subtracting 5 from both sides");
   });
 
   it("formats amounts", () => {
     expect(formatAmount(operation("add", 1, true))).toBe("x");
     expect(formatAmount(operation("add", -2, true))).toBe("−2x");
     expect(formatAmount(operation("add", frac(1, 2)))).toBe("1/2");
+    // A fraction of x is written x/4, never 1/4x, which would read as one over four x.
+    expect(formatAmount(operation("subtract", frac(1, 4), true))).toBe("x/4");
+    expect(formatAmount(operation("add", frac(3, 4), true))).toBe("3x/4");
+    expect(formatAmount(operation("add", frac(-1, 2), true))).toBe("−x/2");
     expect(operationLabel(operation("divide", -2))).toBe("÷ (−2)");
     expect(operationLabel(operation("subtract", 5))).toBe("− 5");
   });

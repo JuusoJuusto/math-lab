@@ -12,13 +12,19 @@ The initial content is designed for introductory lower-secondary mathematics, wi
 | One-step equations | Undo one operation to isolate a variable | Level 1 |
 | Two-step equations | Undo two operations in the right order | Level 2 |
 | Variables on both sides | Collect like terms and isolate the variable | Level 3 |
-| Equations with brackets | Apply the distributive property | – |
+| Equations with brackets | Open brackets, then solve | Level 4 |
+| Fractions and ratios | Clear denominators, then solve | Level 5 |
+| No solution or infinitely many | Recognise what it means when x disappears | Level 7 |
 | Proportional relationships | Recognise direct and inverse proportion | – |
-| Word problems | Translate a situation into an equation | – |
+| Word problems | Write the equation from a story, then solve it | Level 6 |
+| Hard word problems | The same with percentages, consecutive numbers, movement, ages, work | Level 8 |
+| Challenge | Brackets, fractions and negatives in one equation | Level 9 |
 
 The topics are defined in `content/topics.ts`. Topic ids are stored in learners' browsers as progress, so never rename an id. Add a new one instead.
 
-Each topic has a module colour, a **Lucide icon name** and a short formula with one highlighted part, which is what the coloured card shows. Never use an emoji as an icon; add the Lucide icon to `components/ui/icons.tsx` instead.
+Every text is written **in both languages** (Finnish and English), next to each other: topics and lessons here, questions in `content/questions.ts`, level introductions in `lib/equations/levels.ts`, stories in `lib/tasks/stories.ts`. The compiler rejects a missing translation, and the tests reject English left in Finnish text. See [languages and addresses](LANGUAGES_AND_ROUTING.md).
+
+Each topic has a module colour, a **Lucide icon name** and a short formula with one highlighted part, which is what the coloured card shows. Keep the formula to about twelve characters; it shrinks to fit, but a short one reads better on a phone. Never use an emoji as an icon; add the Lucide icon to `components/ui/icons.tsx` instead.
 
 The generated practice tasks (typed answers, true or false, which step, find the mistake, write the equation) are described in [practice](PRACTICE.md). They need no authoring: they come from templates in `lib/tasks`.
 
@@ -36,14 +42,12 @@ The generated practice tasks (typed answers, true or false, which step, find the
 ## Multiple-choice questions
 
 The question bank is defined in `content/questions.ts`. Each question has:
-- A stable `id`.
-- A `topic` identifier matching the topic catalogue.
+- A stable `id` and a `topic` identifier matching the topic catalogue.
 - A `level` of `Beginner`, `Intermediate` or `Advanced`.
-- A prompt and a list of answer choices.
-- One correct answer, which must also appear in the choices.
-- A concise explanation.
+- The position of the correct choice (`correct`), the same in both languages.
+- For each language: a prompt, the list of answer choices (a Finnish decimal comma where needed) and a concise explanation.
 
-`content/__tests__/content.test.ts` checks for duplicate ids, unknown topics, missing practice questions for a topic, invalid answer keys and duplicate choices. It also **solves every question whose prompt starts with `Solve the equation:`**, so the prompt must be written in a form the parser reads (for example `Solve the equation:  3(x − 2) = 2x + 5`) and the answer choices must look like `x = 8`. The test fails if the answer is wrong or if any distractor is also a solution.
+`content/__tests__/content.test.ts` checks for duplicate ids, unknown topics, missing practice questions for a topic, invalid answer keys and duplicate choices. It also **solves every question whose prompt starts with `Solve the equation:` (Finnish: `Ratkaise yhtälö:`)**, so the prompt must be written in a form the parser reads (for example `Solve the equation:  3(x − 2) = 2x + 5`) and the answer choices must look like `x = 8`. The test fails if the answer is wrong or if any distractor is also a solution.
 
 ## Equation solver exercises
 
@@ -65,14 +69,14 @@ Rules:
 | --- | --- |
 | Use a **new id** (the number inside `one(…)`, `two(…)`, `both(…)`). Never reuse an id for a different equation. | Ids identify exercises in rounds. |
 | Write x first: `-2x + 3 = 11`, not `3 - 2x = 11`. | The workspace always shows standard form, and a test checks that what you wrote is what learners see. |
-| The solution must be one **whole number** (negative is fine in level 3). | Fractions are outside the introductory scope. |
-| Keep it to the level's step count: 1 step in level 1, 2 in level 2, 2–4 in level 3. | A test checks this. |
+| The solution must be one **whole number** (negative is fine), except in the special-cases level, where x must disappear. | The tests check it. |
+| Keep it to the level's promise: 1 step in level 1, 2 in level 2, 2–4 in level 3; later levels count the clean-up questions too. | Tests check this. |
 | Order the list from easier to harder. | A round keeps this order. |
 | Do not repeat the level's worked example. | A test checks this. |
 
 Run `npm test`. If the equation does not parse, is not displayed as written, has no single whole-number solution, or does not take the expected number of steps, a test fails with the exercise id.
 
-Equations with brackets, such as `3(x - 2) = 2x + 5`, parse correctly and are used to verify quiz questions, but the solver has no "expand brackets" operation yet, so do not add them to the solver pools.
+Equations with **brackets or fractions** are welcome in the levels that teach them (brackets, fractions, challenge). Write them as a student would: `3(x - 2) = 2x + 5`, `x/2 + x/3 = 5`, `(x + 1)/2 = 4`, `10 - 2(x + 1) = 4`. The learner first answers clean-up questions made from the text (see the [solver doc](EQUATION_SOLVER.md#clean-up-questions-the-prelude)), and the tests check that each question leads to the same equation. A bracket after a minus is written with a space (`- 2(x + 4)`); do not write `-(x + 1)` without a number. The levels `one-step`, `two-step` and `both` stay in plain standard form, shown exactly as written.
 
 ### Rounds
 
@@ -91,9 +95,18 @@ Edit the `intro` and `example` fields of the level. The worked example is solved
 
 ## Feedback wording
 
-Feedback is written in `lib/equations/tutor.ts`. When editing it:
+The logic that decides *what* to say is in `lib/equations/tutor.ts`; the words are in `lib/equations/text-en.ts` and `text-fi.ts`. When editing them:
 
 - Explain *why*, not only *what*.
 - Never reveal the complete solution when correcting a mistake. Hints do that gradually.
 - Keep messages short, friendly and specific. Avoid repeating the same sentence for different mistakes.
 - Do not blame the learner. A valid but unhelpful move is "balanced, but not helpful", not "wrong".
+
+## Word-problem stories
+
+Stories are in `lib/tasks/stories.ts`. A story is a small function from numbers to a `Story`: the equation that is right (first), three wrong equations a learner might write, the solution, and for **each language** the situation, what x stands for, the question, the unit, one sentence on how the equation is built, and the finished answer. Rules:
+
+- Give it a tier (`difficulty`): 1 one step, 2 two steps, 3 x on both sides or brackets, 4 consecutive numbers, percentages and triangles, 5 brackets with two moving things, 6 fractions, ages and work.
+- The answer is a whole number. `sampleStory` re-solves the right equation and every wrong one, and a story whose wrong equation has the right solution is never shown.
+- Say the same numbers in both languages (a test compares them). Write decimals with a comma in Finnish (`0,75x`) and a point in English.
+- Add the story to `TEMPLATES` with the ranges its numbers are drawn from, and to the `StoryId` list.

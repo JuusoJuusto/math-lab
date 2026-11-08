@@ -32,8 +32,8 @@ describe("practice modes", () => {
   });
 
   it("only lists topics a mode can really produce tasks for", () => {
-    expect(topicsForMode(getMode("mistake")!)).toEqual(["two-step", "both"]);
-    expect(topicsForMode(getMode("equation")!)).toEqual(["word"]);
+    expect(topicsForMode(getMode("mistake")!)).toEqual(["two-step", "both", "fractions"]);
+    expect(topicsForMode(getMode("equation")!)).toEqual(["word", "hard-word"]);
     expect(topicsForMode(getMode("exam")!)).toEqual([...TOPIC_ORDER]);
   });
 });
@@ -45,7 +45,7 @@ describe("buildSession", () => {
       const specs = build(modeId, "all", mode.defaultCount, seed);
       expect(specs).toHaveLength(mode.defaultCount);
 
-      const tasks = specs.map(generateTask);
+      const tasks = specs.map((spec) => generateTask(spec));
       expect(new Set(tasks.map(taskFingerprint)).size, `${modeId} seed ${seed} repeats a task`).toBe(tasks.length);
       for (const spec of specs) expect(mode.kinds).toContain(spec.kind);
     }

@@ -2,29 +2,31 @@
 
 import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
 import { getTopic } from "@/content/topics";
+import { useI18n } from "@/hooks/useLang";
 import { getLevel } from "@/lib/equations";
-import { toHash } from "@/lib/routes";
 import { startSession } from "@/components/practice/start";
 import { TopicIcon } from "@/components/ui/icons";
+import { AppLink } from "@/components/ui/AppLink";
 
 export function LessonScreen({ topicId }: { topicId: string }) {
-  const topic = getTopic(topicId);
+  const { lang, t } = useI18n();
+  const topic = getTopic(topicId, lang);
   if (!topic) return null;
   const hasSolver = Boolean(getLevel(topic.id));
   const { before, mark, after } = topic.formula;
 
   return (
     <div className="panel">
-      <a className="back-link" href={toHash({ name: "learn" })}>
-        <ArrowLeft size={16} aria-hidden="true" /> All topics
-      </a>
+      <AppLink className="back-link" route={{ name: "learn" }}>
+        <ArrowLeft size={16} aria-hidden="true" /> {t.lesson.back}
+      </AppLink>
 
       <header className={`lesson-top mod-${topic.colour}`}>
         <span className="lesson-art" aria-hidden="true">
           <TopicIcon name={topic.icon} size={30} />
         </span>
         <div>
-          <p className="lesson-kicker">Quick lesson</p>
+          <p className="lesson-kicker">{t.lesson.kicker}</p>
           <h1>{topic.title}</h1>
           <p className="lesson-formula">
             {before}
@@ -37,7 +39,7 @@ export function LessonScreen({ topicId }: { topicId: string }) {
       <p className="lead">{topic.description}</p>
 
       <section className="lesson-card" aria-labelledby="ideas-title">
-        <h2 id="ideas-title">Key ideas</h2>
+        <h2 id="ideas-title">{t.lesson.keyIdeas}</h2>
         <ol className="lesson-list">
           {topic.lesson.map((line, index) => (
             <li key={line}>
@@ -48,20 +50,20 @@ export function LessonScreen({ topicId }: { topicId: string }) {
         </ol>
         <div className="example-box">
           <div className="example-label">
-            <Lightbulb size={16} aria-hidden="true" /> Remember
+            <Lightbulb size={16} aria-hidden="true" /> {t.lesson.remember}
           </div>
-          <p>Always perform the same operation on both sides of an equation to keep it balanced.</p>
+          <p>{t.lesson.rememberText}</p>
         </div>
       </section>
 
       <div className="action-row">
         {hasSolver && (
-          <a className="cta cta-inline" href={toHash({ name: "solver", level: topic.id })}>
-            Solve step by step <ArrowRight size={18} aria-hidden="true" />
-          </a>
+          <AppLink className="cta cta-inline" route={{ name: "solver", level: topic.id }}>
+            {t.lesson.solve} <ArrowRight size={18} aria-hidden="true" />
+          </AppLink>
         )}
         <button type="button" className={hasSolver ? "button-secondary" : "cta cta-inline"} onClick={() => startSession("exam", topic.id, 10)}>
-          Practise this topic
+          {t.lesson.practiseTopic}
           {!hasSolver && <ArrowRight size={18} aria-hidden="true" />}
         </button>
       </div>
