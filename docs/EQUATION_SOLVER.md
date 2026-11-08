@@ -1,8 +1,36 @@
 # Equation solver
 
-The equation solver is MathLab's interactive way of learning to solve linear equations in one variable. It is part of the normal topic navigation: the **One-step equations**, **Two-step equations** and **Variables on both sides** topics each host one solver level.
+The equation solver is MathLab's interactive way of learning to solve linear equations in one variable. It is part of the normal topic navigation: nine topics each host one solver level, from one-step equations to the hardest mixed equations and word problems. Everything it says is available in Finnish and English.
 
 This document explains how the solver teaches, how the equation engine works, how every move is validated, and how to extend or test it.
+
+## Ways to solve
+
+An equation can be solved in more than one way, and MathLab teaches the ones that are common in Finnish teaching of equations. They are not copied from any textbook: the wording and the exercises are MathLab's own.
+
+| Way | What the learner does | Written like this |
+| --- | --- | --- |
+| **Both sides** (vaakamenetelmä) | Chooses an operation and a number and does it to both sides | `3x − 5 = 6 \| + 5` |
+| **Flip a term** (siirtomenetelmä) | Taps a term; it crosses the equals sign and its sign changes | `3x = 6 + 5` |
+| **Work backwards** (käänteisoperaatiot) | Writes what happens to x as a chain, then undoes it from the end | `x → · 2 → + 5 → 17`, then `17 → − 5 → : 2 → x` |
+| **On a graph** | Looks at each side as a line; the solution is where they cross | check after solving |
+
+The first two are the same rule: a flip *is* the balance operation it stands for, shown in a shorter form. It is never applied by its own arithmetic. `flipOperation` turns the tap into an ordinary operation, `applyOperation` validates it, and the tutor judges it (`lib/equations/flip.ts`). The notebook notation `| + 5` is written beside the equation while a step is applied and in the step history. Work backwards (`lib/equations/methods.ts`) is available when x appears once on one side; its answer is accepted only if the engine agrees. The graph (`graphOf`) shows two lines that cross at one point, parallel lines (no solution) or one line twice (infinitely many).
+
+Equations that are written with brackets or fractions begin with a **clean-up**: the order Finnish textbooks use is *brackets first, then simplify, then balance*.
+
+## Clean-up questions (the prelude)
+
+An equation such as `3(x − 2) = 2x + 5` or `x/2 + x/3 = 5` is not yet in the form the balance moves work on. `makePrelude` (`lib/equations/prelude.ts`) turns the authored text into small questions:
+
+1. **Open the brackets** (`3(x − 2)` → `3x − 6`), left to right. Brackets after a minus (`− 2(x + 4)`), a negative number in front (`−2(x − 3)`) and a division (`(x + 1)/2`) are handled.
+2. **Simplify** each side that is still written out (`3x + 6 − 4` → `3x + 2`, `x/2 + x/3` → `5x/6`).
+
+Each is multiple choice with three plausible wrong answers, each with a *reason*: forgot to multiply a term (`3(x − 2) = 3x − 2`), lost a sign (`3x + 6`), added the denominators (`1/2 + 1/3 = 2/5`), or slipped in the arithmetic. A wrong choice is explained by its reason, counted as a mistake, and disabled; the learner tries again. Until the questions are answered, balance moves, flips, hints and undo are not available. The tests check, for every authored equation, that **every step is a true restatement of the equation** and that exactly one option equals the part it replaces.
+
+## Fractions
+
+With fractions, the first move is to multiply both sides by the common denominator (`commonDenominator`), so that everything is a whole number; then it is solved as before. `x/2 + 1/2 = 4` × 2 gives `x + 1 = 8`. A fraction as the *answer* (`x = 3/7`) is fine. A step such as dividing `2x + 5 = 17` by 2, which creates fractions where a whole-number route exists, is allowed but called "messy". Ratios (`x/6 = 4/3`) are solved the same way.
 
 ## What the learner experiences
 
@@ -29,13 +57,34 @@ Help is always available without giving the answer away:
 
 ## Learning levels
 
-| Level | Topic id | Equations | Steps | What it teaches |
-| --- | --- | --- | --- | --- |
-| 1. One-step | `one-step` | `x + 5 = 12`, `x − 7 = 9`, `3x = 21`, `x/4 = 6` | 1 | Inverse operations; isolating x |
-| 2. Two-step | `two-step` | `2x + 5 = 17`, `3x − 4 = 20`, `x/3 + 4 = 9` | 2 | Undoing operations in reverse order |
-| 3. Both sides | `both` | `5x + 2 = 3x + 12`, `−2x + 3 = 11`, `9x + 2 = 6x − 7` | 2–4 | Collecting x terms; negative constants, coefficients and solutions |
+| Level | Topic id | Equations | What it teaches |
+| --- | --- | --- | --- |
+| 1. One-step | `one-step` | `x + 5 = 12`, `3x = 21`, `x/4 = 6` | Inverse operations; isolating x |
+| 2. Two-step | `two-step` | `2x + 5 = 17`, `x/3 + 4 = 9` | Undoing operations in reverse order |
+| 3. Both sides | `both` | `5x + 2 = 3x + 12`, `−2x + 3 = 11` | Collecting x terms; negative numbers |
+| 4. Brackets | `brackets` | `3(x − 2) = 2x + 5`, `10 − 2(x + 1) = 4` | Opening brackets, signs, then balance |
+| 5. Fractions and ratios | `fractions` | `x/2 + x/3 = 5`, `(x + 1)/2 = 4`, `x/6 = 4/3` | Combining fractions, clearing denominators |
+| 6. Word problems | `word` | stories, tiers 1 to 3 | Writing the equation from a story, then solving it |
+| 7. No solution or infinitely many | `special` | `2x + 3 = 2x + 7`, `3(x + 1) = 3x + 3` | What it means when x disappears |
+| 8. Hard word problems | `hard-word` | stories, tiers 4 to 6 | Percentages, consecutive numbers, movement, ages, work |
+| 9. Challenge | `challenge` | `4(x − 3) − 2(x − 5) = x + 6`, `(x + 2)/3 = (x − 1)/2` | All of it together |
 
-A topic and its level share the same id. Levels are defined in `lib/equations/levels.ts`. Brackets and word problems are covered by the existing topics and quiz questions; they are not part of the solver yet (see the [roadmap](ROADMAP.md)).
+A topic and its level share the same id. Levels are defined in `lib/equations/levels.ts`.
+
+## Word problems: the equation is written from scratch
+
+In the two word-problem levels the learner reads a story, **writes the whole equation in a blank field**, and only then solves it. Nothing is filled in: no boxes, no template, no starting text. A keypad (x, + − · : ( ) = and a decimal sign) is there for phones. What was typed is read by `readWritten`, which accepts what people write (`2x+3=15`, `0,75x`, `x : 2`, `3(x + 1)`, a capital `X`) and says in the learner's language what cannot be read (no equals sign, a different letter, x times x).
+
+`judgeBuiltEquation` compares it with the story's own equation:
+
+| Verdict | Meaning |
+| --- | --- |
+| exact | The same equation, sides and terms in any order, with brackets opened or not |
+| equivalent | A different equation with the same solution, such as `2x = 12` for `2x + 3 = 15`; accepted, and then *the learner's* equation is solved |
+| answer given | x is already alone (`x = 6`): not accepted, because nothing is left to write |
+| wrong | A different solution, with a hint at what to look at: a sign, the two numbers swapped, or the total |
+
+Stories (`lib/tasks/stories.ts`) have six tiers, from `x/4 = 3` to "In 6 years Ella will be 3 times as old as she was 4 years ago". Every story carries a verified correct equation and wrong ones with other solutions, and says the same numbers in Finnish and English.
 
 ## The equation engine
 
@@ -51,8 +100,13 @@ The engine lives in `lib/equations/` and is plain TypeScript with no React or br
 | `check.ts` | Verification by substitution, laid out line by line. |
 | `format.ts` | Turns equations and operations into text and display tokens (one source for visuals, screen readers and feedback). |
 | `tutor.ts` | Judges moves, explains them, suggests the next move and writes the hints. |
-| `session.ts` | The state machine behind the workspace: apply, simplify, hint, undo, restart, check. |
-| `levels.ts` | The learning levels and exercise catalogue. |
+| `session.ts` | The state machine behind the workspace: the clean-up questions, apply, flip, simplify, hint, undo, restart, check, and answers found by working backwards. |
+| `flip.ts` | Flipping a term across the equals sign, and how it is shown. |
+| `prelude.ts` | The clean-up questions for brackets and fractions. |
+| `build.ts` | Reading an equation typed from scratch, and judging it against a story. |
+| `methods.ts` | Working backwards (the chain) and the graph. |
+| `text-*.ts` | Everything the tutor says, in each language. |
+| `levels.ts` | The nine learning levels and the exercise catalogue. |
 | `round.ts` | Picks the equations for a round and summarises it. |
 
 ### Exact numbers

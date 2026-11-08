@@ -221,7 +221,35 @@ export const fi: UiMessages = {
     skipCheck: (label) => `Ohita tarkistus ja ${label.toLowerCase()}`,
     nextEquation: "Seuraava yhtälö",
     finishLevel: "Päätä taso",
-    moveHow: "Miten haluat siirtää?",
+    moveHow: "Miten haluat ratkaista?",
+    moveChain: "Kumoa x:lle tehdyt asiat lopusta alkuun",
+    chain: {
+      intro: "Kirjoita, mitä x:lle tehdään alusta alkaen. Aloita sitten tuloksesta ja kumoa jokainen vaihe, viimeinen ensin.",
+      forward: "Mitä x:lle tehdään",
+      backward: "Kumoa lopusta alkuun",
+      result: "x =",
+      stepLabel: (n, from, op) => `Kumoa vaihe ${n}: ${from} ${op}`,
+      xLabel: "x:n arvo",
+      check: "Tarkista",
+      wrong: (n, from, op) => `Vaihe ${n} ei ole vielä oikein. Laske ${from} ${op} ja yritä uudelleen.`,
+      empty: "Täytä ensin jokainen ruutu.",
+    },
+    graph: {
+      show: "Näytä kuvaajana",
+      hide: "Piilota kuvaaja",
+      title: "Kumpikin puoli suorana",
+      left: (text) => `Vasen puoli: y = ${text}`,
+      right: (text) => `Oikea puoli: y = ${text}`,
+      meet: (x) => `Suorat leikkaavat kohdassa x = ${x}. Se on ratkaisu.`,
+      none: "Suorat ovat yhdensuuntaiset. Ne eivät leikkaa koskaan, joten ratkaisua ei ole.",
+      infinite: "Suorat ovat päällekkäin. Jokainen x on ratkaisu.",
+      alt: (kind) =>
+        kind === "one"
+          ? "Kuvaaja, jossa kaksi puolta näkyvät kahtena suorana, jotka leikkaavat yhdessä pisteessä."
+          : kind === "none"
+            ? "Kuvaaja, jossa kaksi puolta näkyvät kahtena yhdensuuntaisena suorana."
+            : "Kuvaaja, jossa kaksi puolta näkyvät yhtenä suorana, joka on piirretty kahdesti.",
+    },
     moveBalance: "Tee sama molemmille puolille",
     moveFlip: "Napauta termiä siirtääksesi sen yhtäsuuruusmerkin yli",
     flipHelp: "Napauta termiä yllä olevassa yhtälössä. Se siirtyy toiselle puolelle ja sen merkki vaihtuu.",

@@ -21,7 +21,7 @@ MathLab is a client-interactive Next.js application exported as a static site. T
 - `public/` static assets. `docs/` documentation.
 
 ```text
-address (#/practice/exam?...) ──► useRoute ──► App ──► screen
+address (/fi/practice/exam/?...) ──► useAddress ──► App ──► screen
                                                        │
 content/ (topics, quiz) ───────────────────────────────┤
 lib/tasks (generate, grade) ──► practice components ◄──┤
@@ -34,7 +34,7 @@ Two rules keep this maintainable. **Mathematics lives in `lib/equations/` and `l
 
 ## Navigation
 
-Screens are addressed with the URL hash (`#/learn/two-step`, `#/practice/exam?topic=both&n=20&seed=5`). Going to a screen adds a history entry, so the browser's Back button and the phone's back gesture work; a refresh or a shared link returns to the same screen. The server render and the first client render both show the home screen, so there is no hydration mismatch. See `lib/routes.ts` and `hooks/useRoute.ts`.
+Every screen is a real static page in each language (`/fi/learn/two-step/`, `/en/practice/exam/?topic=both&n=20&seed=5`). The address is the single source of truth for the screen **and** the language. Going to a screen uses `history.pushState`, so the browser's Back button and the phone's back gesture work; a refresh or a shared link returns to the same screen. The server build and the first client render use the address the page was built for (without the query), and the learner's query is read right after, so there is no hydration mismatch. See `lib/routes.ts`, `hooks/useRoute.ts` and [languages and addresses](LANGUAGES_AND_ROUTING.md).
 
 ## Learning flow
 
@@ -52,9 +52,13 @@ Screens are addressed with the URL hash (`#/learn/two-step`, `#/practice/exam?to
 | `one-step` | One-step equations | Level 1 |
 | `two-step` | Two-step equations | Level 2 |
 | `both` | Variables on both sides | Level 3 |
-| `brackets` | Equations with brackets | – |
+| `brackets` | Equations with brackets | Level 4 |
+| `fractions` | Fractions and ratios | Level 5 |
+| `word` | Word problems | Level 6 |
+| `special` | No solution or infinitely many | Level 7 |
+| `hard-word` | Hard word problems | Level 8 |
+| `challenge` | Challenge | Level 9 |
 | `proportion` | Proportional relationships | – |
-| `word` | Word problems | – |
 
 Topic ids are stored in learners' browsers, so they are stable. The former combined topic `simple` was split into `one-step` and `two-step`; stored progress for `simple` is mapped to `one-step`.
 

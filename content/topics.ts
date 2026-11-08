@@ -359,12 +359,12 @@ export const topicDefinitions: readonly TopicDefinition[] = [
     id: "hard-word",
     colour: "teal",
     icon: "Puzzle",
-    formula: { before: "", mark: "x", after: " + (x + 1) + (x + 2) = 48" },
+    formula: { before: "", mark: "3x/4", after: " = 60" },
     text: {
       en: {
         title: "Hard word problems",
         subtitle: "Brackets, percentages and speed",
-        caption: "write it all yourself",
+        caption: "longer stories",
         description: "Longer stories with brackets, percentages, consecutive numbers and things that move. You write the whole equation yourself.",
         lesson: [
           "Say in words what each part of the story is worth.",
@@ -376,7 +376,7 @@ export const topicDefinitions: readonly TopicDefinition[] = [
       fi: {
         title: "Vaativat sanalliset tehtävät",
         subtitle: "Sulkuja, prosentteja ja nopeutta",
-        caption: "kirjoita kaikki itse",
+        caption: "pidemmät tarinat",
         description: "Pidempiä tarinoita, joissa on sulkuja, prosentteja, peräkkäisiä lukuja ja liikettä. Kirjoitat koko yhtälön itse.",
         lesson: [
           "Kerro sanoin, mitä jokainen tarinan osa on.",
@@ -391,7 +391,7 @@ export const topicDefinitions: readonly TopicDefinition[] = [
     id: "challenge",
     colour: "red",
     icon: "Flame",
-    formula: { before: "", mark: "3(x − 2)", after: " − (x + 1)/2 = 7" },
+    formula: { before: "", mark: "3(x − 2)", after: " = x/2" },
     text: {
       en: {
         title: "Challenge",

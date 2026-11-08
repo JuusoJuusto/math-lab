@@ -15,12 +15,12 @@
  */
 
 import type { Lang } from "../lang";
-import type { Equation } from "./expression";
+import { expr, type Equation } from "./expression";
 import { evaluateFlip, flipOperation, formatFlipPreview, type FlipTarget } from "./flip";
 import { formatBar, formatEquation } from "./format";
 import { operationKey, type AppliedStep, type Operation } from "./operations";
 import type { Prelude, PreludeStep } from "./prelude";
-import { solvedValue, terminalState, type TerminalState } from "./solve";
+import { isSolution, solvedValue, terminalState, type TerminalState } from "./solve";
 import { engineText } from "./text";
 import {
   describeNextStep,
@@ -82,6 +82,10 @@ export interface SessionState {
 }
 
 export type SessionAction =
+  /** The learner found x another way (working backwards). Accepted only when it really is the solution. */
+  | { readonly type: "answer"; readonly value: Fraction }
+  /** A wrong try in another way of solving, which counts as a mistake. */
+  | { readonly type: "miss" }
   /** Answer the current prelude question by choosing one of its options. */
   | { readonly type: "prelude"; readonly choice: number }
   | { readonly type: "apply"; readonly operation: Operation }
@@ -246,6 +250,20 @@ function answerPrelude(state: SessionState, choice: number): SessionState {
   };
 }
 
+/** The learner reached x some other way. If it is the solution, the equation is solved. */
+function acceptAnswer(state: SessionState, value: Fraction): SessionState {
+  if (!isSolution(state.current, value)) return { ...state, mistakes: state.mistakes + 1 };
+  const solved: Equation = { left: expr(1, 0), right: expr(0, value) };
+  return {
+    ...state,
+    current: solved,
+    outcome: "solved",
+    hintLevel: 0,
+    lastRejected: null,
+    notice: terminalNotice("solved", solved, state.lang),
+  };
+}
+
 function simplifyPending(state: SessionState): SessionState {
   const { pending } = state;
   if (!pending) return state;
@@ -294,6 +312,10 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
   switch (action.type) {
     case "prelude":
       return answerPrelude(state, action.choice);
+    case "miss":
+      return state.outcome === "solving" && state.pending === null ? { ...state, mistakes: state.mistakes + 1 } : state;
+    case "answer":
+      return state.outcome === "solving" && state.pending === null ? acceptAnswer(state, action.value) : state;
     case "apply":
       return state.outcome === "solving" && state.pending === null ? applyMove(state, action.operation) : state;
     case "flip":

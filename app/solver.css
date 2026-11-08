@@ -422,3 +422,45 @@
 .key:active { transform: translateY(1px); }
 .key:focus-visible { outline: 3px solid #0c5e9a; outline-offset: 2px; }
 .key-delete { color: var(--s-teal); }
+
+/* ---------- Work backwards (käänteisoperaatiot) and the graph ---------- */
+
+.chain { display: grid; gap: 14px; min-width: 0; padding: 18px; border: 2px solid var(--s-card-line); border-radius: var(--radius); background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08); }
+.chain-row { display: grid; gap: 8px; }
+.chain-label { color: var(--s-muted); font-size: 12px; font-weight: 800; }
+.chain-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; margin: 0; padding: 0; list-style: none; }
+.chain-step { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; color: #6a8796; }
+.chain-chip {
+  display: inline-grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0 12px; border-radius: 12px; background: #eef4f6;
+  color: var(--s-ink); font: 600 22px var(--font-display);
+}
+.chain-x { background: #e8f1ff; color: #1d4fa8; font-style: italic; }
+.chain-op { background: var(--s-applied-bg); color: var(--s-applied-ink); }
+.chain-end { background: #e8f7ef; color: #14573b; }
+.chain-input {
+  width: 84px; min-height: 48px; border: 2px solid #c3d8de; border-radius: 12px; background: #fff; color: var(--s-ink);
+  font: 600 22px var(--font-display); text-align: center;
+}
+.chain-input:focus-visible { outline: 3px solid #0c5e9a; outline-offset: 2px; }
+.chain-input.ok { border-color: #5fb88a; background: #f1fbf5; }
+.chain-input.wrong { border-color: #d46a72; background: #fff5f5; }
+
+.graph { display: grid; gap: 10px; justify-items: start; }
+.graph-body { display: grid; gap: 8px; width: 100%; padding: 14px; border: 2px solid var(--s-card-line); border-radius: var(--radius); background: #fff; }
+.graph-svg { width: 100%; max-width: 520px; height: auto; background: #fbfdfe; border-radius: 10px; }
+.graph-grid { stroke: #e3edf1; stroke-width: 1; }
+.graph-axis { stroke: #8fa7b4; stroke-width: 1.5; }
+.graph-tick { fill: #6a8796; font: 600 10px var(--font-display); }
+.graph-line { stroke-width: 3.5; stroke-linecap: round; }
+line.graph-left { stroke: #2f6edb; }
+line.graph-right { stroke: #f39a14; }
+.swatch { display: inline-block; width: 22px; height: 6px; margin-right: 6px; border-radius: 99px; vertical-align: middle; }
+.swatch.graph-left { background: #2f6edb; }
+.swatch.graph-right { background: #f39a14; }
+.graph-meet { fill: #cf2234; stroke: #fff; stroke-width: 2; }
+.graph-meet-label { fill: var(--s-ink); font: 700 13px var(--font-display); }
+.graph-legend { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font: 600 15px var(--font-display); color: var(--s-ink); }
+@media (max-width: 560px) {
+  .move-options { flex-wrap: wrap; }
+  .chain-input { width: 72px; }
+}

@@ -51,7 +51,7 @@ export interface EngineText {
   /** "Add", "Subtract", ... exactly as they appear on the operation buttons. */
   readonly kindNames: Record<OperationKind, string>;
   /** The names of the two ways of moving: the same on both sides, or flipping a term across. */
-  readonly modeNames: { readonly balance: string; readonly flip: string };
+  readonly modeNames: { readonly balance: string; readonly flip: string; readonly chain: string };
   /** "add 5 to both sides", lower case, ready for a sentence. */
   readonly phrase: (kind: OperationKind, amount: string) => string;
   /** Rewrites maths text so that screen readers pronounce it sensibly. */

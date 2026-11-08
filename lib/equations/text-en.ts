@@ -21,7 +21,7 @@ export const en: EngineText = {
   times: "×",
   divide: "÷",
   kindNames: { add: "Add", subtract: "Subtract", multiply: "Multiply", divide: "Divide" },
-  modeNames: { balance: "Both sides", flip: "Flip a term" },
+  modeNames: { balance: "Both sides", flip: "Flip a term", chain: "Work backwards" },
 
   phrase(kind, amount) {
     switch (kind) {

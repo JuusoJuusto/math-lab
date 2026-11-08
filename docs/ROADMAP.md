@@ -4,7 +4,7 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 
 ## Learning experience
 
-- [x] Topic catalogue with seven introductory learning areas
+- [x] Topic catalogue with eleven learning areas, in Finnish and English
 - [x] Short lesson notes and worked explanations
 - [x] Multiple-choice practice with immediate feedback
 - [x] End-of-round results screen
@@ -14,10 +14,14 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 - [x] Verification of a solution by substitution
 - [x] Typed numeric answers
 - [ ] Typed algebraic answers (the learner writes an expression or an equation)
-- [ ] Brackets in the equation solver (an "expand brackets" operation)
-- [ ] Solver equations with fractions and decimals
-- [ ] Optional challenge: equations with no solution or infinitely many solutions (the engine already supports them)
-- [ ] Solver word problems: write the equation, then solve it
+- [x] Brackets in the equation solver (clean-up questions: open the brackets, simplify)
+- [x] Solver equations with fractions and ratios (clear the denominators first)
+- [x] A level on equations with no solution or infinitely many solutions
+- [x] Solver word problems: write the whole equation from a blank field, then solve it (two levels, six tiers)
+- [x] A challenge level of long mixed equations
+- [x] Several ways to solve: both sides with the `| + 5` notation, flipping a term, working backwards, and checking on a graph
+- [ ] Solver equations with decimals (decimals work in typed equations, but not as exercises)
+- [ ] Trial and improvement ("guess and check") as another way to solve
 - [x] Mistake review and retry queue ("Fix your mistakes")
 - [x] Varied task types for exam practice: typed answers, true or false, which step, find the mistake, write the equation, time attack, daily challenge
 - [x] XP and levels
@@ -28,6 +32,7 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 
 - [ ] Interactive balance-scale model for equations
 - [ ] Proportionality tables with editable values
+- [x] A graph of each side of an equation, crossing at the solution
 - [ ] Coordinate-plane graphs for direct and inverse proportion
 - [ ] Visual fraction and ratio models
 - [x] Equation transformation history with undo
@@ -38,7 +43,8 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 - [ ] Topic-level mastery and learning streaks
 - [ ] Export and import local progress
 - [ ] Optional account sync, only if a backend is introduced
-- [ ] English and Finnish content packs
+- [x] Finnish and English for the whole interface, the tutor, tasks, stories and lessons, with their own addresses (`/fi/`, `/en/`)
+- [ ] Further languages (the structure is ready: see the languages guide)
 - [ ] Teacher-friendly assignment mode
 
 ## Product principles

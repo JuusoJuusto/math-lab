@@ -226,7 +226,35 @@ export const en = {
     skipCheck: (label: string) => `Skip the check and ${label.toLowerCase()}`,
     nextEquation: "Next equation",
     finishLevel: "Finish level",
-    moveHow: "How do you want to move?",
+    moveHow: "How do you want to solve it?",
+    moveChain: "Undo what was done to x, from the end",
+    chain: {
+      intro: "Write what happens to x from the start. Then start at the result and undo each step, the last one first.",
+      forward: "What happens to x",
+      backward: "Undo it, last step first",
+      result: "x =",
+      stepLabel: (n: number, from: string, op: string) => `Undo step ${n}: ${from} ${op}`,
+      xLabel: "The value of x",
+      check: "Check",
+      wrong: (n: number, from: string, op: string) => `Step ${n} is not right yet. Work out ${from} ${op} and try again.`,
+      empty: "Fill in every box first.",
+    },
+    graph: {
+      show: "Show it on a graph",
+      hide: "Hide the graph",
+      title: "Each side as a line",
+      left: (text: string) => `Left side: y = ${text}`,
+      right: (text: string) => `Right side: y = ${text}`,
+      meet: (x: string) => `The lines cross at x = ${x}. That is the solution.`,
+      none: "The lines are parallel. They never cross, so there is no solution.",
+      infinite: "The lines lie on top of each other. Every x is a solution.",
+      alt: (kind: "one" | "none" | "infinite"): string =>
+        kind === "one"
+          ? "A graph of the two sides as two lines that cross at one point."
+          : kind === "none"
+            ? "A graph of the two sides as two parallel lines."
+            : "A graph of the two sides as one line drawn twice.",
+    },
     moveBalance: "Do the same thing to both sides",
     moveFlip: "Tap a term to flip it across the equals sign",
     flipHelp: "Tap a term in the equation above. It moves to the other side and its sign flips.",

@@ -15,6 +15,7 @@ export * from "./format";
 export * from "./check";
 export * from "./tutor";
 export * from "./flip";
+export * from "./methods";
 export * from "./build";
 export { engineText, type EngineText } from "./text";
 export * from "./levels";

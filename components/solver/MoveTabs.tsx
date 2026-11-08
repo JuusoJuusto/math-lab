@@ -1,15 +1,17 @@
 "use client";
 
 import { useId, type ReactNode } from "react";
-import { ArrowLeftRight, Scale } from "lucide-react";
+import { ArrowLeftRight, Scale, Undo2 } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import { engineText } from "@/lib/equations";
 
-export type MoveMode = "balance" | "flip";
+export type MoveMode = "balance" | "flip" | "chain";
 
 interface MoveTabsProps {
   mode: MoveMode;
   onChange: (mode: MoveMode) => void;
+  /** Whether "work backwards" is offered: x must appear once, on one side. */
+  canChain?: boolean;
   /** Controls shown at the end of the row, such as the hint button. */
   children?: ReactNode;
 }
@@ -18,7 +20,7 @@ interface MoveTabsProps {
  * The two ways to move: do the same to both sides, or flip a term across the
  * equals sign. Native radio buttons, so arrow keys and screen readers work.
  */
-export function MoveTabs({ mode, onChange, children }: MoveTabsProps) {
+export function MoveTabs({ mode, onChange, canChain = false, children }: MoveTabsProps) {
   const { lang, t } = useI18n();
   const name = useId();
   const names = engineText(lang).modeNames;
@@ -26,6 +28,7 @@ export function MoveTabs({ mode, onChange, children }: MoveTabsProps) {
   const options: readonly { id: MoveMode; label: string; description: string; icon: ReactNode }[] = [
     { id: "balance", label: names.balance, description: t.solver.moveBalance, icon: <Scale size={18} aria-hidden="true" /> },
     { id: "flip", label: names.flip, description: t.solver.moveFlip, icon: <ArrowLeftRight size={18} aria-hidden="true" /> },
+    ...(canChain ? [{ id: "chain" as const, label: names.chain, description: t.solver.moveChain, icon: <Undo2 size={18} aria-hidden="true" /> }] : []),
   ];
 
   return (

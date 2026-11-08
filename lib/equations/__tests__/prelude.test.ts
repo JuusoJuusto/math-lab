@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { equalsEquation } from "../expression";
 import { formatEquation } from "../format";
 import { parseEquation, parseExpression } from "../parse";
+import { frac } from "../fraction";
 import { operation } from "../operations";
 import { makePrelude, preludeTarget, splitTerms } from "../prelude";
 import {
@@ -240,4 +241,31 @@ describe("brackets after a minus", () => {
       }
     },
   );
+});
+
+describe("finding x another way (working backwards)", () => {
+  const start = () => createSession(preludeTarget("2x + 5 = 17"));
+
+  it("accepts the solution and ends the exercise as solved, without balance steps", () => {
+    const state = sessionReducer(start(), { type: "answer", value: frac(6) });
+    expect(state.outcome).toBe("solved");
+    expect(formatEquation(state.current)).toBe("x = 6");
+    expect(state.mistakes).toBe(0);
+    expect(state.steps).toHaveLength(0);
+    expect(state.notice?.tone).toBe("success");
+  });
+
+  it("counts a wrong answer as a mistake and leaves the equation alone", () => {
+    const state = sessionReducer(start(), { type: "answer", value: frac(7) });
+    expect(state.outcome).toBe("solving");
+    expect(state.mistakes).toBe(1);
+    expect(sessionReducer(state, { type: "miss" }).mistakes).toBe(2);
+  });
+
+  it("is ignored once solved, and while a move is waiting", () => {
+    const solved = sessionReducer(start(), { type: "answer", value: frac(6) });
+    expect(sessionReducer(solved, { type: "answer", value: frac(7) })).toBe(solved);
+    const pending = sessionReducer(start(), { type: "apply", operation: operation("subtract", 5) });
+    expect(sessionReducer(pending, { type: "answer", value: frac(6) })).toBe(pending);
+  });
 });

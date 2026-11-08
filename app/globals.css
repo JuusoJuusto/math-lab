@@ -680,7 +680,8 @@ button:disabled {
 .module-formula {
   position: relative;
   z-index: 1;
-  font: 600 clamp(20px, 15cqi, 40px) / 1.1 var(--font-display);
+  /* Long formulas shrink to fit the card: about half an em per character. */
+  font: 600 clamp(14px, calc(100cqi / (0.46 * var(--len, 10) + 1)), 40px) / 1.1 var(--font-display);
   white-space: nowrap;
 }
 

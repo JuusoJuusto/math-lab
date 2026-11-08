@@ -6,6 +6,7 @@ import { useI18n } from "@/hooks/useLang";
 import {
   canGetHint,
   canUndo,
+  chainOf,
   createSession,
   currentPreludeStep,
   hintsWithFlip,
@@ -21,7 +22,9 @@ import { PreludeCard } from "./PreludeCard";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
 import { MoveTabs, type MoveMode } from "./MoveTabs";
+import { GraphView } from "./GraphView";
 import { OperationPicker } from "./OperationPicker";
+import { ReverseChain } from "./ReverseChain";
 import { StepHistory } from "./StepHistory";
 import { SubstitutionCheck } from "./SubstitutionCheck";
 
@@ -61,8 +64,11 @@ export function SolverWorkspace({
   const { lang, t } = useI18n();
   const [state, dispatch] = useReducer(sessionReducer, equation, (start: Equation) => createSession(start, lang, prelude ?? null));
   const [ownMode, setOwnMode] = useState<MoveMode>("balance");
-  const moveMode = controlledMode ?? ownMode;
+  const chosenMode = controlledMode ?? ownMode;
   const changeMode = onMoveModeChange ?? setOwnMode;
+  // "Work backwards" needs x once, on one side; if the equation no longer fits, the usual way takes over.
+  const chain = state.pending ? null : chainOf(state.current);
+  const moveMode: MoveMode = chosenMode === "chain" && !chain ? "balance" : chosenMode;
 
   const root = useRef<HTMLDivElement>(null);
   const simplifyButton = useRef<HTMLButtonElement>(null);
@@ -149,6 +155,7 @@ export function SolverWorkspace({
           </section>
         ) : finished ? (
           <>
+            <GraphView equation={state.start} />
             {solution && (
               <SubstitutionCheck
                 original={state.start}
@@ -173,10 +180,16 @@ export function SolverWorkspace({
           </>
         ) : (
           <>
-            <MoveTabs mode={moveMode} onChange={changeMode}>
+            <MoveTabs mode={moveMode} onChange={changeMode} canChain={chain !== null}>
               {moveMode === "flip" ? hintButton : null}
             </MoveTabs>
-            {moveMode === "flip" ? (
+            {moveMode === "chain" && chain ? (
+              <ReverseChain
+                chain={chain}
+                onSolved={(value) => dispatch({ type: "answer", value })}
+                onMiss={() => dispatch({ type: "miss" })}
+              />
+            ) : moveMode === "flip" ? (
               <p className="flip-help">{t.solver.flipHelp}</p>
             ) : (
               <OperationPicker

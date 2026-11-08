@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Check } from "lucide-react";
 import type { Topic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
@@ -15,7 +15,7 @@ export function ModuleCard({ topic, done }: { topic: Topic; done: boolean }) {
   return (
     <AppLink className={`module mod-${topic.colour}`} route={{ name: "lesson", topic: topic.id }}>
       <span className="module-art">
-        <span className="module-formula">
+        <span className="module-formula" style={{ "--len": before.length + mark.length + after.length } as CSSProperties}>
           {before}
           <mark>{mark}</mark>
           {after}
