@@ -81,11 +81,11 @@ MathLab belongs to the same learning-app family as **GeoMaster** and **MasterMod
 | Styling | Tailwind CSS 4 and project CSS |
 | Icons | Lucide (never emojis) |
 | Typography | Fredoka Variable and Open Sans Variable |
-| Hosting target | Cloudflare Workers static assets |
+| Hosting target | Docker + Nginx (Coolify), with static export |
 | Persistence | Browser `localStorage` |
 | Tests | Vitest and React Testing Library |
 
-The application uses Next.js static export. The first release does not require an API, database, account system or environment secrets.
+The application uses Next.js static export. It can be deployed as a Docker container with Nginx on Coolify, or to Cloudflare Workers static assets. The first release does not require an API, database, account system or environment secrets.
 
 ## Getting started
 
