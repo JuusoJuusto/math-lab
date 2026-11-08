@@ -19,6 +19,13 @@ function setup(source: string, lang: "en" | "fi" = "en") {
   return { user, onContinue };
 }
 
+/** A heading by its text; the questions use non-breaking spaces inside an expression, so any space matches. */
+const heading = (text: string | RegExp) => {
+  const source = typeof text === "string" ? text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") : text.source;
+  return screen.getByRole("heading", { name: new RegExp(source.replace(/ /g, "\\s")) });
+};
+const noHeading = (text: RegExp) => screen.queryByRole("heading", { name: new RegExp(text.source.replace(/ /g, "\\s")) });
+
 const options = () => screen.getAllByRole("button").filter((button) => button.classList.contains("answer"));
 /** Clicks the answer with exactly this text. */
 const choose = (user: ReturnType<typeof userEvent.setup>, text: string) => {
@@ -32,7 +39,7 @@ describe("an equation written with brackets", () => {
     setup("3(x - 2) = 2x + 5");
     expect(screen.getByRole("region", { name: "The equation as it is written" })).toBeTruthy();
     expect(document.querySelector(".eq-written .mathline-row")?.textContent).toBe("3(x − 2)=2x + 5");
-    expect(screen.getByRole("heading", { name: "Open the brackets in 3(x − 2). What do you get?" })).toBeTruthy();
+    expect(heading("Open the brackets in 3(x − 2). What do you get?")).toBeTruthy();
     expect(options()).toHaveLength(4);
     // The solving controls are not there yet.
     expect(screen.queryByRole("button", { name: "Apply to both sides" })).toBeNull();
@@ -46,7 +53,7 @@ describe("an equation written with brackets", () => {
     const tried = options().find((button) => button.querySelector(".answer-text")?.textContent === "3x − 2")!;
     expect((tried as HTMLButtonElement).disabled).toBe(true);
     expect(tried.classList.contains("wrong")).toBe(true);
-    expect(screen.getByRole("heading", { name: /Open the brackets in 3\(x − 2\)/ })).toBeTruthy();
+    expect(heading(/Open the brackets in 3\(x − 2\)/)).toBeTruthy();
   });
 
   it("goes on to the balance moves after the right answer, with the clean-up written in the steps", async () => {
@@ -54,7 +61,7 @@ describe("an equation written with brackets", () => {
     await choose(user, "3x − 6");
 
     // The question is gone and the equation is in simple form.
-    expect(screen.queryByRole("heading", { name: /Open the brackets/ })).toBeNull();
+    expect(noHeading(/Open the brackets/)).toBeNull();
     expect(spokenEquation()).toBe("Current equation: 3x minus 6 equals 2x plus 5");
     expect(screen.getByRole("radio", { name: "Subtract" })).toBeTruthy();
     // The history shows the equation as written, and the clean-up step.
@@ -75,9 +82,9 @@ describe("an equation written with brackets", () => {
   it("asks a second question for a side that still needs simplifying: 3(x + 2) − 4 = 11", async () => {
     const { user } = setup("3(x + 2) - 4 = 11");
     await choose(user, "3x + 6");
-    expect(screen.getByRole("heading", { name: "Simplify 3x + 6 − 4. What do you get?" })).toBeTruthy();
+    expect(heading("Simplify 3x + 6 − 4. What do you get?")).toBeTruthy();
     await choose(user, "3x + 2");
-    expect(screen.queryByRole("heading", { name: /Simplify/ })).toBeNull();
+    expect(noHeading(/Simplify/)).toBeNull();
     expect(spokenEquation()).toBe("Current equation: 3x plus 2 equals 11");
   });
 
@@ -91,7 +98,7 @@ describe("an equation written with brackets", () => {
 
   it("works in Finnish", async () => {
     const { user } = setup("3(x - 2) = 2x + 5", "fi");
-    expect(screen.getByRole("heading", { name: "Poista sulut lausekkeesta 3(x − 2). Mitä saat?" })).toBeTruthy();
+    expect(heading("Poista sulut lausekkeesta 3(x − 2). Mitä saat?")).toBeTruthy();
     expect(screen.getByRole("region", { name: "Yhtälö kirjoitettuna" })).toBeTruthy();
     await choose(user, "3x − 2");
     expect(document.querySelector(".notice")?.textContent).toContain("kertoo jokaisen sulkujen sisällä olevan termin");
@@ -101,7 +108,7 @@ describe("an equation written with brackets", () => {
 describe("a fraction equation", () => {
   it("asks to simplify, with 'add the denominators' as a tempting wrong answer, and the first move is the common denominator", async () => {
     const { user } = setup("x/2 + x/3 = 5");
-    expect(screen.getByRole("heading", { name: "Simplify x/2 + x/3. What do you get?" })).toBeTruthy();
+    expect(heading("Simplify x/2 + x/3. What do you get?")).toBeTruthy();
     await choose(user, "2x/5");
     expect(document.querySelector(".notice")?.textContent).toContain("cannot add fractions by adding the denominators");
     await choose(user, "5x/6");
