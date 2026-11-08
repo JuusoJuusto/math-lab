@@ -22,6 +22,7 @@ import { operationKey, type AppliedStep, type Operation } from "./operations";
 import type { Prelude, PreludeStep } from "./prelude";
 import { isSolution, solvedValue, terminalState, type TerminalState } from "./solve";
 import { engineText } from "./text";
+import { preludeWords } from "./prelude-words";
 import {
   describeNextStep,
   evaluateMove,
@@ -235,7 +236,6 @@ function answerPrelude(state: SessionState, choice: number): SessionState {
     };
   }
 
-  const explain = step.kind === "expand" ? text.prelude.expandRight : text.prelude.simplifyRight;
   const index = state.preludeIndex + 1;
   const last = index >= (state.prelude?.steps.length ?? 0);
   return {
@@ -245,7 +245,7 @@ function answerPrelude(state: SessionState, choice: number): SessionState {
     notice: {
       tone: "success",
       title: text.tutor.praise[(index - 1) % text.tutor.praise.length],
-      body: [explain(step.part, step.result), ...(last ? [text.prelude.done] : [])],
+      body: [preludeWords(state.lang).right(step), ...(last ? [text.prelude.done] : [])],
     },
   };
 }

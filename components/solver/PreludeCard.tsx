@@ -2,7 +2,7 @@
 
 import { Check, X } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
-import { engineText, type PreludeStep } from "@/lib/equations";
+import { preludeWords, type PreludeStep } from "@/lib/equations";
 import { DistributeArrows } from "./DistributeArrows";
 
 interface PreludeCardProps {
@@ -20,13 +20,13 @@ interface PreludeCardProps {
  */
 export function PreludeCard({ step, wrong, onChoose }: PreludeCardProps) {
   const { lang } = useI18n();
-  const words = engineText(lang).prelude;
+  const words = preludeWords(lang);
   // Non-breaking spaces keep an expression such as 2(x + 3) together when the question wraps on a narrow screen.
-  const part = step.part.replace(/ /g, "\u00a0");
-  const question = step.kind === "expand" ? words.expandQuestion(part) : words.simplifyQuestion(part);
+  const part = words.local(step.part).replace(/ /g, "\u00a0");
+  const question = words.question(step, part);
 
   return (
-    <section className="prelude" aria-label={step.kind === "expand" ? words.expandStage : words.simplifyStage}>
+    <section className="prelude" aria-label={words.stage(step)}>
       <h3 className="prelude-question">{question}</h3>
       {step.kind === "expand" && <DistributeArrows part={step.part} />}
       <ul className="answers answers-prelude">
@@ -38,7 +38,7 @@ export function PreludeCard({ step, wrong, onChoose }: PreludeCardProps) {
                 <span className="answer-number" aria-hidden="true">
                   {tried ? <X size={16} /> : index + 1}
                 </span>
-                <span className="answer-text">{option.text}</span>
+                <span className="answer-text">{words.local(option.text)}</span>
               </button>
             </li>
           );

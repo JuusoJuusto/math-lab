@@ -199,3 +199,12 @@ export function describeOperation(op: Operation, lang: Lang = "en"): string {
 export function toSpeech(text: string, lang: Lang = "en"): string {
   return engineText(lang).speech(text);
 }
+
+/**
+ * Finnish writes the decimal separator as a comma: 0,5x + 1,2 = 3,7. The maths
+ * is the same in both languages, so numbers are kept with a point inside the
+ * engine and only drawn with a comma when they are shown in Finnish.
+ */
+export function localiseDecimals(text: string, lang: Lang = "en"): string {
+  return lang === "fi" ? text.replace(/(\d)\.(\d)/g, "$1,$2") : text;
+}

@@ -133,8 +133,11 @@ export interface EngineText {
     readonly simplifyQuestion: (part: string) => string;
     readonly expandRight: (part: string, result: string) => string;
     readonly simplifyRight: (part: string, result: string) => string;
+    readonly decimalsStage: string;
+    readonly decimalsQuestion: (part: string, factor: number) => string;
+    readonly decimalsRight: (part: string, result: string, factor: number) => string;
     readonly wrongTitle: string;
-    readonly wrong: Record<"forgot-term" | "sign" | "denominators" | "arithmetic", string>;
+    readonly wrong: Record<"forgot-term" | "sign" | "denominators" | "arithmetic" | "decimal-term" | "decimal-point", string>;
     readonly done: string;
   };
 

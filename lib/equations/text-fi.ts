@@ -209,6 +209,10 @@ export const fi: EngineText = {
     expandRight: (part, result) =>
       `Jokainen sulkujen sisällä oleva termi kerrotaan sulkujen edessä olevalla luvulla: ${part} = ${result}.`,
     simplifyRight: (part, result) => `Yhdistä samanmuotoiset termit: ${part} = ${result}.`,
+    decimalsStage: "Poista desimaalit",
+    decimalsQuestion: (part, factor) => `Kerro yhtälön ${part} jokainen termi luvulla ${factor}, jotta desimaalit häviävät. Mitä saat?`,
+    decimalsRight: (part, result, factor) =>
+      `Kun jokainen termi kerrotaan luvulla ${factor}, jokainen desimaalipilkku siirtyy ja yhtälö pysyy tosi: ${part} muuttuu muotoon ${result}.`,
     wrongTitle: "Ei ihan",
     wrong: {
       "forgot-term": "Sulkujen edessä oleva luku kertoo jokaisen sulkujen sisällä olevan termin, ei vain yhtä.",
@@ -216,6 +220,8 @@ export const fi: EngineText = {
       denominators:
         "Murtolukuja ei lasketa yhteen laskemalla nimittäjät yhteen. Käytä yhteistä nimittäjää ja laske sitten osoittajat yhteen.",
       arithmetic: "Tarkista laskut: käy termit läpi yksi kerrallaan.",
+      "decimal-term": "Jokainen termi molemmilla puolilla pitää kertoa, ei vain desimaalilukuja.",
+      "decimal-point": "Tarkista, mihin desimaalipilkku siirtyy: kertominen luvulla 10 siirtää sitä yhden paikan, luvulla 100 kaksi paikkaa.",
     },
     done: "Yhtälö on nyt yksinkertaisessa muodossa. Ratkaise se.",
   },

@@ -13,9 +13,12 @@ An equation can be solved in more than one way, and MathLab teaches the ones tha
 | **Both sides** (vaakamenetelmä) | Chooses an operation and a number and does it to both sides | `3x − 5 = 6 \|\| + 5` |
 | **Flip a term** (siirtomenetelmä) | Taps a term; it crosses the equals sign and its sign changes | `3x = 6 + 5` |
 | **Work backwards** (käänteisoperaatiot) | Writes what happens to x as a chain, then undoes it from the end | `x → · 2 → + 5 → 17`, then `17 → − 5 → : 2 → x` |
+| **Guess and check** (kokeilu) | Tries a value for x, sees both sides, and improves the guess | a table of guesses, with "try a larger / smaller x" |
 | **On a graph** | Looks at each side as a line; the solution is where they cross | check after solving |
 
 The first two are the same rule: a flip *is* the balance operation it stands for, shown in a shorter form. It is never applied by its own arithmetic. `flipOperation` turns the tap into an ordinary operation, `applyOperation` validates it, and the tutor judges it (`lib/equations/flip.ts`). The notebook notation `|| + 5` is written beside the equation while a step is applied and in the step history. Work backwards (`lib/equations/methods.ts`) is available when x appears once on one side; its answer is accepted only if the engine agrees. The graph (`graphOf`) shows two lines that cross at one point, parallel lines (no solution) or one line twice (infinitely many).
+
+**Guess and check.** `guessVerdict` (`lib/equations/methods.ts`) says whether a guess is right, or whether x has to be larger or smaller. Each side of a linear equation is a straight line in x, so the sign of the difference between the sides and the sign of the slope (the x of the left side minus the x of the right side) decide the direction. A test checks the advice against the real solution for 4,000 random equations and guesses. A wrong guess is not a mistake; only a guess that makes both sides equal ends the exercise, and it goes through the same `answer` action as working backwards, so the engine still has to agree. It is offered only for an equation with exactly one solution.
 
 **Another way (Tapa 2).** The order of the steps is a choice: `4x − 1 = x − 7` can start by taking x away or by adding 1. `waysToSolve` (`lib/equations/ways.ts`) builds the tutor's route and, when one exists, a second route that begins with a different move the tutor also recommends. The worked example shows it once the first route is solved. A test builds both routes for 2,000 random equations and checks that each ends with x alone and keeps the solution.
 
@@ -23,7 +26,15 @@ The first two are the same rule: a flip *is* the balance operation it stands for
 
 **When x is not the answer.** Some stories ask for something worked out from x (the dearer of two prices, the longest side). Such a story has a `final` value; after solving, the learner must answer the question itself, and typing x is explained as "not the answer yet". Practice tasks grade `final` too.
 
+**Arrows over a bracket.** While the brackets of `3(x − 2)` are opened, an arrow is drawn from the number to every term inside (`DistributeArrows`), as in a textbook, so no term is forgotten. `distributionOf` reads the part; a division such as `(x + 1)/2` has no arrows.
+
+**True or false.** When x has dropped out (`3 = 7`, `4 = 4`), the equation display says whether the statement is true or false (*tosi* / *epätosi*), and the explanation calls the equation identically true or identically false.
+
 Equations that are written with brackets or fractions begin with a **clean-up**: the order Finnish textbooks use is *brackets first, then simplify, then balance*.
+
+## Decimals
+
+An equation written with decimals (`0.5x + 1.2 = 3.7`, `0.25x + 1 = 2.5`) has one clean-up question: *multiply every term by 10 (or 100) so that the decimals disappear*. `decimalFactor` picks 10 for one decimal place and 100 for two. The balance moves then start from the whole-number equation (`startEquation`: `5x + 12 = 37`), which has the same solution. The wrong answers are the usual slips (a term left as it was written, a decimal point moved one place too far, a lost sign, an arithmetic slip), and a test checks that none of them is an alternative right answer. Inside the engine numbers use a point; Finnish shows them with a comma (`localiseDecimals`). Decimal exercises are in the fractions level, written with a point in `levels.ts`, and are chosen so that the answer is a whole number.
 
 ## Clean-up questions (the prelude)
 

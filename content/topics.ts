@@ -240,10 +240,10 @@ export const topicDefinitions: readonly TopicDefinition[] = [
     formula: { before: "", mark: "x/2", after: " + x/3 = 5" },
     text: {
       en: {
-        title: "Fractions and ratios",
+        title: "Fractions, decimals and ratios",
         subtitle: "Clear the denominators first",
         caption: "multiply by the common denominator",
-        description: "Solve equations with fractions by multiplying both sides by the common denominator.",
+        description: "Solve equations with fractions or decimals by multiplying both sides to remove them.",
         lesson: [
           "Find the smallest number that every denominator divides into: the common denominator.",
           "Multiply both sides, and every term, by it. Now there are no fractions left.",
@@ -252,10 +252,10 @@ export const topicDefinitions: readonly TopicDefinition[] = [
         ],
       },
       fi: {
-        title: "Murtolausekkeet ja verranto",
+        title: "Murtoluvut, desimaaliluvut ja verranto",
         subtitle: "Poista ensin nimittäjät",
         caption: "kerro yhteisellä nimittäjällä",
-        description: "Ratkaise murtolukuja sisältäviä yhtälöitä kertomalla molemmat puolet yhteisellä nimittäjällä.",
+        description: "Ratkaise murtolukuja tai desimaalilukuja sisältäviä yhtälöitä kertomalla molemmat puolet niin, että ne häviävät.",
         lesson: [
           "Etsi pienin luku, johon jokainen nimittäjä sopii: yhteinen nimittäjä.",
           "Kerro sillä molemmat puolet ja jokainen termi. Murtoluvut häviävät.",

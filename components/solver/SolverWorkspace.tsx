@@ -12,6 +12,7 @@ import {
   currentPreludeStep,
   hintsWithFlip,
   preludeShown,
+  preludeWords,
   sessionReducer,
   solutionOf,
   type Equation,
@@ -129,7 +130,7 @@ export function SolverWorkspace({
               <div className="eq-caption" aria-hidden="true">
                 {t.solver.written}
               </div>
-              <MathLine text={written} />
+              <MathLine text={preludeWords(lang).local(written)} />
             </section>
             <FeedbackPanel notice={state.notice} hints={[]} emptyText={t.solver.preludeEmpty} />
             <PreludeCard step={preludeStep} wrong={state.preludeWrong} onChoose={(choice) => dispatch({ type: "prelude", choice })} />

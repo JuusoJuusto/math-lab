@@ -16,8 +16,7 @@
 
 import type { Lang, Localised } from "../lang";
 import type { Equation } from "./expression";
-import { mustParseEquation } from "./parse";
-import { makePrelude, type Prelude } from "./prelude";
+import { makePrelude, startEquation, type Prelude } from "./prelude";
 
 export type LevelId =
   | "one-step"
@@ -309,28 +308,28 @@ export const LEVELS: readonly LevelDefinition[] = [
     expects: "one",
     text: {
       en: {
-        title: "Fractions and ratios",
-        tagline: "Clear the denominators, then solve",
+        title: "Fractions, decimals and ratios",
+        tagline: "Clear the denominators and decimals, then solve",
         intro: {
           lead: "When an equation has fractions, the easiest way is to get rid of them. Multiply both sides by a number that every denominator divides into. Then you are back to whole numbers.",
           points: [
             "Find the common denominator: the smallest number every denominator divides into.",
             "Multiply both sides, and so every term, by it. The fractions disappear.",
-            "A ratio such as x/6 = 4/3 is solved the same way: multiply both sides by 6.",
+            "A ratio such as x/6 = 4/3 is solved the same way. Decimals vanish when you multiply by 10 or 100.",
           ],
           keyIdea: "Fractions are in the way. Multiply them out of the equation first.",
         },
         exampleLead: "The denominators are 2 and 3, so we first combine the x terms, then multiply both sides by 6.",
       },
       fi: {
-        title: "Murtolausekkeet ja verranto",
-        tagline: "Poista nimittäjät ja ratkaise sitten",
+        title: "Murtoluvut, desimaaliluvut ja verranto",
+        tagline: "Poista nimittäjät ja desimaalit, ratkaise sitten",
         intro: {
           lead: "Kun yhtälössä on murtolukuja, helpointa on päästä niistä eroon. Kerro molemmat puolet luvulla, johon jokainen nimittäjä sopii. Sitten ollaan taas kokonaislukujen parissa.",
           points: [
             "Etsi yhteinen nimittäjä: pienin luku, johon jokainen nimittäjä sopii.",
             "Kerro sillä molemmat puolet ja siis jokainen termi. Murtoluvut häviävät.",
-            "Verranto, kuten x/6 = 4/3, ratkeaa samalla tavalla: kerro molemmat puolet luvulla 6.",
+            "Verranto, kuten x/6 = 4/3, ratkeaa samoin. Desimaalit häviävät, kun kerrot luvulla 10 tai 100.",
           ],
           keyIdea: "Murtoluvut ovat tiellä. Kerro ne ensin pois yhtälöstä.",
         },
@@ -346,6 +345,11 @@ export const LEVELS: readonly LevelDefinition[] = [
       fra(4, "(x - 3)/4 = 2"),
       fra(5, "2x/3 + 1 = 5"),
       fra(6, "3x/4 - 2 = 7"),
+      // Decimals come in the middle: easier than the long mixed equations that follow.
+      fra(17, "0.5x + 1.2 = 3.7"),
+      fra(19, "0.25x + 1 = 2.5"),
+      fra(20, "2.4 - 0.3x = 0.9"),
+      fra(18, "1.5x - 2 = 0.5x + 3"),
       fra(7, "x/6 = 4/3"),
       fra(8, "(x + 4)/5 = 6/2"),
       fra(9, "(2x + 1)/3 = 5"),
@@ -574,7 +578,7 @@ export function toExercise(definition: ExerciseDefinition): Exercise {
   return {
     id: definition.id,
     source: definition.equation,
-    equation: mustParseEquation(definition.equation),
+    equation: startEquation(definition.equation),
     prelude: makePrelude(definition.equation),
   };
 }

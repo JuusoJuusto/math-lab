@@ -4,7 +4,7 @@ import { Check, Flag, RotateCcw, Undo2 } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   describeOperation,
-  engineText,
+  preludeWords,
   findFlipTerm,
   formatAppliedEquation,
   formatBar,
@@ -37,7 +37,7 @@ interface StepHistoryProps {
 export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false, prelude = null, preludeDone = 0 }: StepHistoryProps) {
   const { lang, t } = useI18n();
   const text = t.solver.history;
-  const words = engineText(lang).prelude;
+  const words = preludeWords(lang);
   const cleaned = prelude ? prelude.steps.slice(0, preludeDone) : [];
 
   return (
@@ -50,7 +50,7 @@ export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false, 
           </span>
           <div>
             <span className="history-label">{text.start}</span>
-            <p className="history-equation">{prelude ? prelude.source : formatEquation(start)}</p>
+            <p className="history-equation">{prelude ? words.local(prelude.source) : formatEquation(start)}</p>
           </div>
         </li>
         {cleaned.map((step, index) => (
@@ -59,11 +59,11 @@ export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false, 
               <Check size={13} />
             </span>
             <div>
-              <span className="history-label">{step.kind === "expand" ? words.expandStage : words.simplifyStage}</span>
+              <span className="history-label">{words.stage(step)}</span>
               <p className="history-applied">
-                {step.part} = {step.result}
+                {words.local(step.part)} = {words.local(step.result)}
               </p>
-              <p className="history-equation">{step.after}</p>
+              <p className="history-equation">{words.local(step.after)}</p>
             </div>
           </li>
         ))}

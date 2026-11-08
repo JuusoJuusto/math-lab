@@ -8,6 +8,7 @@ import {
   currentPreludeStep,
   describeOperation,
   levelText,
+  localiseDecimals,
   makePrelude,
   mustParseEquation,
   preludeShown,
@@ -67,7 +68,7 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
             <div className="eq-caption" aria-hidden="true">
               {t.solver.written}
             </div>
-            <MathLine text={written} />
+            <MathLine text={localiseDecimals(written, lang)} />
           </section>
         ) : (
           <EquationDisplay

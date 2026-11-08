@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { formatEquation } from "../format";
 import { LEVELS as ALL_LEVELS, getLevel, getNextLevel, isLevelId, levelText, toExercise, type LevelDefinition } from "../levels";
 import { mustParseEquation } from "../parse";
-import { makePrelude } from "../prelude";
+import { hasDecimals, makePrelude, startEquation } from "../prelude";
 import { createRng, pickRound, shuffle, summariseRound } from "../round";
 import { isSolution, solveEquation, terminalState } from "../solve";
 import { evaluateMove, solveWithTutor } from "../tutor";
@@ -287,8 +287,9 @@ describe("the harder levels deliver what they promise", () => {
 
   it("fractions: every exercise has a fraction, and the tutor clears them with one multiplication first", () => {
     for (const e of level("fractions").exercises) {
-      expect(e.equation, e.id).toContain("/");
-      const equation = mustParseEquation(e.equation);
+      // Fractions, or decimals (which are fractions written another way).
+      expect(e.equation.includes("/") || hasDecimals(e.equation), e.id).toBe(true);
+      const equation = startEquation(e.equation);
       const [first] = solveWithTutor(equation);
       // An equation that is only x/3 + 4 = 9 style needs no clearing, so look at the untidy ones.
       if (first.operation.kind === "multiply" && first.before.left.c.d * first.before.right.c.d * first.before.left.x.d * first.before.right.x.d > 1) {

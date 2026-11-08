@@ -21,6 +21,7 @@ export * from "./build";
 export { engineText, type EngineText } from "./text";
 export * from "./levels";
 export * from "./prelude";
+export * from "./prelude-words";
 export * from "./rng";
 export * from "./round";
 export * from "./session";

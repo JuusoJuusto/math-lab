@@ -4,7 +4,7 @@ import { ArrowRight, ArrowLeftRight, Lightbulb } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   flipTerms,
-  engineText,
+  preludeWords,
   levelText,
   makePrelude,
   mustParseEquation,
@@ -32,7 +32,7 @@ export function LevelIntro({ level, onNext, onSkip }: LevelIntroProps) {
   const [firstStep] = solveWithTutor(equation);
   const prelude = makePrelude(level.example.equation);
   const cleanUp = prelude.steps[0];
-  const words = engineText(lang).prelude;
+  const words = preludeWords(lang);
 
   // The flip that does the same as the first step, so the two ways can be compared.
   const { left, right } = flipTerms(equation, lang);
@@ -66,12 +66,12 @@ export function LevelIntro({ level, onNext, onSkip }: LevelIntroProps) {
           <div className="intro-prelude">
             <section className="eq eq-written" aria-label={t.solver.written}>
               <div className="eq-caption" aria-hidden="true">
-                {cleanUp.kind === "expand" ? words.expandStage : words.simplifyStage}
+                {words.stage(cleanUp)}
               </div>
-              <MathLine text={prelude.source} />
+              <MathLine text={words.local(prelude.source)} />
             </section>
             <p className="intro-demo-note">
-              {cleanUp.kind === "expand" ? words.expandRight(cleanUp.part, cleanUp.result) : words.simplifyRight(cleanUp.part, cleanUp.result)}
+              {words.right(cleanUp)}
             </p>
           </div>
         )}

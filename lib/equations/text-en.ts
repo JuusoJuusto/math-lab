@@ -203,12 +203,18 @@ export const en: EngineText = {
     expandRight: (part, result) =>
       `Every term inside the brackets is multiplied by the number outside: ${part} = ${result}.`,
     simplifyRight: (part, result) => `Combine the like terms: ${part} = ${result}.`,
+    decimalsStage: "Remove the decimals",
+    decimalsQuestion: (part, factor) => `Multiply every term of ${part} by ${factor} so that the decimals disappear. What do you get?`,
+    decimalsRight: (part, result, factor) =>
+      `Multiplying every term by ${factor} moves each decimal point and keeps the equation true: ${part} becomes ${result}.`,
     wrongTitle: "Not quite",
     wrong: {
       "forgot-term": "The number outside multiplies every term inside the brackets, not just one of them.",
       sign: "Check the signs: a minus times a plus gives a minus, and a minus times a minus gives a plus.",
       denominators: "You cannot add fractions by adding the denominators. Use a common denominator, then add the numerators.",
       arithmetic: "Check the arithmetic: work through the terms one at a time.",
+      "decimal-term": "Every term on both sides must be multiplied, not only the ones with decimals.",
+      "decimal-point": "Check where each decimal point goes: multiplying by 10 moves it one place, by 100 two places.",
     },
     done: "The equation is now in simple form. Now solve it.",
   },
