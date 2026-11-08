@@ -1,4 +1,4 @@
-import { RotateCcw, Undo2 } from "lucide-react";
+import { Flag, RotateCcw, Undo2 } from "lucide-react";
 import { formatAppliedEquation, formatEquation, operationLabel, type Equation, type StepRecord } from "@/lib/equations";
 
 interface StepHistoryProps {
@@ -22,7 +22,7 @@ export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false }
       <ol className="history-list">
         <li className="history-item history-start">
           <span className="history-badge" aria-hidden="true">
-            •
+            <Flag size={13} />
           </span>
           <div>
             <span className="history-label">Start</span>

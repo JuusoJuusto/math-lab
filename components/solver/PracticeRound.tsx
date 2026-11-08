@@ -15,11 +15,13 @@ interface PracticeRoundProps {
   /** Exercise ids from the previous round, which are avoided where possible. */
   avoid: readonly string[];
   onComplete: (report: RoundReport) => void;
+  /** Called each time an equation has been solved. */
+  onEquationSolved?: () => void;
   onExit: () => void;
 }
 
 /** A short run of equations, one after another, with a simple progress indicator. */
-export function PracticeRound({ level, avoid, onComplete, onExit }: PracticeRoundProps) {
+export function PracticeRound({ level, avoid, onComplete, onEquationSolved, onExit }: PracticeRoundProps) {
   // Chosen once, when the learner starts the round, so server-rendered HTML never differs from the client.
   const [exercises] = useState(() => pickRound(level, Math.random, avoid));
   const [index, setIndex] = useState(0);
@@ -41,6 +43,7 @@ export function PracticeRound({ level, avoid, onComplete, onExit }: PracticeRoun
 
   function next(outcome: WorkspaceOutcome) {
     const updated = [...results, { id: exercise.id, ...outcome }];
+    onEquationSolved?.();
     if (isLast) {
       onComplete({ exercises, results: updated });
       return;

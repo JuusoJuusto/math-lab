@@ -10,27 +10,22 @@
  */
 
 .solver {
-  --s-ink: #183b53;
-  --s-muted: #4a5f6d;
-  --s-card-line: #e0ebee;
-  --s-teal: #0f786e;
-  --s-teal-dark: #0a5a52;
+  --s-ink: var(--ink);
+  --s-muted: var(--ink-3);
+  --s-card-line: var(--line);
+  --s-teal: var(--teal);
+  --s-teal-dark: var(--teal-edge);
   --s-applied-bg: #ffe3a6;
   --s-applied-ink: #5c3a00;
 }
 
-/* A slightly deeper teal for primary buttons keeps white text above 4.5:1. */
-.solver .button-primary { background: var(--s-teal); box-shadow: 0 4px 0 var(--s-teal-dark); }
-.solver .button-primary:hover { background: #0c6a61; }
-.solver .button-primary:active { box-shadow: 0 1px 0 var(--s-teal-dark); }
 .solver .back-link,
 .solver .text-link { min-height: 44px; }
-.solver .back-link { margin-bottom: 8px; }
 /* Focus is moved here on purpose after a stage change; the ring is shown for keyboard users only. */
 .stage:focus:not(:focus-visible),
 .complete-heading:focus:not(:focus-visible),
 .round-title:focus:not(:focus-visible) { outline: none; }
-.solver .lesson-hero { margin-bottom: 16px; }
+.solver-top { margin-bottom: 16px; }
 
 @keyframes solver-pop {
   from { opacity: 0; transform: translateY(5px) scale(0.98); }
@@ -57,7 +52,7 @@
 /* ---------- Introduction ---------- */
 
 .intro { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 18px; align-items: start; }
-.intro-copy { padding: 22px; border: 1px solid #e2edf0; border-radius: 15px; background: #fff; }
+.intro-copy { padding: 22px; border: 2px solid var(--line); border-radius: var(--radius); background: #fff; }
 .intro-heading { margin: 0 0 8px; color: #234256; font: 600 23px var(--font-display); }
 .intro-lead { margin: 0 0 16px; color: #354f5e; font-size: 15px; line-height: 1.7; }
 .intro-copy .lesson-list p { color: #2f4958; font-size: 15px; }
@@ -85,7 +80,7 @@
 
 .eq {
   container-type: inline-size;
-  padding: 18px clamp(12px, 3vw, 28px) 24px; border: 1px solid var(--s-card-line); border-radius: 18px;
+  padding: 18px clamp(12px, 3vw, 28px) 24px; border: 2px solid var(--s-card-line); border-radius: var(--radius);
   background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08); text-align: center;
 }
 .eq-solved { border-color: #8fd5b4; }
@@ -131,7 +126,7 @@
 
 .feedback-region { display: grid; gap: 10px; }
 .notice {
-  display: flex; gap: 12px; padding: 14px 16px; border: 1px solid; border-radius: 14px;
+  display: flex; gap: 12px; padding: 14px 16px; border: 1px solid; border-radius: var(--radius);
   animation: solver-pop 0.2s ease-out;
 }
 .notice-icon { flex: none; margin-top: 2px; }
@@ -165,7 +160,7 @@
 /* ---------- Choosing an operation ---------- */
 
 .picker {
-  display: grid; gap: 14px; padding: 18px; border: 1px solid var(--s-card-line); border-radius: 17px;
+  display: grid; gap: 14px; padding: 18px; border: 2px solid var(--s-card-line); border-radius: var(--radius);
   background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08);
 }
 .picker-kinds { min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -180,7 +175,8 @@
 .picker-kind:hover { border-color: #7bc9c0; background: #f4fbfa; }
 .picker-kind:has(input:checked) { border-color: var(--s-teal); background: #e5f5f2; box-shadow: 0 3px 0 #b7ded9; }
 /* A real element, not ::after content, so the tick never becomes part of the radio's accessible name. */
-.picker-check { position: absolute; top: 5px; right: 9px; display: none; color: var(--s-teal); font-size: 13px; font-weight: 900; }
+.picker-check { position: absolute; top: 6px; right: 8px; display: none; color: var(--s-teal); }
+.inline-icon { display: inline; vertical-align: -2px; }
 .picker-kind:has(input:checked) .picker-check { display: block; }
 .picker-kind:has(input:focus-visible) { outline: 3px solid #0c5e9a; outline-offset: 3px; }
 .picker-symbol { color: var(--s-teal); font: 600 32px/1 var(--font-display); }
@@ -211,7 +207,7 @@
 .action-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 
 .action-card {
-  padding: 18px; border: 1px solid var(--s-card-line); border-radius: 17px; background: #fff;
+  padding: 18px; border: 2px solid var(--s-card-line); border-radius: var(--radius); background: #fff;
   box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08);
 }
 .action-text { margin: 0 0 12px; color: var(--s-ink); font: 600 18px var(--font-display); }
@@ -219,7 +215,7 @@
 /* ---------- Step history ---------- */
 
 .history {
-  padding: 16px; border: 1px solid var(--s-card-line); border-radius: 17px; background: #fff;
+  padding: 16px; border: 2px solid var(--s-card-line); border-radius: var(--radius); background: #fff;
   box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08);
 }
 .history-title { margin: 0 0 12px; color: var(--s-ink); font: 600 19px var(--font-display); }
@@ -244,7 +240,7 @@
 
 /* ---------- Checking the answer ---------- */
 
-.verify { padding: 18px; border: 1px solid #c9dde4; border-radius: 17px; background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08); }
+.verify { padding: 18px; border: 1px solid #c9dde4; border-radius: var(--radius); background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08); }
 .verify-head { display: flex; align-items: center; gap: 10px; color: var(--s-ink); }
 .verify-head svg { flex: none; }
 .verify-head h2 { margin: 0; font: 600 20px/1.25 var(--font-display); }

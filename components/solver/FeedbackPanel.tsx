@@ -1,4 +1,4 @@
-import { CircleCheck, CircleX, Info, Lightbulb, TriangleAlert } from "lucide-react";
+import { ArrowRight, CircleCheck, CircleX, Info, Lightbulb, TriangleAlert } from "lucide-react";
 import type { Notice, NoticeTone } from "@/lib/equations";
 
 const ICONS: Record<NoticeTone, typeof Info> = {
@@ -47,7 +47,7 @@ export function FeedbackPanel({ notice, hints, emptyText }: FeedbackPanelProps) 
             )}
             {notice.preview && (
               <p className="notice-preview">
-                <span>If you did that:</span> <code>{notice.preview.applied}</code> <span aria-hidden="true">→</span>{" "}
+                <span>If you did that:</span> <code>{notice.preview.applied}</code> <ArrowRight className="inline-icon" size={14} aria-hidden="true" />{" "}
                 <code>{notice.preview.result}</code>
               </p>
             )}
