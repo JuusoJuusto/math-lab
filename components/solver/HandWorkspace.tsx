@@ -7,7 +7,6 @@ import {
   describeOperation,
   engineText,
   formatBar,
-  formatEquation,
   getHints,
   isSolved,
   isWrittenSimply,
