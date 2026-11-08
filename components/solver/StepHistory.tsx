@@ -31,7 +31,7 @@ interface StepHistoryProps {
 /**
  * The learner's working so far, written like a notebook: the starting
  * equation, then for every step the equation with the operation beside it
- * (`3x − 5 = 6 | + 5`), how it looked on both sides (or after the flip), and
+ * (`3x − 5 = 6 || + 5`), how it looked on both sides (or after the flip), and
  * the simplified result.
  */
 export function StepHistory({ start, steps, onUndo, onRestart, canUndo = false, prelude = null, preludeDone = 0 }: StepHistoryProps) {

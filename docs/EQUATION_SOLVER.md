@@ -10,12 +10,12 @@ An equation can be solved in more than one way, and MathLab teaches the ones tha
 
 | Way | What the learner does | Written like this |
 | --- | --- | --- |
-| **Both sides** (vaakamenetelmä) | Chooses an operation and a number and does it to both sides | `3x − 5 = 6 \| + 5` |
+| **Both sides** (vaakamenetelmä) | Chooses an operation and a number and does it to both sides | `3x − 5 = 6 \|\| + 5` |
 | **Flip a term** (siirtomenetelmä) | Taps a term; it crosses the equals sign and its sign changes | `3x = 6 + 5` |
 | **Work backwards** (käänteisoperaatiot) | Writes what happens to x as a chain, then undoes it from the end | `x → · 2 → + 5 → 17`, then `17 → − 5 → : 2 → x` |
 | **On a graph** | Looks at each side as a line; the solution is where they cross | check after solving |
 
-The first two are the same rule: a flip *is* the balance operation it stands for, shown in a shorter form. It is never applied by its own arithmetic. `flipOperation` turns the tap into an ordinary operation, `applyOperation` validates it, and the tutor judges it (`lib/equations/flip.ts`). The notebook notation `| + 5` is written beside the equation while a step is applied and in the step history. Work backwards (`lib/equations/methods.ts`) is available when x appears once on one side; its answer is accepted only if the engine agrees. The graph (`graphOf`) shows two lines that cross at one point, parallel lines (no solution) or one line twice (infinitely many).
+The first two are the same rule: a flip *is* the balance operation it stands for, shown in a shorter form. It is never applied by its own arithmetic. `flipOperation` turns the tap into an ordinary operation, `applyOperation` validates it, and the tutor judges it (`lib/equations/flip.ts`). The notebook notation `|| + 5` is written beside the equation while a step is applied and in the step history. Work backwards (`lib/equations/methods.ts`) is available when x appears once on one side; its answer is accepted only if the engine agrees. The graph (`graphOf`) shows two lines that cross at one point, parallel lines (no solution) or one line twice (infinitely many).
 
 Equations that are written with brackets or fractions begin with a **clean-up**: the order Finnish textbooks use is *brackets first, then simplify, then balance*.
 

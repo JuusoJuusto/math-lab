@@ -60,7 +60,27 @@ describe("SolverView: a level from introduction to completion", () => {
     expect(spokenEquation()).toBe("Worked example: x equals 6");
     await user.click(screen.getByRole("button", { name: "Check by substituting" }));
     expect(screen.getByText("Both sides are equal, so x = 6 is correct!")).toBeTruthy();
+    // The check ends the way a textbook does, with the verdict "true" ("tosi" in Finnish).
+    expect(document.querySelector(".verify-verdict")?.textContent).toBe("true");
     expect(screen.getByRole("button", { name: /Try it yourself/ })).toBeTruthy();
+  });
+
+  it("shows a second way to solve the example once it is solved, written with the double bar", async () => {
+    const { user } = setup("both");
+    await user.click(screen.getByRole("button", { name: /See a worked example/ }));
+    expect(screen.queryByText("Another way to solve it")).toBeNull();
+
+    // 6x − 4 = 2x + 8 takes three steps; let the tutor do each one.
+    for (let step = 1; step <= 3; step += 1) {
+      await user.click(screen.getByRole("button", { name: step === 1 ? "Show the first step" : "Show the next step" }));
+      await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    }
+
+    const card = screen.getByRole("region", { name: "Another way to solve it" });
+    const bars = [...card.querySelectorAll(".history-bar")].map((bar) => bar.textContent);
+    // The tutor collected the x terms first; the other way adds 4 first. Same answer.
+    expect(bars).toEqual(["|| + 4", "|| − 2x", "|| ÷ 4"]);
+    expect(card.textContent).toContain("x equals 3");
   });
 
   it("lets the learner replay the worked example", async () => {

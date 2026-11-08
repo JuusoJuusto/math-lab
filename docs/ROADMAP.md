@@ -19,7 +19,7 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 - [x] A level on equations with no solution or infinitely many solutions
 - [x] Solver word problems: write the whole equation from a blank field, then solve it (two levels, six tiers)
 - [x] A challenge level of long mixed equations
-- [x] Several ways to solve: both sides with the `| + 5` notation, flipping a term, working backwards, and checking on a graph
+- [x] Several ways to solve: both sides with the `|| + 5` notation, flipping a term, working backwards, and checking on a graph
 - [ ] Solver equations with decimals (decimals work in typed equations, but not as exercises)
 - [ ] Trial and improvement ("guess and check") as another way to solve
 - [x] Mistake review and retry queue ("Fix your mistakes")

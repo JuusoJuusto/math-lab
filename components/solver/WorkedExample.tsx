@@ -20,6 +20,7 @@ import {
 import { MathLine } from "@/components/ui/MathLine";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
+import { OtherWay } from "./OtherWay";
 import { StepHistory } from "./StepHistory";
 import { SubstitutionCheck } from "./SubstitutionCheck";
 
@@ -86,6 +87,7 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
               checked={state.checked}
               onCheck={() => dispatch({ type: "check" })}
             />
+            <OtherWay equation={equation} />
             <div className="action-buttons action-finish">
               <button type="button" className="button-primary" onClick={onPractise}>
                 {t.solver.example.tryIt} <ArrowRight size={17} aria-hidden="true" />

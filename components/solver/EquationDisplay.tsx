@@ -76,7 +76,7 @@ function FlipSide({ terms, side, onFlip }: { terms: readonly FlipTerm[]; side: "
  *
  * In flip mode the terms are buttons. A flipped term is highlighted where it
  * landed, and the operation it stands for is written beside the equation the
- * way it is in a notebook: `| + 5`.
+ * way it is in a notebook: `|| + 5`.
  */
 export function EquationDisplay({ equation, applied = null, flipped = null, onFlip, label, solved = false }: EquationDisplayProps) {
   const { lang, t } = useI18n();

@@ -292,6 +292,8 @@ export const fi: UiMessages = {
     },
     verify: {
       region: "Tarkista vastauksesi",
+      verdictTrue: "tosi",
+      verdictFalse: "epätosi",
       done: "Sijoitustarkistus",
       head: (answer) => `Onko x = ${answer} varmasti oikein?`,
       text: (answer) => ({
@@ -316,6 +318,10 @@ export const fi: UiMessages = {
       flipText: (term, becomes) =>
         `Sinun ei tarvitse kirjoittaa samaa asiaa joka kerta molemmille puolille. Ota ${term} ja siirrä se yhtäsuuruusmerkin yli: sen merkki vaihtuu ja siitä tulee ${becomes}. Se tarkoittaa täsmälleen samaa.`,
       flipNote: "Katso: korostettu osa meni yhtäsuuruusmerkin yli.",
+    },
+    otherWay: {
+      title: "Toinen tapa ratkaista",
+      text: "Vaiheiden ei tarvitse olla yhdessä kiinteässä järjestyksessä. Tämä tapa alkaa toisin ja päätyy samaan vastaukseen.",
     },
     example: {
       first: "Näytä ensimmäinen askel",

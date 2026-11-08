@@ -178,10 +178,10 @@ export function operationLabel(op: Operation, lang: Lang = "en"): string {
 
 /**
  * The operation written beside the equation, the way it is in a notebook:
- * `3x − 5 = 6 | + 5`. This returns the `| + 5` part.
+ * `3x − 5 = 6 || + 5`, the way Finnish textbooks write it. This returns the `|| + 5` part.
  */
 export function formatBar(op: Operation, lang: Lang = "en"): string {
-  return `| ${operationLabel(op, lang)}`;
+  return `|| ${operationLabel(op, lang)}`;
 }
 
 /** A lower-case sentence fragment such as `subtract 5 from both sides`. */

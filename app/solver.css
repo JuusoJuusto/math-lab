@@ -316,7 +316,7 @@
 .eq-flip:focus-visible { outline: 3px solid #0c5e9a; outline-offset: 3px; }
 .eq-static { display: inline-flex; align-items: center; gap: 0.2em; }
 
-/* The operation, written beside the equation as in a notebook: | + 5 */
+/* The operation, written beside the equation as in a notebook: || + 5 */
 .eq-bar {
   margin-left: 0.5em; padding: 0 0.32em; border-radius: 0.3em; background: var(--s-applied-bg); color: var(--s-applied-ink);
   font-size: 0.8em; font-weight: 600; white-space: nowrap; animation: solver-pop 0.22s ease-out;
@@ -464,3 +464,11 @@ line.graph-right { stroke: #f39a14; }
   .move-options { flex-wrap: wrap; }
   .chain-input { width: 72px; }
 }
+
+/* A second way to solve the same equation, shown after the worked example */
+.other-way { padding: 18px; border: 1px solid #c9dde4; border-radius: var(--radius); background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08); }
+.other-way-steps { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.other-way-steps li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 8px 10px; border-radius: 10px; background: #f3f8fa; }
+.verify-verdict { margin: 4px 0 0; font: 700 15px/1.2 var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+.verify-pass .verify-verdict { color: #14573b; }
+.verify-fail .verify-verdict { color: #7d2630; }

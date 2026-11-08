@@ -34,7 +34,7 @@ Each topic includes a short introduction and a multiple-choice practice round. Q
 
 Nine levels teach equation solving hands-on, from `x + 5 = 12` to equations with brackets on both sides, fractions and negative numbers. In each level you learn the idea, watch a worked example, and then solve equations yourself, in the way you prefer:
 
-- **Both sides** (vaakamenetelmä): pick an operation and a number. A good choice is shown written on both sides in the same highlight, and in the notebook way: `3x − 5 = 6 | + 5`, then simplified.
+- **Both sides** (vaakamenetelmä): pick an operation and a number. A good choice is shown written on both sides in the same highlight, and in the notebook way: `3x − 5 = 6 || + 5`, then simplified.
 - **Flip a term** (siirtomenetelmä): tap `− 5` and it crosses the equals sign as `+ 5`: `3x = 6 + 5`.
 - **Work backwards** (käänteisoperaatiot): write what happens to x (`x → · 2 → + 5 → 17`) and undo it from the end.
 - **On a graph**: each side is a line, and the solution is where they cross.

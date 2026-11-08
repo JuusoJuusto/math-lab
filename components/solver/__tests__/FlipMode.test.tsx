@@ -71,7 +71,7 @@ describe("flipping a term across the equals sign", () => {
     const step = historyItems()[1];
     expect(step.querySelector(".history-label")?.textContent).toBe("Step 1 · Flip − 5 across the = sign");
     expect(step.querySelector(".history-notebook")?.textContent).toContain("3x − 5 = 6");
-    expect(step.querySelector(".history-bar")?.textContent).toBe("| + 5");
+    expect(step.querySelector(".history-bar")?.textContent).toBe("|| + 5");
     expect(step.querySelector(".history-applied")?.textContent).toBe("3x = 6 + 5");
     expect(step.querySelector(".history-equation")?.textContent).toBe("3x = 11");
   });
@@ -83,9 +83,9 @@ describe("flipping a term across the equals sign", () => {
     await user.click(screen.getByRole("button", { name: "Apply to both sides" }));
 
     // The operation is also written beside the equation while it is applied.
-    expect(document.querySelector(".eq-bar")?.textContent).toBe("| − 5");
+    expect(document.querySelector(".eq-bar")?.textContent).toBe("|| − 5");
     await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
-    expect(historyItems()[1].querySelector(".history-bar")?.textContent).toBe("| − 5");
+    expect(historyItems()[1].querySelector(".history-bar")?.textContent).toBe("|| − 5");
     expect(historyItems()[1].querySelector(".history-label")?.textContent).toBe("Step 1 · Subtract 5 from both sides");
   });
 

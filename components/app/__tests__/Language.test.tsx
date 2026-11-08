@@ -204,7 +204,7 @@ describe("the app in Finnish", () => {
     await user.click(screen.getByRole("button", { name: "Sievennä molemmat puolet" }));
     await user.click(screen.getByRole("button", { name: "Näytä seuraava askel" }));
     expect(screen.getByText("Askel 2: Jaa molemmat puolet luvulla 2")).toBeTruthy();
-    expect(document.querySelector(".eq-bar")?.textContent).toBe("| : 2");
+    expect(document.querySelector(".eq-bar")?.textContent).toBe("|| : 2");
   });
 
   it("lets the learner flip a term in Finnish", async () => {

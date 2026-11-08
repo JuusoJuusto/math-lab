@@ -297,6 +297,8 @@ export const en = {
     },
     verify: {
       region: "Check your answer",
+      verdictTrue: "true",
+      verdictFalse: "false",
       done: "Substitution check",
       head: (answer: string) => `Is x = ${answer} really right?`,
       text: (answer: string) => ({
@@ -321,6 +323,10 @@ export const en = {
       flipText: (term: string, becomes: string) =>
         `You do not have to write the same thing on both sides every time. Take ${term} and flip it across the equals sign: its sign changes and it becomes ${becomes}. It means exactly the same.`,
       flipNote: "Look: the highlighted part crossed the equals sign.",
+    },
+    otherWay: {
+      title: "Another way to solve it",
+      text: "The steps do not have to come in one fixed order. This route starts differently and reaches the same answer.",
     },
     example: {
       first: "Show the first step",
