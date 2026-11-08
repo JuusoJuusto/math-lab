@@ -23,9 +23,10 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run verify
 ```
 
-The `check` script runs all four checks in sequence:
+The `check` script runs all five checks in sequence:
 
 ```bash
 npm run check
@@ -39,23 +40,67 @@ Every screen is a real exported page in both languages (`/fi/learn/two-step/`, `
 
 ## Cloudflare Workers
 
-Authenticate Wrangler:
+MathLab is a static site: `npm run build` writes it to `out/` and Cloudflare serves that folder with Workers static assets (`wrangler.jsonc`). There is no server code. Nothing in this repository deploys by itself; you choose one of the three ways below.
+
+### Before the first deployment
+
+```bash
+npm run check          # lint, types, tests, build, and the export check (about a minute)
+npm run preview        # builds, then serves out/ in the real Workers runtime on http://localhost:3000
+npm run deploy:dry     # builds, checks the export, and validates the Cloudflare configuration without uploading
+```
+
+`npm run verify` (also part of `check` and of every deploy) reads `out/` and fails when a page exists in only one language, a page is marked with the wrong language, `404.html`, `index.html`, `robots.txt` or `_headers` is missing, a page loads something from another site, or `wrangler.jsonc` no longer has the three settings the routing depends on.
+
+### Way 1: Cloudflare's own Git integration (Workers Builds)
+
+In the Cloudflare dashboard: **Workers & Pages → Create → Import a repository**, choose `JuusoJuusto/math-lab`, and set:
+
+| Setting | Value |
+| --- | --- |
+| Production branch | `main` |
+| Build command | `npm run build && npm run verify` |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | (leave empty) |
+| Worker name | `math-lab` (must match `name` in `wrangler.jsonc`) |
+
+Add the build variable `NODE_VERSION` = `22` if the build image does not already use Node 22 (the `.nvmrc` file says 22). If you use this way, delete `.github/workflows/deploy.yml` so the site is not deployed twice.
+
+### Way 2: GitHub Actions
+
+`.github/workflows/deploy.yml` builds, tests, verifies and deploys whenever `main` changes, or when you press **Run workflow**. Add two repository secrets (**Settings → Secrets and variables → Actions**):
+
+- `CLOUDFLARE_API_TOKEN`: create it at **My Profile → API Tokens → Create Token → "Edit Cloudflare Workers"** template.
+- `CLOUDFLARE_ACCOUNT_ID`: shown on the right of the Workers & Pages overview.
+
+Until both secrets exist the workflow only prints a notice and does nothing, so it is safe to merge first.
+
+### Way 3: from your own computer
 
 ```bash
 npx wrangler login
-```
-
-Build and deploy:
-
-```bash
 npm run deploy
 ```
 
-The `wrangler.jsonc` configuration points the Workers static-assets binding at `./out`. The project name is currently `math-lab`.
+### What Cloudflare does with the files
 
-## GitHub Actions
+- `html_handling: "auto-trailing-slash"`: `/fi` goes to `/fi/` (a 307 redirect), and `/fi/learn/index.html` goes to `/fi/learn/`.
+- `not_found_handling: "404-page"`: an unknown address returns the bilingual `404.html` **with status 404**.
+- `public/_headers` is copied into `out/` and sets security headers on every page (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) and a one-year `immutable` cache for the hashed files under `/_next/static/`. Pages themselves are revalidated on every visit, so a new deployment shows up at once. `_headers` is never served as a file.
+- The content security policy allows only the site's own files (plus the small inline scripts Next.js writes into each page). If you ever add an outside script, font or image, the browser will refuse it until you add its address to the policy in `public/_headers`.
 
-The CI workflow in `.github/workflows/ci.yml` runs lint, TypeScript checks, the test suite and a production build for pushes and pull requests targeting `main`. It does not deploy the application.
+### Checked in the real runtime
+
+These were tested against `wrangler dev` (the same runtime Cloudflare uses) on the real `out/` build: every page in both languages loads with no console errors; the bare address `/` goes to `/fi/` for a Finnish browser and `/en/` for anything else; an old `#/learn/two-step` link becomes `/fi/learn/two-step/`; an unknown address returns 404 with the app's own page; the content security policy is enforced (an outside script is refused); and the headers above are present.
+
+## Rolling back
+
+```bash
+npx wrangler deployments list
+npx wrangler rollback
+```
+
+Cloudflare keeps earlier versions of the Worker, so the previous site can be restored in seconds.
 
 ## Custom domain
 

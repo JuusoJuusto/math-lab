@@ -116,9 +116,11 @@ Open the local URL printed by Next.js.
 | `npm test` | Run the unit and interaction tests once |
 | `npm run test:watch` | Re-run tests when files change |
 | `npm run build` | Create the production static export |
-| `npm run check` | Run lint, type checking, tests and the production build |
-| `npm run preview` | Build and preview the output with Wrangler |
-| `npm run deploy` | Build and deploy the Worker with Wrangler |
+| `npm run verify` | Check the exported site in `out/` (both languages complete, Cloudflare files present, nothing loaded from other sites) |
+| `npm run check` | Run lint, type checking, tests, the production build and the export check |
+| `npm run preview` | Build and preview the output in the Workers runtime (`wrangler dev`) |
+| `npm run deploy:dry` | Build, verify and validate the Cloudflare configuration without uploading anything |
+| `npm run deploy` | Build, verify and deploy the Worker with Wrangler |
 
 ## Project structure
 

@@ -7,12 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "preview": "npm run build && wrangler dev --port 3000",
-    "deploy": "npm run build && wrangler deploy",
+    "verify": "node scripts/verify-export.mjs",
+    "deploy": "npm run build && npm run verify && wrangler deploy",
+    "deploy:dry": "npm run build && npm run verify && wrangler deploy --dry-run",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run verify"
   },
   "dependencies": {
     "@fontsource-variable/fredoka": "^5.3.0",
