@@ -109,9 +109,9 @@ export const en: EngineText = {
     solved: (value, sameAs) =>
       `x is on its own, so x = ${value}${sameAs ? ` (${sameAs} means the same as x = ${value})` : ""}. Check it by putting it back into the original equation.`,
     noSolution: (equation) =>
-      `x has disappeared, and ${equation} is never true. No value of x can work, so this equation has no solution.`,
+      `x has disappeared, and ${equation} is never true. The equation is identically false: no value of x can work, so it has no solution.`,
     infinite: (equation) =>
-      `x has disappeared, and ${equation} is always true. Every value of x works, so there are infinitely many solutions.`,
+      `x has disappeared, and ${equation} is always true. The equation is identically true: every value of x works, so there are infinitely many solutions.`,
     nextClear: "Next: the equation still has fractions. Multiply both sides by the common denominator to get rid of them.",
     nextCollect: "Next: x is still on both sides, so collect the x-terms on one side.",
     nextConstant: "Next: there is still a number added to or subtracted from the x-term. Undo it.",

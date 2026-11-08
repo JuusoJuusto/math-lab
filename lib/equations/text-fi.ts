@@ -109,9 +109,9 @@ export const fi: EngineText = {
     solved: (value, sameAs) =>
       `x on yksin, joten x = ${value}${sameAs ? ` (${sameAs} tarkoittaa samaa kuin x = ${value})` : ""}. Tarkista vastaus sijoittamalla se alkuperäiseen yhtälöön.`,
     noSolution: (equation) =>
-      `x on kadonnut, eikä ${equation} pidä koskaan paikkaansa. Mikään x:n arvo ei kelpaa, joten yhtälöllä ei ole ratkaisua.`,
+      `x on kadonnut, eikä ${equation} pidä koskaan paikkaansa. Yhtälö on identtisesti epätosi: mikään x:n arvo ei kelpaa, joten yhtälöllä ei ole ratkaisua.`,
     infinite: (equation) =>
-      `x on kadonnut, ja ${equation} pitää aina paikkansa. Kaikki x:n arvot kelpaavat, joten ratkaisuja on äärettömän monta.`,
+      `x on kadonnut, ja ${equation} pitää aina paikkansa. Yhtälö on identtisesti tosi: kaikki x:n arvot kelpaavat, joten ratkaisuja on äärettömän monta.`,
     nextClear: "Seuraavaksi: yhtälössä on yhä murtolukuja. Kerro molemmat puolet yhteisellä nimittäjällä, niin ne häviävät.",
     nextCollect: "Seuraavaksi: x on yhä kummallakin puolella, joten kokoa x-termit yhdelle puolelle.",
     nextConstant: "Seuraavaksi: x-termiin on yhä lisätty tai siitä on vähennetty jokin luku. Kumoa se.",
