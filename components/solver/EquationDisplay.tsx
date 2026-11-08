@@ -17,6 +17,8 @@ import {
   type FlipTarget,
   type FlipTerm,
   type Operation,
+  hasNoVariable,
+  solveEquation,
 } from "@/lib/equations";
 
 interface EquationDisplayProps {
@@ -91,6 +93,8 @@ export function EquationDisplay({ equation, applied = null, flipped = null, onFl
   const interactive = Boolean(onFlip) && !applied && !preview;
   const terms = interactive ? flipTerms(equation, lang) : null;
   const caption = preview ? t.solver.display.flipped : applied ? t.solver.display.sameOperation : name;
+  // When x has dropped out, what is left is a plain statement such as 3 = 7. Say whether it is true, as a textbook does.
+  const statement = !applied && !preview && hasNoVariable(equation) ? (solveEquation(equation).kind === "infinite" ? "true" : "false") : null;
 
   return (
     <section
@@ -105,6 +109,11 @@ export function EquationDisplay({ equation, applied = null, flipped = null, onFl
         {solved && (
           <span className="eq-badge">
             <Check size={14} /> {t.solver.display.solved}
+          </span>
+        )}
+        {statement && (
+          <span className={`eq-badge eq-verdict eq-verdict-${statement}`} data-verdict={statement}>
+            {statement === "true" ? t.solver.verify.verdictTrue : t.solver.verify.verdictFalse}
           </span>
         )}
       </div>

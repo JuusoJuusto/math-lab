@@ -7,6 +7,7 @@ import {
   canGetHint,
   canUndo,
   chainOf,
+  solveEquation,
   createSession,
   currentPreludeStep,
   hintsWithFlip,
@@ -25,6 +26,7 @@ import { FeedbackPanel } from "./FeedbackPanel";
 import { MoveTabs, type MoveMode } from "./MoveTabs";
 import { GraphView } from "./GraphView";
 import { OperationPicker } from "./OperationPicker";
+import { GuessAndCheck } from "./GuessAndCheck";
 import { ReverseChain } from "./ReverseChain";
 import { StepHistory } from "./StepHistory";
 import { SubstitutionCheck } from "./SubstitutionCheck";
@@ -69,7 +71,9 @@ export function SolverWorkspace({
   const changeMode = onMoveModeChange ?? setOwnMode;
   // "Work backwards" needs x once, on one side; if the equation no longer fits, the usual way takes over.
   const chain = state.pending ? null : chainOf(state.current);
-  const moveMode: MoveMode = chosenMode === "chain" && !chain ? "balance" : chosenMode;
+  // "Guess and check" needs one answer to find: not an equation that is never true or always true.
+  const canGuess = !state.pending && solveEquation(state.current).kind === "one";
+  const moveMode: MoveMode = (chosenMode === "chain" && !chain) || (chosenMode === "guess" && !canGuess) ? "balance" : chosenMode;
 
   const root = useRef<HTMLDivElement>(null);
   const simplifyButton = useRef<HTMLButtonElement>(null);
@@ -183,7 +187,7 @@ export function SolverWorkspace({
           </>
         ) : (
           <>
-            <MoveTabs mode={moveMode} onChange={changeMode} canChain={chain !== null}>
+            <MoveTabs mode={moveMode} onChange={changeMode} canChain={chain !== null} canGuess={canGuess}>
               {moveMode === "flip" ? hintButton : null}
             </MoveTabs>
             {moveMode === "chain" && chain ? (
@@ -192,6 +196,8 @@ export function SolverWorkspace({
                 onSolved={(value) => dispatch({ type: "answer", value })}
                 onMiss={() => dispatch({ type: "miss" })}
               />
+            ) : moveMode === "guess" ? (
+              <GuessAndCheck equation={state.current} onSolved={(value) => dispatch({ type: "answer", value })} />
             ) : moveMode === "flip" ? (
               <p className="flip-help">{t.solver.flipHelp}</p>
             ) : (

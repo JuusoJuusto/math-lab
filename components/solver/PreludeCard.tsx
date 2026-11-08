@@ -3,6 +3,7 @@
 import { Check, X } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import { engineText, type PreludeStep } from "@/lib/equations";
+import { DistributeArrows } from "./DistributeArrows";
 
 interface PreludeCardProps {
   step: PreludeStep;
@@ -27,6 +28,7 @@ export function PreludeCard({ step, wrong, onChoose }: PreludeCardProps) {
   return (
     <section className="prelude" aria-label={step.kind === "expand" ? words.expandStage : words.simplifyStage}>
       <h3 className="prelude-question">{question}</h3>
+      {step.kind === "expand" && <DistributeArrows part={step.part} />}
       <ul className="answers answers-prelude">
         {step.options.map((option, index) => {
           const tried = wrong.includes(index);

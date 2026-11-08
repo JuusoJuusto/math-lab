@@ -227,3 +227,26 @@ export function preludeTarget(source: string): Equation {
   if (!result.ok) throw new Error(`Cannot read "${source}": ${result.message}`);
   return result.value;
 }
+
+/** A number multiplying a bracket: in `3(x − 2)` the factor is 3 and the terms are x and −2. */
+export interface Distribution {
+  readonly factor: string;
+  readonly terms: readonly string[];
+}
+
+/**
+ * Reads a part such as `3(x − 2)`, `−2(x − 3)` or `− 2(x + 4)` for the arrows
+ * textbooks draw from the number to each term inside the bracket. A minus in
+ * front of the whole product belongs to the factor (`− 2(x + 4)` multiplies by
+ * −2). Anything else, such as a division `(x + 1)/2`, has no arrows.
+ */
+export function distributionOf(part: string): Distribution | null {
+  const match = plain(part).replace(/\s+/g, "").match(/^(-?)(-?\d+)\(([^()]+)\)$/);
+  if (!match) return null;
+  const [, front, digits, inside] = match;
+  const factor = (front ? -1 : 1) * Number(digits);
+  const terms = splitTerms(inside);
+  if (terms.length === 0 || terms.length > 3) return null;
+  const minus = (text: string) => text.replace(/-/g, "−");
+  return { factor: minus(String(factor)), terms: terms.map(minus) };
+}

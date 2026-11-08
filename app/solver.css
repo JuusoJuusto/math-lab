@@ -489,3 +489,25 @@ line.graph-right { stroke: #f39a14; }
 .final-input { max-width: 140px; }
 .final-unit { font-weight: 700; color: var(--s-ink, #164655); }
 .final-feedback { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: #fff7f7; border: 1px solid #f0bcbc; color: #7d2630; font-size: 14.5px; line-height: 1.5; }
+
+/* The arrows from a number to each term of the bracket it multiplies */
+.distribute { display: block; width: min(100%, 300px); height: auto; margin: 4px auto 10px; }
+.distribute-arc { fill: none; stroke: #e8832a; stroke-width: 2.4; stroke-linecap: round; }
+.distribute-head { fill: #e8832a; }
+.distribute-text { fill: var(--s-ink, #164655); font: 600 26px var(--font-display, sans-serif); }
+.distribute-factor { fill: #c5731f; }
+.eq-verdict { text-transform: uppercase; letter-spacing: 0.05em; }
+.eq-verdict-true { background: #e3f6ec; color: #14573b; }
+.eq-verdict-false { background: #fdeaea; color: #7d2630; }
+
+/* Guess and check */
+.guess { display: grid; gap: 12px; }
+.guess-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.guess-row .build-label { flex-basis: 100%; margin: 0; }
+.guess-input { max-width: 150px; }
+.guess-nudge { margin: 0; padding: 10px 12px; border-radius: 10px; background: #fff8e8; border: 1px solid #f0d9a0; color: #5d4210; font-size: 15px; line-height: 1.5; }
+.guess-table { width: 100%; border-collapse: collapse; font-size: 15px; background: #fff; border: 1px solid #c9dde4; border-radius: 10px; overflow: hidden; }
+.guess-table caption { text-align: left; padding: 6px 2px; font-weight: 700; color: #164655; }
+.guess-table th, .guess-table td { padding: 8px 12px; text-align: left; border-top: 1px solid #e3eef2; }
+.guess-table thead th { background: #f3f8fa; border-top: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: #4a6b78; }
+.guess-right th, .guess-right td { background: #e3f6ec; font-weight: 700; }

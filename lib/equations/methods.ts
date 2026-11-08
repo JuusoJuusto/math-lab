@@ -124,7 +124,8 @@ export function graphOf(eq: Equation): Graph {
   const left = line(eq.left, "left");
   const right = line(eq.right, "right");
 
-  const meet = solution.kind === "one" ? { x: s, y: at(eq.left, s), value: solution.value } : null;
+  // The height at the crossing is worked out exactly from the fraction: x may be 3/2, which is not a whole number.
+  const meet = solution.kind === "one" ? { x: s, y: num(evaluate(eq.left, solution.value)), value: solution.value } : null;
   const ys = [left.from.y, left.to.y, right.from.y, right.to.y, 0, ...(meet ? [meet.y] : [])];
   const low = Math.min(...ys);
   const high = Math.max(...ys);
@@ -137,3 +138,28 @@ export function sidesDifference(eq: Equation, x: Fraction): Fraction {
   return sub(evaluate(eq.left, x), evaluate(eq.right, x));
 }
 
+
+/* -------------------------------------------------------------------------- */
+/* Guess and check (trial and improvement)                                    */
+/* -------------------------------------------------------------------------- */
+
+export type GuessVerdict = "right" | "larger" | "smaller";
+
+/**
+ * What a guess for x tells you. Put the guess into both sides: if they are
+ * equal, it is right. If not, the two sides say which way to go, because each
+ * side is a straight line in x. Where the left side is lower and rises faster
+ * than the right side, x has to be larger; if it falls faster, smaller.
+ *
+ * Only an equation with exactly one solution has a direction to follow, so
+ * for an equation with no solution or with every x as a solution this returns
+ * `null`.
+ */
+export function guessVerdict(eq: Equation, guess: Fraction): GuessVerdict | null {
+  const slope = sub(eq.left.x, eq.right.x);
+  if (isZero(slope)) return null;
+  const difference = sidesDifference(eq, guess);
+  if (isZero(difference)) return "right";
+  // The difference changes by `slope` for every step of x. A positive difference with a positive slope means we are past the solution.
+  return isNegative(difference) === isNegative(slope) ? "smaller" : "larger";
+}

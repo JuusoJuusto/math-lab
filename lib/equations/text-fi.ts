@@ -21,7 +21,7 @@ export const fi: EngineText = {
   times: "·",
   divide: ":",
   kindNames: { add: "Lisää", subtract: "Vähennä", multiply: "Kerro", divide: "Jaa" },
-  modeNames: { balance: "Molemmat puolet", flip: "Siirrä termi", chain: "Käänteisoperaatiot" },
+  modeNames: { balance: "Molemmat puolet", flip: "Siirrä termi", chain: "Käänteisoperaatiot", guess: "Arvaa ja tarkista" },
 
   phrase(kind, amount) {
     switch (kind) {
