@@ -84,7 +84,7 @@ main { min-height:100vh; }
 .results-score { margin:22px 0 10px; color:#159b8b; font:600 66px/.95 var(--font-display); }
 .results-score span { margin-left:3px; font-size:30px; }
 .results-bar { height:12px; max-width:390px; margin:0 auto; overflow:hidden; border-radius:99px; background:#e7eff1; }
-.results-bar span { display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#159b8b,#78c9a6); }
+.results-bar span { display:block; height:100%; border-radius:99px; background:#159b8b; }
 .results-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:11px; margin-top:25px; }
 .results-actions .text-link { min-height:44px; padding:0 8px; }
 @media(max-width:480px) { .results-actions { flex-direction:column; align-items:stretch; }.results-actions>* { width:100%; }.results-actions .text-link { justify-content:center; } }
