@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
-import { levelText, type LevelDefinition } from "@/lib/equations";
+import { levelText, summariseRound, thinksYouKnow, type LevelDefinition } from "@/lib/equations";
 import type { Topic } from "@/content/topics";
 import { TopicIcon } from "@/components/ui/icons";
+import { KnowledgePopup } from "@/components/ui/KnowledgePopup";
 import { LevelComplete } from "./LevelComplete";
 import { LevelIntro } from "./LevelIntro";
 import { PracticeRound, type RoundReport } from "./PracticeRound";
@@ -39,6 +40,8 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
   const [roundId, setRoundId] = useState(0);
   const [previousIds, setPreviousIds] = useState<readonly string[]>([]);
   const [report, setReport] = useState<RoundReport | null>(null);
+  // The popup is shown once per finished round; closing it keeps it closed until the next round.
+  const [dismissedRound, setDismissedRound] = useState<number | null>(null);
   const root = useRef<HTMLElement>(null);
   const firstRender = useRef(true);
 
@@ -123,6 +126,10 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
         ) : (
           <PracticeRound key={roundId} level={level} avoid={previousIds} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
         ))}
+      {stage === "complete" && report && thinksYouKnow(summariseRound(report.results), level.roundSize) && dismissedRound !== roundId && (
+        <KnowledgePopup topicTitle={topic.title} onQuiz={() => onQuiz(topic.id)} onClose={() => setDismissedRound(roundId)} />
+      )}
+
       {stage === "complete" && report && (
         <LevelComplete
           level={level}

@@ -100,6 +100,7 @@ export function EquationDisplay({ equation, applied = null, flipped = null, onFl
     <section
       className={`eq ${solved ? "eq-solved" : ""} ${applied || preview ? "eq-applying" : ""} ${interactive ? "eq-flippable" : ""}`}
       aria-label={name}
+      data-equation={formatEquation(equation)}
       // The stylesheet turns this into a font size that fits the card's own width, so long
       // equations shrink instead of wrapping, wherever the card is placed.
       style={{ "--eq-chars": text.length + (bar ? bar.length + 2 : 0) } as CSSProperties}

@@ -61,3 +61,22 @@ export async function solveByHand(user: UserEvent) {
   }
   await user.click(screen.getByRole("button", { name: "Check by substituting" }));
 }
+
+/**
+ * Solves the equation on screen the way a learner who needs no help would: the tutor's own steps, typed in, with no hint
+ * asked for. The last exercise of a round is solved by hand, line by line.
+ */
+export async function solveCleanly(user: UserEvent) {
+  if (document.querySelector(".hand")) return solveByHand(user);
+  const kinds = { add: "Add", subtract: "Subtract", multiply: "Multiply", divide: "Divide" } as const;
+  for (let guard = 0; guard < 10 && !screen.queryByText("Solved"); guard += 1) {
+    const text = document.querySelector(".eq")?.getAttribute("data-equation");
+    if (!text) throw new Error("No equation on screen");
+    const step = solveWithTutor(startEquation(text.replace(/−/g, "-")))[0];
+    const op = step.operation;
+    await applyOperation(user, kinds[op.kind], Number(op.amount.n) / Number(op.amount.d), op.withVariable);
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
+  }
+  if (!screen.queryByText("Solved")) throw new Error("Equation was not solved");
+  await user.click(screen.getByRole("button", { name: "Check by substituting" }));
+}

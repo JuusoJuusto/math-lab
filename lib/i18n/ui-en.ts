@@ -397,6 +397,12 @@ export const en = {
       barKey: "two bars, to write the step beside a line",
       none: "Nothing written yet. Type the first line below.",
     },
+    knowledge: {
+      title: "You seem to know this!",
+      text: (topic: string) => `You solved most of "${topic}" without help. Want to take a short quiz to test your knowledge?`,
+      yes: "Take a short quiz",
+      no: "Not now",
+    },
     otherWay: {
       title: "Another way to solve it",
       text: "The steps do not have to come in one fixed order. This route starts differently and reaches the same answer.",

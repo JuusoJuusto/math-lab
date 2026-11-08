@@ -43,6 +43,14 @@ export interface RoundSummary {
   readonly cleanSolves: number;
 }
 
+/**
+ * Whether a round shows that the learner knows the level: every equation solved,
+ * and at least four in five of them without a hint or a wrong move.
+ */
+export function thinksYouKnow(summary: RoundSummary, roundSize: number): boolean {
+  return roundSize > 0 && summary.solved >= roundSize && summary.cleanSolves / roundSize >= 0.8;
+}
+
 export function summariseRound(results: readonly ExerciseResult[]): RoundSummary {
   return {
     solved: results.length,

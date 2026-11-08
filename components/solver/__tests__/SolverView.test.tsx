@@ -1,10 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { topics } from "@/content/topics";
 import { createRng, getLevel, type LevelId } from "@/lib/equations";
 import { SolverView } from "../SolverView";
-import { solveOnScreenEquation, spokenEquation } from "./helpers";
+import { solveCleanly, solveOnScreenEquation, spokenEquation } from "./helpers";
 
 function setup(levelId: LevelId = "one-step") {
   const level = getLevel(levelId)!;
@@ -179,6 +179,46 @@ describe("SolverView: a level from introduction to completion", () => {
     await playRound(user);
     await user.click(screen.getByRole("button", { name: /Next: Word problems/ }));
     expect(onOpenLevel).toHaveBeenCalledWith("word");
+  });
+
+  it("offers a short quiz in a popup when a round is solved without any help, and the quiz is on this lesson", async () => {
+    vi.spyOn(Math, "random").mockImplementation(createRng(4));
+    const { user, onQuiz } = setup("two-step");
+    await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
+    for (let n = 1; n <= 5; n += 1) {
+      await screen.findByText(`Equation ${n} of 5`);
+      await solveCleanly(user);
+      await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
+    }
+
+    const popup = await screen.findByRole("dialog", { name: "You seem to know this!" });
+    expect(popup.textContent).toContain("Two-step equations");
+    await user.click(within(popup).getByRole("button", { name: "Take a short quiz" }));
+    expect(onQuiz).toHaveBeenCalledWith("two-step");
+  });
+
+  it("does not interrupt a learner who needed hints, and a popup can be closed with Escape", async () => {
+    vi.spyOn(Math, "random").mockImplementation(createRng(4));
+    const { user } = setup("two-step");
+    await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
+    await playRound(user);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("heading", { name: /Two-step equations: done!/ })).toBeTruthy();
+  });
+
+  it("closes the popup with Escape and keeps the results", async () => {
+    vi.spyOn(Math, "random").mockImplementation(createRng(4));
+    const { user } = setup("two-step");
+    await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
+    for (let n = 1; n <= 5; n += 1) {
+      await screen.findByText(`Equation ${n} of 5`);
+      await solveCleanly(user);
+      await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
+    }
+    await screen.findByRole("dialog");
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("heading", { name: /Two-step equations: done!/ })).toBeTruthy();
   });
 
   it("can leave a round part-way without recording completion", async () => {

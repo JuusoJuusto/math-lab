@@ -25,7 +25,8 @@ export function SolverScreen({ levelId }: { levelId: string }) {
       onEquationSolved={() => updateProgress((old) => addXp(old, XP.solverEquation))}
       onExit={() => navigate({ name: "learn" })}
       onOpenLevel={(id) => navigate({ name: "solver", level: id })}
-      onQuiz={(topicId) => startSession("exam", topicId, 10)}
+      // A short quiz: five questions on this lesson.
+      onQuiz={(topicId) => startSession("quiz", topicId, 5)}
     />
   );
 }

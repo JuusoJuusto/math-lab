@@ -392,6 +392,12 @@ export const fi: UiMessages = {
       barKey: "kaksi viivaa, jolla kirjoitat vaiheen rivin viereen",
       none: "Mitään ei ole vielä kirjoitettu. Kirjoita ensimmäinen rivi alle.",
     },
+    knowledge: {
+      title: "Tämä taitaa olla hallussa!",
+      text: (topic: string) => `Ratkaisit suurimman osan aiheesta "${topic}" ilman apua. Haluatko tehdä lyhyen kokeen ja testata osaamisesi?`,
+      yes: "Tee lyhyt koe",
+      no: "Ei nyt",
+    },
     otherWay: {
       title: "Toinen tapa ratkaista",
       text: "Vaiheiden ei tarvitse olla yhdessä kiinteässä järjestyksessä. Tämä tapa alkaa toisin ja päätyy samaan vastaukseen.",

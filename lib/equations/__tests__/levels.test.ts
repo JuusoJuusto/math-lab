@@ -3,7 +3,7 @@ import { formatEquation } from "../format";
 import { LEVELS as ALL_LEVELS, getLevel, getNextLevel, isLevelId, levelText, toExercise, type LevelDefinition } from "../levels";
 import { mustParseEquation } from "../parse";
 import { hasDecimals, makePrelude, startEquation } from "../prelude";
-import { createRng, pickRound, shuffle, summariseRound } from "../round";
+import { createRng, pickRound, shuffle, summariseRound, thinksYouKnow } from "../round";
 import { isSolution, solveEquation, terminalState } from "../solve";
 import { evaluateMove, solveWithTutor } from "../tutor";
 import { isInteger } from "../fraction";
@@ -357,5 +357,18 @@ describe("the word-problem levels", () => {
   it("climb through different tiers", () => {
     expect(level("word").tiers).toEqual([1, 2, 3]);
     expect(level("hard-word").tiers).toEqual([4, 5, 6]);
+  });
+});
+
+describe("when the app thinks a lesson is known", () => {
+  const round = (clean: number, size = 5) => ({ solved: size, hintsUsed: size - clean, cleanSolves: clean });
+  it("needs a finished round with at least four in five solved without a hint or a wrong move", () => {
+    expect(thinksYouKnow(round(5), 5)).toBe(true);
+    expect(thinksYouKnow(round(4), 5)).toBe(true);
+    expect(thinksYouKnow(round(3), 5)).toBe(false);
+    expect(thinksYouKnow(round(0), 5)).toBe(false);
+    // An unfinished round proves nothing.
+    expect(thinksYouKnow({ solved: 4, hintsUsed: 0, cleanSolves: 4 }, 5)).toBe(false);
+    expect(thinksYouKnow(round(0, 0), 0)).toBe(false);
   });
 });
