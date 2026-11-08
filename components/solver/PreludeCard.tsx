@@ -20,7 +20,9 @@ interface PreludeCardProps {
 export function PreludeCard({ step, wrong, onChoose }: PreludeCardProps) {
   const { lang } = useI18n();
   const words = engineText(lang).prelude;
-  const question = step.kind === "expand" ? words.expandQuestion(step.part) : words.simplifyQuestion(step.part);
+  // Non-breaking spaces keep an expression such as 2(x + 3) together when the question wraps on a narrow screen.
+  const part = step.part.replace(/ /g, "\u00a0");
+  const question = step.kind === "expand" ? words.expandQuestion(part) : words.simplifyQuestion(part);
 
   return (
     <section className="prelude" aria-label={step.kind === "expand" ? words.expandStage : words.simplifyStage}>
