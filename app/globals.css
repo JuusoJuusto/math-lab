@@ -1345,6 +1345,8 @@ mark {
 
 .answer-form {
   display: grid;
+  /* The column may not grow past the screen: with a unit and the sign button the field used to be wider than a phone. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   justify-items: start;
 }
