@@ -297,7 +297,7 @@ export const fi: UiMessages = {
       solved: "Ratkaistu",
     },
     history: {
-      title: "Askeleesi",
+      title: "Ratkaisusi tähän asti",
       start: "Alku",
       step: (n, what) => `Askel ${n} · ${what}`,
       flip: (n, term) => `Askel ${n} · Siirrä ${term} =-merkin yli`,

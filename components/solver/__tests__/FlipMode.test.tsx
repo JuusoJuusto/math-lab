@@ -68,12 +68,14 @@ describe("flipping a term across the equals sign", () => {
     await user.click(screen.getByRole("button", { name: /^Flip − 5/ }));
     await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
-    const step = historyItems()[1];
+    const step = historyItems()[0];
     expect(step.querySelector(".history-label")?.textContent).toBe("Step 1 · Flip − 5 across the = sign");
     expect(step.querySelector(".history-notebook")?.textContent).toContain("3x − 5 = 6");
     expect(step.querySelector(".history-bar")?.textContent).toBe("|| + 5");
     expect(step.querySelector(".history-applied")?.textContent).toBe("3x = 6 + 5");
-    expect(step.querySelector(".history-equation")?.textContent).toBe("3x = 11");
+    // The result is not written twice: it is the current equation, directly below the finished steps.
+    expect(step.querySelector(".history-equation")).toBeNull();
+    expect(spokenEquation()).toBe("Current equation: 3x equals 11");
   });
 
   it("writes a balance step in the notebook the same way", async () => {
@@ -85,8 +87,8 @@ describe("flipping a term across the equals sign", () => {
     // The operation is also written beside the equation while it is applied.
     expect(document.querySelector(".eq-bar")?.textContent).toBe("|| − 5");
     await user.click(screen.getByRole("button", { name: "Work out both sides" }));
-    expect(historyItems()[1].querySelector(".history-bar")?.textContent).toBe("|| − 5");
-    expect(historyItems()[1].querySelector(".history-label")?.textContent).toBe("Step 1 · Subtract 5 from both sides");
+    expect(historyItems()[0].querySelector(".history-bar")?.textContent).toBe("|| − 5");
+    expect(historyItems()[0].querySelector(".history-label")?.textContent).toBe("Step 1 · Subtract 5 from both sides");
   });
 
   it("solves a whole equation by flipping: 3x − 5 = 7 → 3x = 12 → x = 4", async () => {

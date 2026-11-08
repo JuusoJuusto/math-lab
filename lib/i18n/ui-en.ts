@@ -302,7 +302,7 @@ export const en = {
       solved: "Solved",
     },
     history: {
-      title: "Your steps",
+      title: "Your solution so far",
       start: "Start",
       step: (n: number, what: string) => `Step ${n} · ${what}`,
       flip: (n: number, term: string) => `Step ${n} · Flip ${term} across the = sign`,

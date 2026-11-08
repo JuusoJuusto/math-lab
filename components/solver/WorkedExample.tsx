@@ -61,8 +61,9 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
       : state.notice;
 
   return (
-    <div className="workspace">
+    <div className="workspace workspace-single">
       <div className="workspace-main">
+        <StepHistory start={state.start} steps={state.steps} prelude={state.prelude} preludeDone={state.preludeIndex} />
         {written !== null ? (
           <section className="eq eq-written" aria-label={t.solver.display.worked}>
             <div className="eq-caption" aria-hidden="true">
@@ -113,9 +114,6 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
         )}
       </div>
 
-      <div className="workspace-side">
-        <StepHistory start={state.start} steps={state.steps} prelude={state.prelude} preludeDone={state.preludeIndex} />
-      </div>
     </div>
   );
 }

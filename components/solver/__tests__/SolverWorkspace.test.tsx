@@ -13,14 +13,18 @@ function setup(text: string) {
 }
 
 const feedback = () => screen.getByRole("status");
-const historyItems = () => within(screen.getByRole("region", { name: "Your steps" })).getAllByRole("listitem");
+/** The finished steps, stacked above the current equation. Nothing is shown before the first step. */
+const historyItems = () => {
+  const region = screen.queryByRole("region", { name: "Your solution so far" });
+  return region ? within(region).queryAllByRole("listitem") : [];
+};
 
 describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
   it("shows the equation and an invitation to act before anything has happened", () => {
     setup("2x + 5 = 17");
     expect(spokenEquation()).toBe("Current equation: 2x plus 5 equals 17");
     expect(feedback().textContent).toMatch(/Your move/);
-    expect(historyItems()).toHaveLength(1);
+    expect(historyItems()).toHaveLength(0);
   });
 
   it("explains a mistake, keeps the equation, and does not give the solution away", async () => {
@@ -32,7 +36,7 @@ describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
     expect(feedback().textContent).toContain("2x + 10 = 22");
     expect(feedback().textContent).not.toMatch(/2x = 12|x = 6/);
     expect(spokenEquation()).toBe("Current equation: 2x plus 5 equals 17");
-    expect(historyItems()).toHaveLength(1);
+    expect(historyItems()).toHaveLength(0);
   });
 
   it("explains why division by zero is not allowed", async () => {
@@ -79,9 +83,11 @@ describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
 
     expect(spokenEquation()).toBe("Current equation: 2x equals 12");
     expect(feedback().textContent).toContain("x is still multiplied by 2");
-    expect(historyItems()).toHaveLength(2);
-    expect(historyItems()[1].textContent).toContain("2x + 5 − 5 = 17 − 5");
-    expect(historyItems()[1].textContent).toContain("2x = 12");
+    // The finished step stays on the sheet, written as in a notebook; the result is the current equation below it.
+    expect(historyItems()).toHaveLength(1);
+    expect(historyItems()[0].textContent).toContain("2x + 5 = 17");
+    expect(historyItems()[0].textContent).toContain("|| − 5");
+    expect(historyItems()[0].textContent).toContain("2x + 5 − 5 = 17 − 5");
     expect(document.activeElement).toBe(screen.getByRole("radio", { name: "Add" }));
   });
 
@@ -137,7 +143,7 @@ describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
     await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: /Start over/ }));
     expect(spokenEquation()).toBe("Current equation: 2x plus 5 equals 17");
-    expect(historyItems()).toHaveLength(1);
+    expect(historyItems()).toHaveLength(0);
 
     // Finish quickly and confirm the hint is still remembered.
     await applyOperation(user, "Subtract", 5);

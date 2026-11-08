@@ -124,8 +124,17 @@ export function SolverWorkspace({
   );
 
   return (
-    <div className="workspace" ref={root}>
+    <div className="workspace workspace-single" ref={root}>
       <div className="workspace-main">
+        <StepHistory
+          start={state.start}
+          prelude={state.prelude}
+          preludeDone={state.preludeIndex}
+          steps={state.steps}
+          canUndo={canUndo(state)}
+          onUndo={() => dispatch({ type: "undo" })}
+          onRestart={() => dispatch({ type: "restart" })}
+        />
         {preludeStep && written !== null ? (
           <>
             <section className="eq eq-written" aria-label={t.solver.written}>
@@ -232,17 +241,6 @@ export function SolverWorkspace({
         )}
       </div>
 
-      <div className="workspace-side">
-        <StepHistory
-          start={state.start}
-          prelude={state.prelude}
-          preludeDone={state.preludeIndex}
-          steps={state.steps}
-          canUndo={canUndo(state)}
-          onUndo={() => dispatch({ type: "undo" })}
-          onRestart={() => dispatch({ type: "restart" })}
-        />
-      </div>
     </div>
   );
 }
