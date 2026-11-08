@@ -267,9 +267,8 @@ describe("the app in Finnish", () => {
     await user.click(screen.getByRole("button", { name: /Siirry harjoitteluun/ }));
     expect(screen.getByText("Tehtävä 1/5")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Kirjoita yhtälö" })).toBeTruthy();
-    expect(screen.getByLabelText("Vasen puoli, luku x:n edessä")).toBeTruthy();
-    fireEvent.change(screen.getByLabelText("Vasen puoli, luku x:n edessä"), { target: { value: "1" } });
-    fireEvent.change(screen.getByLabelText("Oikea puoli, pelkkä luku"), { target: { value: "99" } });
+    expect((screen.getByLabelText("Yhtälösi") as HTMLInputElement).value).toBe("");
+    fireEvent.change(screen.getByLabelText("Yhtälösi"), { target: { value: "x = 99" } });
     await user.click(screen.getByRole("button", { name: "Tarkista yhtälöni" }));
     expect(document.querySelector(".notice")?.textContent).toMatch(/Siinä x on jo yksin|Se ei vielä vastaa tarinaa|Tarkista/);
   });

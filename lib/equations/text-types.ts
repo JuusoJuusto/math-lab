@@ -39,6 +39,11 @@ export interface BuildText {
   readonly general: { readonly title: string; readonly body: string };
 }
 
+export interface WrittenProblemText {
+  readonly title: string;
+  readonly body: string;
+}
+
 export interface EngineText {
   /** The multiplication and division signs used in written working. */
   readonly times: string;
@@ -135,4 +140,6 @@ export interface EngineText {
 
   readonly flip: FlipExplanation;
   readonly build: BuildText;
+  /** What to say when what the learner wrote cannot be read as an equation. */
+  readonly written: Record<"empty" | "no-equals" | "many-equals" | "unknown-letter" | "not-linear" | "unreadable", WrittenProblemText>;
 }

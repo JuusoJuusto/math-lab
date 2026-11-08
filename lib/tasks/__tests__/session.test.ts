@@ -33,7 +33,7 @@ describe("practice modes", () => {
 
   it("only lists topics a mode can really produce tasks for", () => {
     expect(topicsForMode(getMode("mistake")!)).toEqual(["two-step", "both", "fractions"]);
-    expect(topicsForMode(getMode("equation")!)).toEqual(["word"]);
+    expect(topicsForMode(getMode("equation")!)).toEqual(["word", "hard-word"]);
     expect(topicsForMode(getMode("exam")!)).toEqual([...TOPIC_ORDER]);
   });
 });

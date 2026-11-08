@@ -403,3 +403,22 @@
 @media (max-width: 560px) {
   .answers-prelude { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ---------- Writing the equation from scratch ---------- */
+
+.build-label { color: var(--s-muted); font-size: 12px; font-weight: 800; }
+.write-input {
+  width: 100%; min-height: 58px; padding: 0 16px; border: 2px solid #c3d8de; border-radius: 12px; background: #fff; color: var(--s-ink);
+  font: 600 clamp(22px, 5vw, 30px) var(--font-display); letter-spacing: 0.02em;
+}
+.write-input:focus-visible { outline: 3px solid #0c5e9a; outline-offset: 2px; }
+.write-input:disabled { background: #f1f8fa; }
+.keypad { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.key {
+  display: grid; place-items: center; min-height: 46px; border: 2px solid #d3e3e8; border-radius: 12px; background: #fff; color: var(--s-ink);
+  font: 600 22px var(--font-display); cursor: pointer; transition: background 0.12s, border-color 0.12s, transform 0.12s;
+}
+.key:hover { background: #f4fbfa; border-color: #7bc9c0; }
+.key:active { transform: translateY(1px); }
+.key:focus-visible { outline: 3px solid #0c5e9a; outline-offset: 2px; }
+.key-delete { color: var(--s-teal); }

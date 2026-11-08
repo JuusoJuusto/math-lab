@@ -234,6 +234,15 @@ export const fi: EngineText = {
       `Termin ${term} siirtäminen pitää yhtälön oikeana, mutta se ei vie x:ää lähemmäs sitä, että se olisi yksin. Etsi luku, joka on x:n tiellä.`,
   },
 
+  written: {
+    empty: { title: "Kirjoita ensin yhtälö", body: "Kirjoita tarinan antama yhtälö ja käytä etsittävälle luvulle merkintää x." },
+    "no-equals": { title: "Yhtälössä tarvitaan yhtäsuuruusmerkki", body: "Laita = kahden yhtä suuren asian väliin, esimerkiksi 2x + 3 = 15." },
+    "many-equals": { title: "Vain yksi yhtäsuuruusmerkki", body: "Yhtälössä on kaksi puolta ja niiden välissä yksi =." },
+    "unknown-letter": { title: "Käytä tuntemattomalle merkintää x", body: "Kirjoita etsittävä luku x:nä. Muita kirjaimia ei käytetä tässä." },
+    "not-linear": { title: "Tuossa on x kertaa x tai x jakajana", body: "Näissä tarinoissa x on yksinään, kerrottuna luvulla tai jaettuna luvulla." },
+    unreadable: { title: "En ymmärrä tuota", body: "Tarkista sulut ja merkit. Kirjoita lukuja, x, + − · : ( ) ja yksi =." },
+  },
+
   build: {
     exact: {
       title: "Se on oikea yhtälö!",

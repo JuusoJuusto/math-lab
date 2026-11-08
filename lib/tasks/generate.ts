@@ -34,12 +34,14 @@ import {
 import { getQuestions } from "../../content/questions";
 import { CORRUPTIONS, continueWith, corruptStep, plausibleWrongValues } from "./corruption";
 import { displayEquation, int, isEquationTopic, pick, sampleEquation, type Sample } from "./sample";
-import { sampleProportion, sampleStory, storyPassage } from "./stories";
+import { sampleProportion, sampleStory, storyPassage, tiersOfTopic } from "./stories";
 import { supports } from "./support";
 import { taskText, type TaskText } from "./text";
 import type { Task, TaskSpec, WorkedLine } from "./types";
 
 const minus = (text: string) => text.replace(/-/g, "−");
+/** An equation as it reads in the language: a true minus, and a decimal comma in Finnish (0,75x). */
+const written = (text: string, lang: Lang) => (lang === "fi" ? minus(text).replace(/(\d)\.(\d)/g, "$1,$2") : minus(text));
 const xEquals = (value: number) => `x = ${formatFraction(frac(value))}`;
 
 /** The solution written as short lines, e.g. "Subtract 5 from both sides: 2x = 12." */
@@ -116,8 +118,8 @@ function solveTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
     };
   }
 
-  if (spec.topic === "word") {
-    const story = sampleStory(rng);
+  if (spec.topic === "word" || spec.topic === "hard-word") {
+    const story = sampleStory(rng, { tiers: tiersOfTopic(spec.topic) });
     const words = story.i18n[lang];
     const sample = { text: story.equations[0], equation: parseEquationOrThrow(story.equations[0]), solution: story.solution };
     return {
@@ -311,7 +313,7 @@ function mistakeTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
 
 function equationTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
   const text = taskText(lang);
-  const story = sampleStory(rng);
+  const story = sampleStory(rng, { tiers: tiersOfTopic(spec.topic) });
   const words = story.i18n[lang];
   const options = shuffle(story.equations, rng);
   const sample = { text: story.equations[0], equation: parseEquationOrThrow(story.equations[0]), solution: story.solution };
@@ -319,10 +321,10 @@ function equationTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
   return {
     spec,
     kind: "equation",
-    topic: "word",
+    topic: spec.topic,
     prompt: text.equationPrompt(storyPassage(story, lang)),
-    input: { type: "choice", options: options.map(minus), correct: options.indexOf(story.equations[0]) },
-    answerText: minus(story.equations[0]),
+    input: { type: "choice", options: options.map((option) => written(option, lang)), correct: options.indexOf(story.equations[0]) },
+    answerText: written(story.equations[0], lang),
     explanation: [words.build, ...workingLines(sample, lang), text.so(xEquals(story.solution))],
   };
 }

@@ -227,6 +227,15 @@ export const en: EngineText = {
       `Flipping ${term} keeps the equation correct, but it does not bring x closer to being alone. Look for the number that is in the way of x.`,
   },
 
+  written: {
+    empty: { title: "Write your equation first", body: "Type the equation the story gives, using x for the number you are looking for." },
+    "no-equals": { title: "An equation needs an equals sign", body: "Put = between the two things that are equal, for example 2x + 3 = 15." },
+    "many-equals": { title: "Only one equals sign", body: "An equation has two sides with one = between them." },
+    "unknown-letter": { title: "Use x for the unknown", body: "Write the number you are looking for as x. Other letters are not used here." },
+    "not-linear": { title: "That has x times x or x underneath", body: "These stories only need x on its own, multiplied by a number or divided by a number." },
+    unreadable: { title: "I cannot read that", body: "Check the brackets and the signs. Write numbers, x, + − · : ( ) and one =." },
+  },
+
   build: {
     exact: {
       title: "That is the equation!",

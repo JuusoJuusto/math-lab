@@ -68,7 +68,7 @@ describe("task generation is sound for every kind and topic", () => {
           expect(text, task.prompt).not.toMatch(/NaN|undefined|Infinity|\[object|null/);
         }
         expect(task.explanation.length).toBeGreaterThan(0);
-        expect(task.topic).toBe(kind === "equation" ? "word" : topic);
+        expect(task.topic).toBe(topic);
       }
     });
 

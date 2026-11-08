@@ -15,6 +15,18 @@ import type { Localised } from "../lang";
 import { int, pick } from "./sample";
 
 export type StoryId =
+  | "sharing"
+  | "race"
+  | "consecutive"
+  | "discount"
+  | "triangle"
+  | "bracket-puzzle"
+  | "cyclists"
+  | "trains"
+  | "parts"
+  | "ella-age"
+  | "sale-fee"
+  | "work-together"
   | "notebooks"
   | "stickers"
   | "birthday"
@@ -42,8 +54,11 @@ export interface StoryText {
 
 export interface Story {
   readonly id: StoryId;
-  /** 1 is a one-step equation, 2 is two steps, 3 has x on both sides or brackets. */
-  readonly difficulty: 1 | 2 | 3;
+  /**
+   * 1 one step, 2 two steps, 3 x on both sides or brackets, 4 consecutive numbers and percentages,
+   * 5 brackets with two moving things, 6 fractions, ages and work (the hardest).
+   */
+  readonly difficulty: 1 | 2 | 3 | 4 | 5 | 6;
   /** Equation options in standard ASCII form. The first one is correct. */
   readonly equations: readonly string[];
   readonly solution: number;
@@ -318,6 +333,360 @@ export function rectangleStory(s: number, n: number): Story {
   };
 }
 
+/* -------------------------------------------------------------------------- */
+/* Harder stories: percentages, consecutive numbers, movement, ages, work      */
+/* -------------------------------------------------------------------------- */
+
+/** Decimal as written in each language: 0.75 and 0,75. */
+const dec = (value: number, lang: Lang) => (lang === "fi" ? String(value).replace(".", ",") : String(value));
+const both = (text: (lang: Lang) => StoryText): Localised<StoryText> => ({ en: text("en"), fi: text("fi") });
+
+export function sharingStory(n: number, m: number): Story {
+  const s = n * m;
+  return {
+    id: "sharing",
+    difficulty: 1,
+    equations: [`x/${n} = ${m}`, `x + ${n} = ${m}`, `${n}x = ${m}`, `x - ${n} = ${m}`],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `A pizza is shared equally between ${n} friends. Each friend gets ${m} slices.`,
+        letX: "Let x be the number of slices in the pizza.",
+        question: "How many slices does the pizza have?",
+        unit: "slices",
+        build: `Sharing x slices between ${n} friends gives x/${n} each: x/${n} = ${m}.`,
+        answer: `The pizza has ${s} slices.`,
+      },
+      fi: {
+        situation: `Pizza jaetaan tasan ${n} ystävän kesken. Jokainen saa ${m} palaa.`,
+        letX: "Olkoon x pizzan palojen määrä.",
+        question: "Montako palaa pizzassa on?",
+        unit: "palaa",
+        build: `Kun x palaa jaetaan ${n} ystävälle, jokainen saa x/${n}: x/${n} = ${m}.`,
+        answer: `Pizzassa on ${s} palaa.`,
+      },
+    },
+  };
+}
+
+export function raceStory(b: number, p: number, q: number, s: number): Story {
+  const a = b + (q - p) * s;
+  const total = p * s + a;
+  return {
+    id: "race",
+    difficulty: 3,
+    equations: [`${p}x + ${a} = ${q}x + ${b}`, `${p}x + ${a} = ${b}`, `${p}x + ${b} = ${q}x + ${a}`, `${p + q}x = ${a} + ${b}`],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `Aino has €${a} and saves €${p} every week. Ben has €${b} and saves €${q} every week.`,
+        letX: "Let x be the number of weeks until they have the same amount.",
+        question: "After how many weeks do they have the same amount?",
+        unit: "weeks",
+        build: `After x weeks Aino has ${p}x + ${a} and Ben has ${q}x + ${b}. They are equal when ${p}x + ${a} = ${q}x + ${b}.`,
+        answer: `After ${s} weeks they both have €${total}.`,
+      },
+      fi: {
+        situation: `Ainolla on ${a} € ja hän säästää ${p} € viikossa. Benillä on ${b} € ja hän säästää ${q} € viikossa.`,
+        letX: "Olkoon x viikkojen määrä, kunnes heillä on yhtä paljon.",
+        question: "Monenko viikon kuluttua heillä on yhtä paljon?",
+        unit: "viikkoa",
+        build: `x viikon jälkeen Ainolla on ${p}x + ${a} ja Benillä ${q}x + ${b}. Ne ovat yhtä suuret, kun ${p}x + ${a} = ${q}x + ${b}.`,
+        answer: `${s} viikon kuluttua heillä on kummallakin ${total} €.`,
+      },
+    },
+  };
+}
+
+export function consecutiveStory(s: number): Story {
+  const total = 3 * s + 3;
+  return {
+    id: "consecutive",
+    difficulty: 4,
+    equations: [`x + (x + 1) + (x + 2) = ${total}`, `3x = ${total}`, `x + (x + 1) + (x + 2) = ${total + 3}`, `x + 1 + 2 = ${total}`],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `The sum of three consecutive whole numbers is ${total}.`,
+        letX: "Let x be the smallest of them.",
+        question: "What is the smallest number?",
+        unit: "",
+        build: `The numbers are x, x + 1 and x + 2, so x + (x + 1) + (x + 2) = ${total}.`,
+        answer: `The smallest number is ${s}.`,
+      },
+      fi: {
+        situation: `Kolmen peräkkäisen kokonaisluvun summa on ${total}.`,
+        letX: "Olkoon x niistä pienin.",
+        question: "Mikä on pienin luku?",
+        unit: "",
+        build: `Luvut ovat x, x + 1 ja x + 2, joten x + (x + 1) + (x + 2) = ${total}.`,
+        answer: `Pienin luku on ${s}.`,
+      },
+    },
+  };
+}
+
+export function discountStory(p: number, s: number): Story {
+  const factor = (100 - p) / 100;
+  const sale = (s * (100 - p)) / 100;
+  return {
+    id: "discount",
+    difficulty: 4,
+    equations: [`${factor}x = ${sale}`, `x - ${p}x = ${sale}`, `${p / 100}x = ${sale}`, `x - ${p} = ${sale}`],
+    solution: s,
+    i18n: both((lang) =>
+      lang === "en"
+        ? {
+            situation: `A jacket is on sale with ${p} % off. The sale price is €${sale}.`,
+            letX: "Let x be the original price in euros.",
+            question: "What was the original price?",
+            unit: "€",
+            build: `After ${p} % off the price is ${factor} of the original: ${factor}x = ${sale}.`,
+            answer: `The original price was €${s}.`,
+          }
+        : {
+            situation: `Takki on alennusmyynnissä ${p} %:n alennuksella. Alennettu hinta on ${sale} €.`,
+            letX: "Olkoon x alkuperäinen hinta euroina.",
+            question: "Mikä oli alkuperäinen hinta?",
+            unit: "€",
+            build: `${p} %:n alennuksen jälkeen hinta on ${dec(factor, "fi")}-kertainen alkuperäiseen: ${dec(factor, "fi")}x = ${sale}.`,
+            answer: `Alkuperäinen hinta oli ${s} €.`,
+          },
+    ),
+  };
+}
+
+export function triangleStory(k: number, s: number): Story {
+  const perimeter = 3 * s - k;
+  return {
+    id: "triangle",
+    difficulty: 4,
+    equations: [`x + x + (x - ${k}) = ${perimeter}`, `3x = ${perimeter}`, `x + x + (x + ${k}) = ${perimeter}`, `x + (x - ${k}) = ${perimeter}`],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `An isosceles triangle has two equal sides. The third side is ${k} cm shorter than each of them. The perimeter is ${perimeter} cm.`,
+        letX: "Let x be the length of one of the equal sides in centimetres.",
+        question: "How long is one of the equal sides?",
+        unit: "cm",
+        build: `The sides are x, x and x − ${k}. The perimeter is their sum: x + x + (x − ${k}) = ${perimeter}.`,
+        answer: `Each of the equal sides is ${s} cm.`,
+      },
+      fi: {
+        situation: `Tasakylkisessä kolmiossa on kaksi yhtä pitkää sivua. Kolmas sivu on ${k} cm lyhyempi kuin kumpikaan niistä. Piiri on ${perimeter} cm.`,
+        letX: "Olkoon x toisen yhtä pitkän sivun pituus senttimetreinä.",
+        question: "Kuinka pitkä on toinen yhtä pitkistä sivuista?",
+        unit: "cm",
+        build: `Sivut ovat x, x ja x − ${k}. Piiri on niiden summa: x + x + (x − ${k}) = ${perimeter}.`,
+        answer: `Kumpikin yhtä pitkistä sivuista on ${s} cm.`,
+      },
+    },
+  };
+}
+
+export function bracketPuzzleStory(a: number, b: number, s: number): Story {
+  const result = a * (s + b);
+  return {
+    id: "bracket-puzzle",
+    difficulty: 5,
+    equations: [`${a}(x + ${b}) = ${result}`, `${a}x + ${b} = ${result}`, `x + ${a * b} = ${result}`, `${a}(x - ${b}) = ${result}`],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `I think of a number, add ${b} to it and multiply the result by ${a}. I get ${result}.`,
+        letX: "Let x be my number.",
+        question: "What number am I thinking of?",
+        unit: "",
+        build: `First add ${b}: (x + ${b}). Then multiply all of it by ${a}: ${a}(x + ${b}) = ${result}.`,
+        answer: `My number is ${s}.`,
+      },
+      fi: {
+        situation: `Ajattelen jotakin lukua, lisään siihen ${b} ja kerron tuloksen luvulla ${a}. Saan ${result}.`,
+        letX: "Olkoon x ajattelemani luku.",
+        question: "Mitä lukua ajattelen?",
+        unit: "",
+        build: `Lisää ensin ${b}: (x + ${b}). Kerro sitten koko lauseke luvulla ${a}: ${a}(x + ${b}) = ${result}.`,
+        answer: `Ajattelemani luku on ${s}.`,
+      },
+    },
+  };
+}
+
+export function cyclistsStory(v1: number, v2: number, t: number): Story {
+  const distance = (v1 + v2) * t;
+  return {
+    id: "cyclists",
+    difficulty: 5,
+    equations: [`${v1}x + ${v2}x = ${distance}`, `${v1}x = ${distance}`, `${v1}x - ${v2}x = ${distance}`, `${v1 * v2}x = ${distance}`],
+    solution: t,
+    i18n: {
+      en: {
+        situation: `Two cyclists start at the same time from two towns ${distance} km apart and ride towards each other. One rides at ${v1} km/h and the other at ${v2} km/h.`,
+        letX: "Let x be the number of hours until they meet.",
+        question: "After how many hours do they meet?",
+        unit: "hours",
+        build: `In x hours they ride ${v1}x km and ${v2}x km. Together that is the whole distance: ${v1}x + ${v2}x = ${distance}.`,
+        answer: `They meet after ${t} hours.`,
+      },
+      fi: {
+        situation: `Kaksi pyöräilijää lähtee yhtä aikaa kahdesta ${distance} km:n päässä toisistaan olevasta kaupungista ja ajaa toisiaan kohti. Toinen ajaa nopeudella ${v1} km/h ja toinen nopeudella ${v2} km/h.`,
+        letX: "Olkoon x tuntien määrä, kunnes he kohtaavat.",
+        question: "Kuinka monen tunnin kuluttua he kohtaavat?",
+        unit: "tuntia",
+        build: `x tunnissa he ajavat ${v1}x km ja ${v2}x km. Yhteensä se on koko matka: ${v1}x + ${v2}x = ${distance}.`,
+        answer: `He kohtaavat ${t} tunnin kuluttua.`,
+      },
+    },
+  };
+}
+
+export function trainsStory(d: number, k: number, h: number): Story {
+  const v1 = d * k;
+  const v2 = v1 + d;
+  return {
+    id: "trains",
+    difficulty: 5,
+    equations: [`${v1}(x + ${h}) = ${v2}x`, `${v1}x = ${v2}(x + ${h})`, `${v1}(x + ${h}) = ${v2}`, `${v1}x + ${h} = ${v2}x`],
+    solution: k * h,
+    i18n: {
+      en: {
+        situation: `A train leaves a station at ${v1} km/h. ${h} hours later a second train leaves the same station on the same track at ${v2} km/h.`,
+        letX: "Let x be the number of hours the second train travels before it catches up with the first.",
+        question: "After how many hours does the second train catch up?",
+        unit: "hours",
+        build: `The second train travels x hours and the first x + ${h} hours. They have gone the same distance: ${v1}(x + ${h}) = ${v2}x.`,
+        answer: `The second train catches up after ${k * h} hours.`,
+      },
+      fi: {
+        situation: `Juna lähtee asemalta nopeudella ${v1} km/h. ${h} tuntia myöhemmin toinen juna lähtee samalta asemalta samaa rataa nopeudella ${v2} km/h.`,
+        letX: "Olkoon x tuntien määrä, jonka toinen juna ajaa ennen kuin se saavuttaa ensimmäisen.",
+        question: "Kuinka monen tunnin kuluttua toinen juna saavuttaa ensimmäisen?",
+        unit: "tuntia",
+        build: `Toinen juna ajaa x tuntia ja ensimmäinen x + ${h} tuntia. Ne ovat kulkeneet saman matkan: ${v1}(x + ${h}) = ${v2}x.`,
+        answer: `Toinen juna saavuttaa ensimmäisen ${k * h} tunnin kuluttua.`,
+      },
+    },
+  };
+}
+
+const PART_EN: Record<number, string> = { 2: "half", 3: "a third", 4: "a quarter", 6: "a sixth" };
+const PART_FI: Record<number, string> = { 2: "puolikas", 3: "kolmasosa", 4: "neljäsosa", 6: "kuudesosa" };
+
+export function partsStory(a: number, b: number, c: number): Story {
+  const s = (c * a * b) / (a - b);
+  const first = PART_EN[a];
+  return {
+    id: "parts",
+    difficulty: 6,
+    equations: [`x/${a} + ${c} = x/${b}`, `x/${a} - ${c} = x/${b}`, `${a}x + ${c} = ${b}x`, `x/${a} + ${c} = x/${b} + ${c}`],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `${first.charAt(0).toUpperCase()}${first.slice(1)} of a number plus ${c} is the same as ${PART_EN[b]} of the number.`,
+        letX: "Let x be the number.",
+        question: "What is the number?",
+        unit: "",
+        build: `${first.charAt(0).toUpperCase()}${first.slice(1)} of x is x/${a}, and ${PART_EN[b]} of x is x/${b}: x/${a} + ${c} = x/${b}.`,
+        answer: `The number is ${s}.`,
+      },
+      fi: {
+        situation: `Luvun ${PART_FI[a]} lisättynä luvulla ${c} on yhtä suuri kuin luvun ${PART_FI[b]}.`,
+        letX: "Olkoon x luku.",
+        question: "Mikä luku on?",
+        unit: "",
+        build: `Luvun x ${PART_FI[a]} on x/${a} ja luvun x ${PART_FI[b]} on x/${b}: x/${a} + ${c} = x/${b}.`,
+        answer: `Luku on ${s}.`,
+      },
+    },
+  };
+}
+
+export function ellaAgeStory(k: number, m: number, s: number): Story {
+  const n = s * (k - 1) - k * m;
+  return {
+    id: "ella-age",
+    difficulty: 6,
+    equations: [`x + ${n} = ${k}(x - ${m})`, `x + ${n} = ${k}x - ${m}`, `x + ${n} = ${k}(x + ${m})`, `x - ${n} = ${k}(x - ${m})`],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `In ${n} years Ella will be ${k} times as old as she was ${m} years ago.`,
+        letX: "Let x be Ella's age now, in years.",
+        question: "How old is Ella now?",
+        unit: "years",
+        build: `In ${n} years she is x + ${n}. ${m} years ago she was x − ${m}, and ${k} times that is ${k}(x − ${m}): x + ${n} = ${k}(x − ${m}).`,
+        answer: `Ella is ${s} years old.`,
+      },
+      fi: {
+        situation: `${n} vuoden kuluttua Ella on ${k} kertaa niin vanha kuin hän oli ${m} vuotta sitten.`,
+        letX: "Olkoon x Ellan ikä nyt vuosina.",
+        question: "Kuinka vanha Ella on nyt?",
+        unit: "vuotta",
+        build: `${n} vuoden kuluttua hän on x + ${n}. ${m} vuotta sitten hän oli x − ${m}, ja ${k}-kertainen on ${k}(x − ${m}): x + ${n} = ${k}(x − ${m}).`,
+        answer: `Ella on ${s}-vuotias.`,
+      },
+    },
+  };
+}
+
+export function saleFeeStory(p: number, s: number, fee: number): Story {
+  const factor = (100 - p) / 100;
+  const total = (s * (100 - p)) / 100 + fee;
+  return {
+    id: "sale-fee",
+    difficulty: 6,
+    equations: [`${factor}x + ${fee} = ${total}`, `${factor}x = ${total}`, `${p / 100}x + ${fee} = ${total}`, `${factor}(x + ${fee}) = ${total}`],
+    solution: s,
+    i18n: both((lang) =>
+      lang === "en"
+        ? {
+            situation: `A shirt is sold with ${p} % off. Delivery costs €${fee}. Altogether the customer pays €${total}.`,
+            letX: "Let x be the original price of the shirt in euros.",
+            question: "What was the original price of the shirt?",
+            unit: "€",
+            build: `The shirt costs ${factor}x after the discount, and the delivery is added once: ${factor}x + ${fee} = ${total}.`,
+            answer: `The shirt originally cost €${s}.`,
+          }
+        : {
+            situation: `Paita myydään ${p} %:n alennuksella. Toimitus maksaa ${fee} €. Asiakas maksaa yhteensä ${total} €.`,
+            letX: "Olkoon x paidan alkuperäinen hinta euroina.",
+            question: "Mikä oli paidan alkuperäinen hinta?",
+            unit: "€",
+            build: `Paita maksaa alennuksen jälkeen ${dec(factor, "fi")}x, ja toimitus lisätään kerran: ${dec(factor, "fi")}x + ${fee} = ${total}.`,
+            answer: `Paidan alkuperäinen hinta oli ${s} €.`,
+          },
+    ),
+  };
+}
+
+export function workTogetherStory(a: number, b: number): Story {
+  const s = (a * b) / (a + b);
+  return {
+    id: "work-together",
+    difficulty: 6,
+    equations: [`x/${a} + x/${b} = 1`, `x/${a} + x/${b} = 2`, `${a}x + ${b}x = 1`, `x/${a} - x/${b} = 1`],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `Anna can paint a fence in ${a} hours. Ben can paint the same fence in ${b} hours. They work together.`,
+        letX: "Let x be the number of hours they need together.",
+        question: "How many hours do they need together?",
+        unit: "hours",
+        build: `In one hour Anna paints 1/${a} of the fence and Ben 1/${b}. In x hours: x/${a} + x/${b} = 1 whole fence.`,
+        answer: `Together they need ${s} hours.`,
+      },
+      fi: {
+        situation: `Anna maalaa aidan ${a} tunnissa. Ben maalaa saman aidan ${b} tunnissa. He tekevät työn yhdessä.`,
+        letX: "Olkoon x tuntien määrä, jonka he tarvitsevat yhdessä.",
+        question: "Kuinka monta tuntia he tarvitsevat yhdessä?",
+        unit: "tuntia",
+        build: `Tunnissa Anna maalaa 1/${a} aidasta ja Ben 1/${b}. x tunnissa: x/${a} + x/${b} = 1 eli koko aita.`,
+        answer: `Yhdessä he tarvitsevat ${s} tuntia.`,
+      },
+    },
+  };
+}
+
 type Template = (rng: Rng) => Story | null;
 
 const TEMPLATES: readonly Template[] = [
@@ -353,6 +722,42 @@ const TEMPLATES: readonly Template[] = [
     const n = int(rng, 2, 8);
     return s === n ? null : rectangleStory(s, n);
   },
+  (rng) => sharingStory(int(rng, 2, 6), int(rng, 2, 9)),
+  (rng) => {
+    const p = int(rng, 2, 6);
+    const q = p + int(rng, 1, 4);
+    return raceStory(int(rng, 2, 15), p, q, int(rng, 3, 10));
+  },
+  (rng) => consecutiveStory(int(rng, 3, 40)),
+  (rng) => {
+    const p = pick(rng, [10, 20, 25, 30, 40]);
+    const step = { 10: 10, 20: 5, 25: 4, 30: 10, 40: 5 }[p as 10 | 20 | 25 | 30 | 40];
+    return discountStory(p, step * int(rng, 4, 20));
+  },
+  (rng) => triangleStory(int(rng, 2, 6), int(rng, 5, 14)),
+  (rng) => bracketPuzzleStory(int(rng, 2, 6), int(rng, 2, 9), int(rng, 2, 14)),
+  (rng) => cyclistsStory(int(rng, 8, 20), int(rng, 10, 24), int(rng, 2, 5)),
+  (rng) => trainsStory(pick(rng, [10, 20, 30]), int(rng, 2, 5), int(rng, 1, 3)),
+  (rng) => {
+    const [a, b] = pick(rng, [[3, 2], [4, 2], [6, 3], [6, 2]] as const);
+    return partsStory(a, b, int(rng, 2, 9));
+  },
+  (rng) => {
+    const k = int(rng, 2, 3);
+    const m = int(rng, 2, 6);
+    const s = int(rng, 8, 20);
+    const n = s * (k - 1) - k * m;
+    return n > 0 && n < 25 ? ellaAgeStory(k, m, s) : null;
+  },
+  (rng) => {
+    const p = pick(rng, [10, 20, 25]);
+    const step = { 10: 10, 20: 5, 25: 4 }[p as 10 | 20 | 25];
+    return saleFeeStory(p, step * int(rng, 4, 16), int(rng, 2, 9));
+  },
+  (rng) => {
+    const [a, b] = pick(rng, [[3, 6], [4, 12], [6, 12], [10, 15], [6, 3], [12, 4]] as const);
+    return a === b ? null : workTogetherStory(a, b);
+  },
 ];
 
 /** True when the equation text has exactly one solution and it equals `expected`. */
@@ -363,16 +768,11 @@ function solvesTo(text: string, expected: number): boolean {
   return solution.kind === "one" && solution.value.d === 1 && solution.value.n === expected;
 }
 
-/** Whether a story's intended equation can be written without brackets, as the equation builder requires. */
-export function isBracketFree(story: Story): boolean {
-  return !story.equations[0].includes("(");
-}
-
 export interface StoryOptions {
   /** Only stories of this difficulty. */
-  readonly difficulty?: 1 | 2 | 3;
-  /** Only stories whose equation can be built from `ax + b = cx + d` (no brackets). */
-  readonly bracketFree?: boolean;
+  readonly difficulty?: Story["difficulty"];
+  /** Only stories of these difficulties. */
+  readonly tiers?: readonly Story["difficulty"][];
 }
 
 /** A verified word problem: the first option is the only one that gives the intended answer. */
@@ -381,29 +781,40 @@ export function sampleStory(rng: Rng, options: StoryOptions = {}): Story {
     const story = pick(rng, TEMPLATES)(rng);
     if (!story) continue;
     if (options.difficulty && story.difficulty !== options.difficulty) continue;
-    if (options.bracketFree && !isBracketFree(story)) continue;
+    if (options.tiers && !options.tiers.includes(story.difficulty)) continue;
     const [correct, ...wrong] = story.equations;
     if (solvesTo(correct, story.solution) && wrong.every((text) => !solvesTo(text, story.solution))) return story;
   }
   throw new Error("Could not build a valid word problem");
 }
 
-/** The story used for the worked example: fixed, so it reads the same every time. */
+/** The story used for the worked example of the first word-problem level: fixed, so it reads the same every time. */
 export const EXAMPLE_STORY: Story = taxiStory(3, 2, 6);
 
+/** The worked example of each word-problem level. */
+export const EXAMPLE_STORIES: Readonly<Record<"word" | "hard-word", Story>> = {
+  word: EXAMPLE_STORY,
+  "hard-word": consecutiveStory(15),
+};
+
+/** The difficulty tiers a topic draws its stories from. */
+export function tiersOfTopic(topic: string): readonly Story["difficulty"][] {
+  return topic === "hard-word" ? [4, 5, 6] : [1, 2, 3];
+}
+
 /**
- * The stories of one round of the word-problem level: easy ones first, never
- * the same situation twice in a row, and always with an equation that can be
- * written without brackets.
+ * The stories of one round of a word-problem level: easy ones first, climbing
+ * through the level's tiers, and never the same situation twice in a row.
  */
-export function pickStoryRound(rng: Rng, count: number): Story[] {
+export function pickStoryRound(rng: Rng, count: number, tiers: readonly Story["difficulty"][] = [1, 2, 3]): Story[] {
   const stories: Story[] = [];
   for (let index = 0; index < count; index += 1) {
     const ratio = count === 1 ? 0 : index / (count - 1);
-    const difficulty = ratio < 0.4 ? 1 : ratio < 0.8 ? 2 : 3;
-    let story = sampleStory(rng, { difficulty, bracketFree: true });
+    const step = ratio < 0.4 ? 0 : ratio < 0.8 ? 1 : 2;
+    const difficulty = tiers[Math.min(step, tiers.length - 1)];
+    let story = sampleStory(rng, { difficulty });
     for (let retry = 0; retry < 10 && stories.some((earlier) => earlier.id === story.id); retry += 1) {
-      story = sampleStory(rng, { difficulty, bracketFree: true });
+      story = sampleStory(rng, { difficulty });
     }
     stories.push(story);
   }

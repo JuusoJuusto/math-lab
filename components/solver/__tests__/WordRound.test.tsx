@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getTopic } from "@/content/topics";
-import { createRng, getLevel, mustParseEquation, type Equation } from "@/lib/equations";
+import { createRng, getLevel } from "@/lib/equations";
 import { pickStoryRound } from "@/lib/tasks";
 import { SolverView } from "../SolverView";
 import { solveOnScreenEquation } from "./helpers";
@@ -16,15 +16,9 @@ function setup() {
   return { ...handlers, user };
 }
 
-function write(side: "Left side" | "Right side", x: number, c: number) {
-  if (x !== 0) fireEvent.change(screen.getByLabelText(`${side}, number before x`), { target: { value: String(Math.abs(x)) } });
-  if (c !== 0) fireEvent.change(screen.getByLabelText(`${side}, plain number`), { target: { value: String(Math.abs(c)) } });
-  if (c < 0) fireEvent.click(screen.getByRole("button", { name: `${side}: Plus` }));
-}
-
-function writeEquation(equation: Equation) {
-  write("Left side", equation.left.x.n, equation.left.c.n);
-  write("Right side", equation.right.x.n, equation.right.c.n);
+/** Types the equation into the blank field, as a learner would. */
+function writeEquation(text: string) {
+  fireEvent.change(screen.getByLabelText("Your equation"), { target: { value: text } });
 }
 
 afterEach(() => {
@@ -67,7 +61,7 @@ describe("the word-problem level", () => {
       // The story is on screen, with what x stands for and the question.
       expect(screen.getByText(story.i18n.en.question)).toBeTruthy();
 
-      writeEquation(mustParseEquation(story.equations[0]));
+      writeEquation(story.equations[0]);
       await user.click(screen.getByRole("button", { name: "Check my equation" }));
       expect(document.querySelector(".notice")?.textContent).toContain("That is the equation!");
       await user.click(screen.getByRole("button", { name: /Solve it/ }));
@@ -92,8 +86,7 @@ describe("the word-problem level", () => {
     const round = pickStoryRound(createRng(11), 5);
     expect(round.map((story) => story.difficulty)).toEqual([1, 1, 2, 2, 3]);
     expect(new Set(round.map((story) => story.id)).size).toBeGreaterThanOrEqual(4);
-    // Every equation can be written in the builder: no brackets.
-    expect(round.every((story) => !story.equations[0].includes("("))).toBe(true);
+    expect(round.every((story) => story.difficulty <= 3)).toBe(true);
   });
 
   it("does not move on while the equation is wrong", async () => {
@@ -102,8 +95,7 @@ describe("the word-problem level", () => {
     await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
     await screen.findByText("Problem 1 of 5");
 
-    fireEvent.change(screen.getByLabelText("Left side, number before x"), { target: { value: "9" } });
-    fireEvent.change(screen.getByLabelText("Right side, plain number"), { target: { value: "1" } });
+    writeEquation("9x = 1");
     await user.click(screen.getByRole("button", { name: "Check my equation" }));
     expect(screen.queryByRole("button", { name: /Solve it/ })).toBeNull();
     expect(screen.getByText("Problem 1 of 5")).toBeTruthy();

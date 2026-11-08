@@ -15,7 +15,38 @@
 
 import { equals, isZero, neg } from "./fraction";
 import { equalsEquation, type Equation } from "./expression";
+import { parseEquation } from "./parse";
 import { isSolved, sameSolution, solveEquation } from "./solve";
+
+/** Why what a learner wrote cannot be read as an equation. */
+export type WrittenProblem = "empty" | "no-equals" | "many-equals" | "unknown-letter" | "not-linear" | "unreadable";
+
+export type Written = { readonly ok: true; readonly equation: Equation } | { readonly ok: false; readonly problem: WrittenProblem };
+
+/**
+ * Reads an equation the learner typed from scratch. It accepts what people
+ * actually write: `2x+3=15`, `3(x + 1)`, `0,75x`, `x/2`, `x·2`, `x : 2`, a capital X.
+ */
+export function readWritten(text: string): Written {
+  const cleaned = text
+    .trim()
+    .replace(/(\d),(\d)/g, "$1.$2")
+    .replace(/[·×]/g, "*")
+    .replace(/[÷:]/g, "/")
+    .replace(/[−–]/g, "-")
+    .replace(/X/g, "x");
+
+  if (cleaned === "") return { ok: false, problem: "empty" };
+  const equals = cleaned.split("=").length - 1;
+  if (equals === 0) return { ok: false, problem: "no-equals" };
+  if (equals > 1) return { ok: false, problem: "many-equals" };
+  if (/[a-wyzA-WYZ]/.test(cleaned)) return { ok: false, problem: "unknown-letter" };
+
+  const parsed = parseEquation(cleaned);
+  if (parsed.ok) return { ok: true, equation: parsed.value };
+  if (/non-linear|expression with x/.test(parsed.message)) return { ok: false, problem: "not-linear" };
+  return { ok: false, problem: "unreadable" };
+}
 
 export type BuildHint = "sign" | "swapped" | "total" | "general";
 

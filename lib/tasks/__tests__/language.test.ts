@@ -207,3 +207,56 @@ describe("the interface text", () => {
     expect(parseAnswer("−3", "fi")).toEqual(parseAnswer("-3", "en"));
   });
 });
+
+describe("the harder word problems", () => {
+  it("are all reachable, in six tiers, each with a verified answer", () => {
+    const rng = createRng(31);
+    const seen = new Map<number, Set<string>>();
+    for (let i = 0; i < 1500; i += 1) {
+      const story = sampleStory(rng);
+      seen.set(story.difficulty, (seen.get(story.difficulty) ?? new Set()).add(story.id));
+    }
+    expect([...seen.keys()].sort()).toEqual([1, 2, 3, 4, 5, 6]);
+    // Twelve new stories plus the nine before, in every language.
+    expect([...seen.values()].reduce((sum, ids) => sum + ids.size, 0)).toBe(21);
+  });
+
+  it("keep the tiers apart: practice draws easy ones for 'word' and hard ones for 'hard-word'", () => {
+    const rng = createRng(5);
+    for (let i = 0; i < 200; i += 1) {
+      expect(sampleStory(rng, { tiers: [1, 2, 3] }).difficulty).toBeLessThanOrEqual(3);
+      expect(sampleStory(rng, { tiers: [4, 5, 6] }).difficulty).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it("write decimals with a comma in Finnish and a point in English", () => {
+    const rng = createRng(12);
+    let checked = 0;
+    for (let i = 0; i < 400; i += 1) {
+      const story = sampleStory(rng, { difficulty: 4 });
+      if (story.id !== "discount") continue;
+      expect(story.i18n.en.build).toMatch(/\d\.\d/);
+      expect(story.i18n.fi.build).toMatch(/\d,\d/);
+      expect(story.i18n.fi.build).not.toMatch(/\d\.\d/);
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThan(20);
+  });
+
+  it("show the written equation with a Finnish decimal comma in a 'which equation' task", () => {
+    let withDecimals = 0;
+    for (let seed = 1; seed <= 300; seed += 1) {
+      const fi = generateTask({ kind: "equation", topic: "hard-word", seed }, "fi");
+      const en = generateTask({ kind: "equation", topic: "hard-word", seed }, "en");
+      if (fi.input.type !== "choice" || en.input.type !== "choice") throw new Error("expected a choice");
+      // The same option is right in both languages.
+      expect(fi.input.correct).toBe(en.input.correct);
+      if (/\d,\d/.test(fi.answerText)) {
+        withDecimals += 1;
+        expect(en.answerText).toMatch(/\d\.\d/);
+        expect(fi.answerText).not.toMatch(/\d\.\d/);
+      }
+    }
+    expect(withDecimals).toBeGreaterThan(10);
+  });
+});

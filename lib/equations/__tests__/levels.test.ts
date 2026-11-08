@@ -339,3 +339,21 @@ describe("the harder levels deliver what they promise", () => {
     expect(moves("brackets")).toBeLessThan(moves("challenge"));
   });
 });
+
+describe("the word-problem levels", () => {
+  it("each has a worked example that is the story's own equation", async () => {
+    const { EXAMPLE_STORIES } = await import("../../tasks/stories");
+    for (const id of ["word", "hard-word"] as const) {
+      const story = EXAMPLE_STORIES[id];
+      const fromStory = mustParseEquation(story.equations[0]);
+      const fromLevel = mustParseEquation(level(id).example.equation);
+      expect(fromLevel).toEqual(fromStory);
+      expect(level(id).kind).toBe("stories");
+    }
+  });
+
+  it("climb through different tiers", () => {
+    expect(level("word").tiers).toEqual([1, 2, 3]);
+    expect(level("hard-word").tiers).toEqual([4, 5, 6]);
+  });
+});

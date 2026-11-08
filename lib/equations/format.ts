@@ -11,7 +11,7 @@
  */
 
 import type { Lang } from "../lang";
-import { abs, isNegative, isOne, isZero, type Fraction } from "./fraction";
+import { abs, isNegative, isZero, type Fraction } from "./fraction";
 import { termCount, type Equation, type LinearExpr } from "./expression";
 import type { Operation } from "./operations";
 import { engineText } from "./text";

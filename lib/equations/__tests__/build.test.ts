@@ -51,3 +51,50 @@ describe("judging an equation written from a story", () => {
     }
   });
 });
+
+import { readWritten } from "../build";
+import { formatEquation } from "../format";
+
+describe("reading an equation typed from scratch", () => {
+  const read = (text: string) => {
+    const result = readWritten(text);
+    return result.ok ? formatEquation(result.equation) : result.problem;
+  };
+
+  it("reads what people actually write", () => {
+    expect(read("2x+3=15")).toBe("2x + 3 = 15");
+    expect(read("  2X + 3 = 15 ")).toBe("2x + 3 = 15");
+    expect(read("3(x + 1) = 18")).toBe("3x + 3 = 18");
+    expect(read("0,75x = 60")).toBe("3x/4 = 60");
+    expect(read("x - 0.25x = 60")).toBe("3x/4 = 60");
+    expect(read("x : 2 + 1 = 5")).toBe("x/2 + 1 = 5");
+    expect(read("(x + 1)/2 = 4")).toBe("x/2 + 1/2 = 4");
+    expect(read("2·x = 8")).toBe("2x = 8");
+    expect(read("x + (x + 1) + (x + 2) = 48")).toBe("3x + 3 = 48");
+    expect(read("15 = 2x + 3")).toBe("15 = 2x + 3");
+  });
+
+  it("says what is wrong when it cannot be read", () => {
+    expect(read("")).toBe("empty");
+    expect(read("2x + 3")).toBe("no-equals");
+    expect(read("2x = 3 = 5")).toBe("many-equals");
+    expect(read("2y + 3 = 15")).toBe("unknown-letter");
+    expect(read("x*x = 16")).toBe("not-linear");
+    expect(read("3/x = 2")).toBe("not-linear");
+    expect(read("2x + = 15")).toBe("unreadable");
+    expect(read("(2x + 3 = 15")).toBe("unreadable");
+  });
+
+  it("feeds the judge: an equivalent way of writing it is accepted, the answer alone is not", () => {
+    const intended = mustParseEquation("0.75x = 60");
+    const judge = (text: string) => {
+      const written = readWritten(text);
+      return written.ok ? judgeBuiltEquation(written.equation, intended).kind : written.problem;
+    };
+    expect(judge("x - 0.25x = 60")).toBe("exact");
+    expect(judge("3/4 x = 60")).toBe("exact"); // three quarters of x
+    expect(judge("3x/4 = 60")).toBe("exact");
+    expect(judge("x = 80")).toBe("answer-given");
+    expect(judge("0.25x = 60")).toBe("wrong");
+  });
+});

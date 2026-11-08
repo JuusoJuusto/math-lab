@@ -28,11 +28,11 @@ const ALL: readonly string[] = TOPIC_ORDER;
 export const KIND_TOPICS: Record<TaskKind, readonly string[]> = {
   bank: ALL,
   choose: ["basics", "one-step", "two-step", "both", "brackets", "fractions", "challenge"],
-  solve: ["one-step", "two-step", "both", "brackets", "fractions", "proportion", "word", "challenge"],
+  solve: ["one-step", "two-step", "both", "brackets", "fractions", "proportion", "word", "hard-word", "challenge"],
   check: ["basics", "one-step", "two-step", "both", "brackets", "fractions", "challenge"],
   step: ["one-step", "two-step", "both", "fractions"],
   mistake: ["two-step", "both", "fractions"],
-  equation: ["word"],
+  equation: ["word", "hard-word"],
 };
 
 export function supports(kind: TaskKind, topic: string): boolean {

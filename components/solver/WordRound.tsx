@@ -13,8 +13,8 @@ import {
   type ExerciseResult,
   type LevelDefinition,
 } from "@/lib/equations";
-import { EXAMPLE_STORY, pickStoryRound, type Story } from "@/lib/tasks";
-import { EquationBuilder, type BuiltResult } from "./EquationBuilder";
+import { EXAMPLE_STORIES, pickStoryRound, type Story } from "@/lib/tasks";
+import { EquationWriter, type BuiltResult } from "./EquationWriter";
 import type { RoundReport } from "./PracticeRound";
 import { StoryCard } from "./StoryCard";
 import { SolverWorkspace, type WorkspaceOutcome } from "./SolverWorkspace";
@@ -58,7 +58,7 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, onDone 
       </ol>
 
       {stage === "build" && (
-        <EquationBuilder
+        <EquationWriter
           // A change of language starts the story again, so every message is in one language.
           key={lang}
           intended={intended}
@@ -128,7 +128,7 @@ function storyExercise(story: Story, index: number): Exercise {
 export function WordRound({ level, onComplete, onEquationSolved, onExit }: WordRoundProps) {
   const { t } = useI18n();
   // Chosen once, when the learner starts the round, so server-rendered HTML never differs from the client.
-  const [stories] = useState(() => pickStoryRound(Math.random, level.roundSize));
+  const [stories] = useState(() => pickStoryRound(Math.random, level.roundSize, level.tiers));
   const [index, setIndex] = useState(0);
   const [results, setResults] = useState<readonly ExerciseResult[]>([]);
   const [moveMode, setMoveMode] = useState<MoveMode>("balance");
@@ -189,19 +189,20 @@ export function WordRound({ level, onComplete, onEquationSolved, onExit }: WordR
 /** The worked example of the word-problem level: the story, how it becomes an equation, then the solution. */
 export function WordExample({ level, onPractise }: { level: LevelDefinition; onPractise: () => void }) {
   const { lang, t } = useI18n();
-  const words = EXAMPLE_STORY.i18n[lang];
-  const equation = mustParseEquation(EXAMPLE_STORY.equations[0]);
+  const story = EXAMPLE_STORIES[level.id === "hard-word" ? "hard-word" : "word"];
+  const words = story.i18n[lang];
+  const equation = mustParseEquation(story.equations[0]);
 
   return (
     <div className="word-example">
-      <StoryCard story={EXAMPLE_STORY} />
+      <StoryCard story={story} />
       <section className="build" aria-labelledby="example-build">
         <h3 className="build-title" id="example-build">
           {t.word.step1}
         </h3>
         <p className="build-text">{words.build}</p>
         <p className="build-preview">
-          <span>{t.word.yourEquation}:</span> <strong>{formatEquation(equation)}</strong>
+          <span>{t.word.reads}:</span> <strong>{formatEquation(equation)}</strong>
         </p>
       </section>
       <h3 className="build-title word-example-solve">{t.word.step2}</h3>
