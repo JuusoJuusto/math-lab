@@ -22,7 +22,9 @@ describe("the arrows over a bracket", () => {
   it("draws one arrow to each term inside the bracket", () => {
     const { container } = render(<DistributeArrows part="3(x − 2)" />);
     expect(container.querySelectorAll("[data-arc]")).toHaveLength(2);
-    expect([...container.querySelectorAll("text")].map((text) => text.textContent)).toEqual(["3", "(", "x", "−2", ")"]);
+    expect([...container.querySelectorAll("text")].map((text) => text.textContent)).toEqual(["3", "(", "x", "− 2", ")"]);
+    const plus = render(<DistributeArrows part="2(x + 3)" />);
+    expect([...plus.container.querySelectorAll("text")].map((text) => text.textContent)).toEqual(["2", "(", "x", "+ 3", ")"]);
     expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
   });
 

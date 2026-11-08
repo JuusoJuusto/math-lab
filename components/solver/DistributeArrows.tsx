@@ -45,7 +45,8 @@ export function DistributeArrows({ part }: { part: string }) {
       </text>
       {found.terms.map((term, index) => (
         <text key={`t-${term}-${index}`} className="distribute-text" x={termX(index)} y={BASE} textAnchor="middle">
-          {term}
+          {/* A term after the first one is written with its sign, as it is in the equation: x + 3, x − 2. */}
+          {index > 0 && !term.startsWith("−") ? `+ ${term}` : index > 0 ? `− ${term.slice(1)}` : term}
         </text>
       ))}
       <text className="distribute-text" x={closeX} y={BASE} textAnchor="middle">
