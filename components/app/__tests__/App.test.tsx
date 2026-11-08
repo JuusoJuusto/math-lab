@@ -161,6 +161,40 @@ describe("learning", () => {
     expect(screen.getAllByText("Finished")).toHaveLength(1);
   });
 
+  it("groups the lessons into nine chapters in the order of the textbook, and marks the next lesson", () => {
+    open("#/learn", { solverLevels: ["one-step"] });
+    const headings = screen.getAllByRole("heading", { level: 2 }).filter((heading) => heading.id.startsWith("chapter-"));
+    expect(headings.map((heading) => heading.textContent)).toEqual([
+      "Reviewing equations",
+      "Solving an equation",
+      "Practising solving",
+      "Forming an equation",
+      "Brackets in an equation",
+      "Denominators in an equation",
+      "Problem solving with equations",
+      "Identically true or false equations",
+      "Extra challenges",
+    ]);
+    // The first lesson not yet finished is the one to take next, and only one is marked.
+    const next = document.querySelectorAll(".lesson-slot-next");
+    expect(next).toHaveLength(1);
+    expect(next[0].textContent).toContain("Understanding equations");
+    expect(screen.getByText("1 of 1 lessons done")).toBeTruthy();
+    expect(screen.getByText("Chapter 3")).toBeTruthy();
+  });
+
+  it("tells a lesson which chapter it is in and leads on to the next lesson, even in the next chapter", async () => {
+    const { user } = open("#/learn/both");
+    expect(screen.getByText("Chapter 3 · Practising solving · Lesson 2 of 2")).toBeTruthy();
+    await user.click(screen.getByRole("link", { name: /Next lesson: Word problems/ }));
+    expect(await screen.findByText(/Chapter 4 · Forming an equation · Lesson 1 of 1/)).toBeTruthy();
+  });
+
+  it("says so at the last lesson", () => {
+    open("#/learn/proportion");
+    expect(screen.getByText("You have reached the last lesson. Well done!")).toBeTruthy();
+  });
+
   it("offers the solver where there is one, and varied practice for every topic", async () => {
     const { user } = open("#/learn/proportion");
     expect(screen.queryByRole("link", { name: /Solve step by step/ })).toBeNull();

@@ -88,7 +88,7 @@ const fra = (n: number, equation: string): ExerciseDefinition => ({ id: `fractio
 const spc = (n: number, equation: string): ExerciseDefinition => ({ id: `special-${String(n).padStart(2, "0")}`, equation });
 const chl = (n: number, equation: string): ExerciseDefinition => ({ id: `challenge-${String(n).padStart(2, "0")}`, equation });
 
-export const LEVELS: readonly LevelDefinition[] = [
+const AUTHORED: readonly LevelDefinition[] = [
   {
     id: "one-step",
     number: 1,
@@ -247,7 +247,7 @@ export const LEVELS: readonly LevelDefinition[] = [
   },
   {
     id: "brackets",
-    number: 4,
+    number: 5,
     kind: "equations",
     expects: "one",
     text: {
@@ -303,7 +303,7 @@ export const LEVELS: readonly LevelDefinition[] = [
   },
   {
     id: "fractions",
-    number: 5,
+    number: 6,
     kind: "equations",
     expects: "one",
     text: {
@@ -364,7 +364,7 @@ export const LEVELS: readonly LevelDefinition[] = [
   },
   {
     id: "word",
-    number: 6,
+    number: 4,
     kind: "stories",
     expects: "one",
     tiers: [1, 2, 3],
@@ -404,7 +404,7 @@ export const LEVELS: readonly LevelDefinition[] = [
   },
   {
     id: "special",
-    number: 7,
+    number: 8,
     kind: "equations",
     expects: "special",
     text: {
@@ -456,7 +456,7 @@ export const LEVELS: readonly LevelDefinition[] = [
   },
   {
     id: "hard-word",
-    number: 8,
+    number: 7,
     kind: "stories",
     expects: "one",
     tiers: [4, 5, 6],
@@ -548,6 +548,9 @@ export const LEVELS: readonly LevelDefinition[] = [
     ],
   },
 ];
+
+/** The levels in the order a learner meets them: the order of the chapters of the textbook. */
+export const LEVELS: readonly LevelDefinition[] = [...AUTHORED].sort((a, b) => a.number - b.number);
 
 export function getLevel(id: string): LevelDefinition | undefined {
   return LEVELS.find((level) => level.id === id);

@@ -29,18 +29,19 @@ describe("level catalogue", () => {
       "one-step",
       "two-step",
       "both",
+      "word",
       "brackets",
       "fractions",
-      "word",
-      "special",
       "hard-word",
+      "special",
       "challenge",
     ]);
     expect(ALL_LEVELS.map((l) => l.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(ALL_LEVELS.filter((l) => l.kind === "stories").map((l) => l.id)).toEqual(["word", "hard-word"]);
     expect(getNextLevel("one-step")?.id).toBe("two-step");
-    expect(getNextLevel("both")?.id).toBe("brackets");
-    expect(getNextLevel("fractions")?.id).toBe("word");
+    expect(getNextLevel("both")?.id).toBe("word");
+    expect(getNextLevel("word")?.id).toBe("brackets");
+    expect(getNextLevel("fractions")?.id).toBe("hard-word");
     expect(getNextLevel("challenge")).toBeUndefined();
     expect(isLevelId("two-step")).toBe(true);
     expect(isLevelId("brackets")).toBe(true);

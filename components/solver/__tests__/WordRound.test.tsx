@@ -89,7 +89,7 @@ describe("the word-problem level", () => {
     // The test helper asks for hints to play each move, so hints are mentioned.
     expect(screen.getByText(/You solved 5 problems\. You used \d+ hints/)).toBeTruthy();
     // The next level is the special cases.
-    expect(screen.getByRole("button", { name: /^Next: No solution or infinitely many/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Next: Equations with brackets/ })).toBeTruthy();
   });
 
   it("starts with the easy problems and ends with the ones that have x on both sides or two steps", () => {
