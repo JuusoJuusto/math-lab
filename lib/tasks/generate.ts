@@ -128,10 +128,11 @@ function solveTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
       topic: spec.topic,
       prompt: `${storyPassage(story, lang)} ${words.question}`,
       input: { type: "number", unit: words.unit },
-      answerText: `${story.solution} ${words.unit}`.trim(),
-      answerValue: frac(story.solution),
+      answerText: `${story.final ?? story.solution} ${words.unit}`.trim(),
+      answerValue: frac(story.final ?? story.solution),
       checkEquation: story.equations[0],
-      explanation: [words.build, ...workingLines(sample, lang), text.so(`x = ${story.solution}`)],
+      // When the question asks for something worked out from x, say so: x = 7 is not yet the answer.
+      explanation: [words.build, ...workingLines(sample, lang), text.so(`x = ${story.solution}`), ...(story.final !== undefined ? [words.answer] : [])],
     };
   }
 

@@ -12,7 +12,7 @@ import {
   type Operation,
 } from "@/lib/equations";
 import { questions } from "@/content/questions";
-import { KIND_TOPICS, generateTask, supports, taskFingerprint, type Task, type TaskKind, type TaskSpec } from "..";
+import { KIND_TOPICS, generateTask, gradeNumber, isInvalid, supports, taskFingerprint, type Task, type TaskKind, type TaskSpec } from "..";
 
 const SEEDS = Array.from({ length: 200 }, (_, index) => index + 1);
 
@@ -127,8 +127,33 @@ describe("typed answers (solve)", () => {
     for (const seed of SEEDS) {
       const task = generateTask({ kind: "solve", topic: "word", seed });
       expect(task.checkEquation).toBeDefined();
-      expect(isSolution(eq(task.checkEquation!), task.answerValue!)).toBe(true);
+      const equation = eq(task.checkEquation!);
+      const x = solveEquation(equation);
+      expect(x.kind).toBe("one");
+      if (isSolution(equation, task.answerValue!)) continue;
+
+      // The question asks for something worked out from x (the dearer price): the explanation
+      // must state that very number, and x itself must not be accepted as the answer.
+      expect(task.answerValue).not.toEqual(x.kind === "one" ? x.value : null);
+      expect(task.explanation.at(-1)).toContain(String(task.answerValue!.n));
     }
+  });
+
+  it("word problems: a question that asks for more than x accepts the worked-out number and rejects x", () => {
+    let derived = 0;
+    for (const seed of SEEDS) {
+      const task = generateTask({ kind: "solve", topic: "word", seed });
+      const x = solveEquation(eq(task.checkEquation!));
+      if (x.kind !== "one" || isSolution(eq(task.checkEquation!), task.answerValue!)) continue;
+      derived += 1;
+      const rightText = String(task.answerValue!.n);
+      const wrongText = String(x.value.n);
+      const right = gradeNumber(task, rightText);
+      expect(isInvalid(right) ? false : right.correct).toBe(true);
+      const wrong = gradeNumber(task, wrongText);
+      expect(isInvalid(wrong) ? false : wrong.correct).toBe(false);
+    }
+    expect(derived).toBeGreaterThan(5);
   });
 
   it("proportion: recomputes each template from its own wording", () => {

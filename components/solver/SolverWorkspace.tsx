@@ -19,6 +19,7 @@ import {
 } from "@/lib/equations";
 import { MathLine } from "@/components/ui/MathLine";
 import { PreludeCard } from "./PreludeCard";
+import { BalanceScale } from "./BalanceScale";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
 import { MoveTabs, type MoveMode } from "./MoveTabs";
@@ -138,6 +139,8 @@ export function SolverWorkspace({
           onFlip={flipping ? (target) => dispatch({ type: "flip", target }) : undefined}
           solved={state.outcome === "solved"}
         />
+
+        <BalanceScale equation={state.current} />
 
         <FeedbackPanel notice={state.notice} hints={shownHints} emptyText={moveMode === "flip" ? t.solver.emptyFlip : t.solver.empty} />
 

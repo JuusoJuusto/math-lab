@@ -68,6 +68,16 @@ describe("the word-problem level", () => {
 
       await solveOnScreenEquation(user);
       await user.click(screen.getByRole("button", { name: /Now answer the question/ }));
+      if (story.final !== undefined) {
+        // The question asks for something worked out from x, so x alone is not the answer.
+        const field = screen.getByLabelText("Your answer");
+        await user.type(field, String(story.solution));
+        await user.click(screen.getByRole("button", { name: "Check my answer" }));
+        expect(document.querySelector(".final-feedback")?.textContent).toContain("is not the answer yet");
+        await user.clear(field);
+        await user.type(field, String(story.final));
+        await user.click(screen.getByRole("button", { name: "Check my answer" }));
+      }
       expect(screen.getByText(`x = ${story.solution}`)).toBeTruthy();
       expect(screen.getByText(story.i18n.en.answer)).toBeTruthy();
       await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next problem/ }));

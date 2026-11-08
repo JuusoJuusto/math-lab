@@ -20,6 +20,8 @@ export type StoryId =
   | "consecutive"
   | "discount"
   | "triangle"
+  | "pair-prices"
+  | "triangle-sides"
   | "bracket-puzzle"
   | "cyclists"
   | "trains"
@@ -62,6 +64,12 @@ export interface Story {
   /** Equation options in standard ASCII form. The first one is correct. */
   readonly equations: readonly string[];
   readonly solution: number;
+  /**
+   * The number the question asks for, when that is not x itself. The equation
+   * gives x (the price of the cheaper item), but the question asks for something
+   * worked out from x (the price of the dearer one). Missing means the answer is x.
+   */
+  readonly final?: number;
   readonly i18n: Localised<StoryText>;
 }
 
@@ -484,6 +492,74 @@ export function triangleStory(k: number, s: number): Story {
   };
 }
 
+/** Two prices that add up to a total. x is the cheaper one, but the question asks for the dearer one. */
+export function pairPricesStory(cheap: number, extra: number): Story {
+  const total = 2 * cheap + extra;
+  return {
+    id: "pair-prices",
+    difficulty: 2,
+    final: cheap + extra,
+    equations: [`x + (x + ${extra}) = ${total}`, `x + ${extra} = ${total}`, `2x = ${total} + ${extra}`, `x + (x - ${extra}) = ${total}`],
+    solution: cheap,
+    i18n: {
+      en: {
+        situation: `A sandwich and a juice cost ${total} euros together. The sandwich costs ${extra} euros more than the juice.`,
+        letX: "Let x be the price of the juice in euros.",
+        question: "How much does the sandwich cost?",
+        unit: "€",
+        build: `The juice costs x and the sandwich costs x + ${extra}. Together they cost x + (x + ${extra}) = ${total}.`,
+        answer: `The juice costs ${cheap} euros, so the sandwich costs ${cheap} + ${extra} = ${cheap + extra} euros.`,
+      },
+      fi: {
+        situation: `Voileipä ja mehu maksavat yhteensä ${total} euroa. Voileipä maksaa ${extra} euroa enemmän kuin mehu.`,
+        letX: "Olkoon x mehun hinta euroina.",
+        question: "Paljonko voileipä maksaa?",
+        unit: "€",
+        build: `Mehu maksaa x ja voileipä maksaa x + ${extra}. Yhdessä ne maksavat x + (x + ${extra}) = ${total}.`,
+        answer: `Mehu maksaa ${cheap} euroa, joten voileipä maksaa ${cheap} + ${extra} = ${cheap + extra} euroa.`,
+      },
+    },
+  };
+}
+
+/** A triangle with three different sides. x is the first side, but the question asks for the longest one. */
+export function triangleSidesStory(a: number, b: number, s: number): Story | null {
+  if (a === b || 2 * s - b <= 0) return null;
+  const perimeter = 4 * s + a - b;
+  const sides = [s, s + a, 2 * s - b];
+  const longest = Math.max(...sides);
+  return {
+    id: "triangle-sides",
+    difficulty: 4,
+    final: longest,
+    equations: [
+      `x + (x + ${a}) + (2x - ${b}) = ${perimeter}`,
+      `x + (x + ${a}) + (2x + ${b}) = ${perimeter}`,
+      `x + (x + ${a}) + 2x = ${perimeter}`,
+      `4x = ${perimeter}`,
+    ],
+    solution: s,
+    i18n: {
+      en: {
+        situation: `A triangle has three sides. The second side is ${a} cm longer than the first. The third side is ${b} cm shorter than twice the first. The perimeter is ${perimeter} cm.`,
+        letX: "Let x be the length of the first side in centimetres.",
+        question: "How long is the longest side?",
+        unit: "cm",
+        build: `The sides are x, x + ${a} and 2x − ${b}. The perimeter is their sum: x + (x + ${a}) + (2x − ${b}) = ${perimeter}.`,
+        answer: `The sides are ${sides[0]} cm, ${sides[1]} cm and ${sides[2]} cm, so the longest side is ${longest} cm.`,
+      },
+      fi: {
+        situation: `Kolmiolla on kolme sivua. Toinen sivu on ${a} cm pidempi kuin ensimmäinen. Kolmas sivu on ${b} cm lyhyempi kuin ensimmäisen sivun kaksinkertainen pituus. Piiri on ${perimeter} cm.`,
+        letX: "Olkoon x ensimmäisen sivun pituus senttimetreinä.",
+        question: "Kuinka pitkä on pisin sivu?",
+        unit: "cm",
+        build: `Sivut ovat x, x + ${a} ja 2x − ${b}. Piiri on niiden summa: x + (x + ${a}) + (2x − ${b}) = ${perimeter}.`,
+        answer: `Sivut ovat ${sides[0]} cm, ${sides[1]} cm ja ${sides[2]} cm, joten pisin sivu on ${longest} cm.`,
+      },
+    },
+  };
+}
+
 export function bracketPuzzleStory(a: number, b: number, s: number): Story {
   const result = a * (s + b);
   return {
@@ -735,6 +811,8 @@ const TEMPLATES: readonly Template[] = [
     return discountStory(p, step * int(rng, 4, 20));
   },
   (rng) => triangleStory(int(rng, 2, 6), int(rng, 5, 14)),
+  (rng) => pairPricesStory(int(rng, 2, 12), int(rng, 1, 9)),
+  (rng) => triangleSidesStory(int(rng, 2, 6), int(rng, 1, 5), int(rng, 5, 12)),
   (rng) => bracketPuzzleStory(int(rng, 2, 6), int(rng, 2, 9), int(rng, 2, 14)),
   (rng) => cyclistsStory(int(rng, 8, 20), int(rng, 10, 24), int(rng, 2, 5)),
   (rng) => trainsStory(pick(rng, [10, 20, 30]), int(rng, 2, 5), int(rng, 1, 3)),

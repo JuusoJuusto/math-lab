@@ -6,7 +6,7 @@ This document explains how the solver teaches, how the equation engine works, ho
 
 ## Ways to solve
 
-An equation can be solved in more than one way, and MathLab teaches the ones that are common in Finnish teaching of equations. They are not copied from any textbook: the wording and the exercises are MathLab's own.
+An equation can be solved in more than one way, and MathLab teaches the ones that are common in Finnish teaching of equations. The notation and the order of the topics follow what Finnish lower-secondary textbooks do (the double bar `||`, `:` and `·` for division and multiplication, checking by substitution with *tosi / epätosi*, brackets first, denominators last). No text or exercise is copied from any textbook: the wording and every exercise are MathLab's own.
 
 | Way | What the learner does | Written like this |
 | --- | --- | --- |
@@ -16,6 +16,12 @@ An equation can be solved in more than one way, and MathLab teaches the ones tha
 | **On a graph** | Looks at each side as a line; the solution is where they cross | check after solving |
 
 The first two are the same rule: a flip *is* the balance operation it stands for, shown in a shorter form. It is never applied by its own arithmetic. `flipOperation` turns the tap into an ordinary operation, `applyOperation` validates it, and the tutor judges it (`lib/equations/flip.ts`). The notebook notation `|| + 5` is written beside the equation while a step is applied and in the step history. Work backwards (`lib/equations/methods.ts`) is available when x appears once on one side; its answer is accepted only if the engine agrees. The graph (`graphOf`) shows two lines that cross at one point, parallel lines (no solution) or one line twice (infinitely many).
+
+**Another way (Tapa 2).** The order of the steps is a choice: `4x − 1 = x − 7` can start by taking x away or by adding 1. `waysToSolve` (`lib/equations/ways.ts`) builds the tutor's route and, when one exists, a second route that begins with a different move the tutor also recommends. The worked example shows it once the first route is solved. A test builds both routes for 2,000 random equations and checks that each ends with x alone and keeps the solution.
+
+**The balance picture (vaaka).** `BalanceScale` draws balls marked x and numbered weights on two pans, for equations whose terms are all whole numbers that are not negative. It is a picture of the equation shown above it (hidden from screen readers), and it is not drawn for an equation that is never true, because a scale in balance cannot show one.
+
+**When x is not the answer.** Some stories ask for something worked out from x (the dearer of two prices, the longest side). Such a story has a `final` value; after solving, the learner must answer the question itself, and typing x is explained as "not the answer yet". Practice tasks grade `final` too.
 
 Equations that are written with brackets or fractions begin with a **clean-up**: the order Finnish textbooks use is *brackets first, then simplify, then balance*.
 

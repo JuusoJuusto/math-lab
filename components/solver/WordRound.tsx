@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, CircleCheck } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
@@ -23,6 +23,72 @@ import type { MoveMode } from "./MoveTabs";
 
 type Stage = "build" | "solve" | "answer";
 
+/**
+ * A story whose question asks for something worked out from x (the dearer of
+ * two prices, the longest side). Solving the equation is not the end: the
+ * learner has to go back to the question, as the textbook procedure says.
+ */
+function FinalAnswer({ story, onCorrect, onSlip }: { story: Story; onCorrect: () => void; onSlip: () => void }) {
+  const { lang, t } = useI18n();
+  const id = useId();
+  const words = story.i18n[lang];
+  const [value, setValue] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+
+  function check(event: FormEvent) {
+    event.preventDefault();
+    const typed = Number(value.trim().replace(",", "."));
+    if (value.trim() === "" || Number.isNaN(typed)) {
+      setMessage(t.word.finalNumber);
+      return;
+    }
+    if (typed === story.final) {
+      onCorrect();
+      return;
+    }
+    onSlip();
+    setMessage(typed === story.solution ? t.word.finalWasX(formatFraction(frac(story.solution))) : t.word.finalWrong);
+  }
+
+  return (
+    <form className="answer-card" onSubmit={check} aria-labelledby={`${id}-title`} noValidate>
+      <h3 id={`${id}-title`} className="build-title">
+        {t.word.finalTitle}
+      </h3>
+      <p className="answer-line">
+        <CircleCheck size={20} aria-hidden="true" />
+        <strong>{t.word.answerSolution(formatFraction(frac(story.solution)))}</strong>
+      </p>
+      <p className="build-text">{t.word.finalText}</p>
+      <p className="answer-sentence">{words.question}</p>
+      <label className="build-label" htmlFor={`${id}-field`}>
+        {t.word.finalLabel}
+      </label>
+      <div className="final-row">
+        <input
+          id={`${id}-field`}
+          className="write-input final-input"
+          inputMode="decimal"
+          autoComplete="off"
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+        />
+        {words.unit && <span className="final-unit">{words.unit}</span>}
+      </div>
+      {message && (
+        <p className="final-feedback" role="status">
+          {message}
+        </p>
+      )}
+      <div className="action-buttons">
+        <button type="submit" className="button-primary" disabled={value.trim() === ""}>
+          {t.word.finalCheck}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 interface WordProblemProps {
   story: Story;
   moveMode: MoveMode;
@@ -38,6 +104,8 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, onDone 
   const [stage, setStage] = useState<Stage>("build");
   const [built, setBuilt] = useState<BuiltResult | null>(null);
   const [solved, setSolved] = useState<WorkspaceOutcome | null>(null);
+  const [finalDone, setFinalDone] = useState(story.final === undefined);
+  const [slips, setSlips] = useState(0);
 
   const words = story.i18n[lang];
 
@@ -83,7 +151,11 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, onDone 
         />
       )}
 
-      {stage === "answer" && built && solved && (
+      {stage === "answer" && built && solved && !finalDone && (
+        <FinalAnswer story={story} onCorrect={() => setFinalDone(true)} onSlip={() => setSlips((count) => count + 1)} />
+      )}
+
+      {stage === "answer" && built && solved && finalDone && (
         <section className="answer-card" aria-labelledby="answer-heading">
           <h3 id="answer-heading" className="build-title">
             {t.word.answerTitle}
@@ -100,7 +172,7 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, onDone 
             onClick={() =>
               onDone({
                 steps: solved.steps,
-                mistakes: solved.mistakes + built.mistakes,
+                mistakes: solved.mistakes + built.mistakes + slips,
                 hints: solved.hints + built.hints,
               })
             }

@@ -81,6 +81,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
         lesson: [
           "An equation says that its left-hand side and right-hand side have the same value.",
           "A letter such as x represents an unknown number.",
+          "An expression such as 3x + 2 has no equals sign. An equation such as 3x + 2 = 11 has one, with an expression on each side.",
+          "The solution is the value of x that makes both sides equal. To test a value, put it in place of x in the original equation: if both sides come out the same, the equation is true, otherwise it is false.",
           "An equation stays balanced when you perform the same operation on both sides.",
           "The goal is to isolate x on one side of the equation.",
         ],
@@ -93,6 +95,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
         lesson: [
           "Yhtälö kertoo, että sen vasemmalla ja oikealla puolella on sama arvo.",
           "Kirjain, kuten x, tarkoittaa tuntematonta lukua.",
+          "Lausekkeessa, kuten 3x + 2, ei ole yhtäsuuruusmerkkiä. Yhtälössä, kuten 3x + 2 = 11, on yhtäsuuruusmerkki ja lauseke kummallakin puolella.",
+          "Ratkaisu on se x:n arvo, jolla vasen ja oikea puoli ovat yhtä suuret. Arvoa voi testata sijoittamalla sen alkuperäiseen yhtälöön x:n paikalle: jos puolet ovat yhtä suuret, yhtälö on tosi, muuten epätosi.",
           "Yhtälö pysyy tasapainossa, kun molemmille puolille tehdään sama laskutoimitus.",
           "Tavoitteena on saada x yksin yhtälön toiselle puolelle.",
         ],

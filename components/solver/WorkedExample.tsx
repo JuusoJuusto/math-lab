@@ -18,6 +18,7 @@ import {
   type LevelDefinition,
 } from "@/lib/equations";
 import { MathLine } from "@/components/ui/MathLine";
+import { BalanceScale } from "./BalanceScale";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
 import { OtherWay } from "./OtherWay";
@@ -76,6 +77,8 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
             label={t.solver.display.worked}
           />
         )}
+
+        {written === null && <BalanceScale equation={state.current} />}
 
         <FeedbackPanel notice={notice} hints={[]} emptyText={levelText(level, lang).exampleLead} />
 

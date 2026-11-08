@@ -371,9 +371,9 @@ export const LEVELS: readonly LevelDefinition[] = [
         intro: {
           lead: "In a word problem the equation is hidden inside a story. First you write the equation yourself, then you solve it with the moves you already know.",
           points: [
-            "Decide what x stands for. The story tells you.",
-            "Find the number that repeats (for each kilometre, each week) and the number that happens once.",
-            "Work out what the total is, and put it after the equals sign.",
+            "Read the story. Call one thing you are asked about x and write the others with x (“3 more than x” is x + 3).",
+            "Write the equation from the facts of the story, then solve it.",
+            "Check that it fits the story, then answer in words with the unit. The answer is not always x.",
           ],
           keyIdea: "Turn the story into maths first. Solve only after the equation says what the story says.",
         },
@@ -385,9 +385,9 @@ export const LEVELS: readonly LevelDefinition[] = [
         intro: {
           lead: "Sanallisessa tehtävässä yhtälö on piilotettu tarinaan. Kirjoita ensin yhtälö itse ja ratkaise se sitten tutuilla siirroilla.",
           points: [
-            "Päätä, mitä x tarkoittaa. Tarina kertoo sen.",
-            "Etsi luku, joka toistuu (jokaista kilometriä tai viikkoa kohden), ja luku, joka tapahtuu vain kerran.",
-            "Päätä, mikä on yhteensä, ja kirjoita se yhtäsuuruusmerkin jälkeen.",
+            "Lue tarina. Merkitse yhtä kysyttyä asiaa x:llä ja kirjoita muut x:n avulla (”3 enemmän kuin x” on x + 3).",
+            "Kirjoita yhtälö tarinan tiedoista ja ratkaise se.",
+            "Tarkista, että vastaus sopii tarinaan, ja vastaa sanallisesti yksikön kanssa. Vastaus ei aina ole x.",
           ],
           keyIdea: "Muuta tarina ensin matematiikaksi. Ratkaise vasta, kun yhtälö kertoo saman kuin tarina.",
         },

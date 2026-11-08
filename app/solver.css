@@ -472,3 +472,20 @@ line.graph-right { stroke: #f39a14; }
 .verify-verdict { margin: 4px 0 0; font: 700 15px/1.2 var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
 .verify-pass .verify-verdict { color: #14573b; }
 .verify-fail .verify-verdict { color: #7d2630; }
+
+/* The balance picture (vaaka) */
+.balance-scale { display: block; width: 100%; max-width: 340px; height: auto; margin: 0 auto; }
+.scale-pan { fill: #8fb3c1; }
+.scale-beam { fill: #3d6272; }
+.scale-stand { fill: #5b8294; }
+.scale-ball circle { fill: #f2994a; stroke: #c5731f; stroke-width: 1.5; }
+.scale-ball text { fill: #fff; font: italic 700 14px var(--font-display, serif); }
+.scale-weight rect { fill: #e8f1f5; stroke: #5b8294; stroke-width: 1.5; }
+.scale-weight text { fill: #164655; font: 700 15px var(--font-display, sans-serif); }
+.scale-times { fill: #164655; font: 700 13px var(--font-display, sans-serif); }
+
+/* The last step of a story whose question is not "what is x" */
+.final-row { display: flex; align-items: center; gap: 10px; }
+.final-input { max-width: 140px; }
+.final-unit { font-weight: 700; color: var(--s-ink, #164655); }
+.final-feedback { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: #fff7f7; border: 1px solid #f0bcbc; color: #7d2630; font-size: 14.5px; line-height: 1.5; }
