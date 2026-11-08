@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, BookOpen, Check, CheckCircle2, ChevronRight, CircleHelp, GraduationCap, Home, Lightbulb, ListChecks, Menu, RotateCcw, Settings2, Sparkles, Target, Trophy, X } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, CheckCircle2, ChevronRight, Home, Lightbulb, ListChecks, Menu, RotateCcw, Sparkles, Target, Trophy, X } from "lucide-react";
 
 type Question = {
   id: string;
@@ -133,7 +133,7 @@ export default function HomePage() {
   );
 }
 
-function NavButton({active,onClick,icon,label}:{active:boolean;onClick:()=>void;icon?:React.ReactNode;label:string}) {
+function NavButton({active,onClick,icon,label}:{active:boolean;onClick:()=>void;icon?:ReactNode;label:string}) {
   return <button onClick={onClick} className={`nav-button ${active?"nav-active":""}`}>{icon}{label}</button>;
 }
 
@@ -190,5 +190,5 @@ function ProgressView({attempts,correct,accuracy,completed,onReset,onTopics}:{at
 }
 
 function PageHeading({kicker,title,description}:{kicker:string;title:string;description:string}) { return <div className="page-heading"><span className="section-kicker">{kicker}</span><h1>{title}</h1><p>{description}</p></div>; }
-function StatCard({icon,label,value,tone}:{icon:React.ReactNode;label:string;value:string;tone:string}) { return <div className="stat-card"><span className={`stat-icon tone-${tone}`}>{icon}</span><div><strong>{value}</strong><span>{label}</span></div></div>; }
+function StatCard({icon,label,value,tone}:{icon:ReactNode;label:string;value:string;tone:string}) { return <div className="stat-card"><span className={`stat-icon tone-${tone}`}>{icon}</span><div><strong>{value}</strong><span>{label}</span></div></div>; }
 function TopicCard({topic,number,done,onClick}:{topic:Topic;number:number;done:boolean;onClick:()=>void}) { return <button className="topic-card" onClick={onClick}><div className="topic-card-top"><span className={`topic-icon tone-${topic.colour}`}>{topic.icon}</span><span className="topic-number">{String(number).padStart(2,"0")}</span></div><h3>{topic.title}</h3><p>{topic.subtitle}</p><div className="topic-card-bottom"><span>{done?<><CheckCircle2 size={15}/> Harjoiteltu</>: "Tutustu aiheeseen"}</span><ChevronRight size={18}/></div></button>; }
