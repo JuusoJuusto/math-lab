@@ -2,7 +2,8 @@
 
 import { ArrowRight, RotateCcw, Trophy } from "lucide-react";
 import { getTopic } from "@/content/topics";
-import { GROUP_INFO, generateTask, groupOf, type ModeInfo, type TaskGroup, type TaskSpec } from "@/lib/tasks";
+import { useI18n } from "@/hooks/useLang";
+import { generateTask, groupOf, type ModeInfo, type TaskGroup, type TaskSpec } from "@/lib/tasks";
 import { toHash } from "@/lib/routes";
 import { TaskDisplayView } from "./TaskCard";
 
@@ -23,15 +24,9 @@ interface SessionResultsProps {
   onMistakes: () => void;
 }
 
-function headline(percent: number): string {
-  if (percent === 100) return "Perfect round!";
-  if (percent >= 80) return "Great work!";
-  if (percent >= 60) return "Nice progress!";
-  return "Keep practising!";
-}
-
 /** The end of a session: score, XP, what kinds of task went well, and what to review. */
 export function SessionResults({ mode, records, bonus, queued, onAgain, onMistakes }: SessionResultsProps) {
+  const { lang, t } = useI18n();
   const total = records.length;
   const correct = records.filter((record) => record.correct).length;
   const percent = total ? Math.round((correct / total) * 100) : 0;
@@ -54,18 +49,19 @@ export function SessionResults({ mode, records, bonus, queued, onAgain, onMistak
       <div className="results-medal">
         <Trophy size={34} aria-hidden="true" />
       </div>
-      <p className="kicker">{mode.title} complete</p>
-      <h1 id="results-title">{mode.id === "time" ? `${correct} correct in 60 seconds` : headline(percent)}</h1>
+      <p className="kicker">{t.results.complete(t.modes[mode.id].title)}</p>
+      <h1 id="results-title">{mode.id === "time" ? t.results.timeHeadline(correct) : t.results.headline(percent)}</h1>
       <p className="results-score">
-        <strong>{correct}</strong> / {total} correct
+        <strong>{t.results.score(correct, total).correct}</strong>
+        {t.results.score(correct, total).rest}
       </p>
-      <p className="results-xp">+{xp} XP{bonus > 0 ? ` (including +${bonus} daily bonus)` : ""}</p>
+      <p className="results-xp">{t.results.xp(xp, bonus)}</p>
 
       {groups.size > 1 && (
-        <ul className="breakdown" aria-label="Results by type of task">
+        <ul className="breakdown" aria-label={t.results.byType}>
           {[...groups.entries()].map(([group, tally]) => (
             <li key={group}>
-              <span>{GROUP_INFO[group].label}</span>
+              <span>{t.groups[group].label}</span>
               <span className="bar" aria-hidden="true">
                 <span style={{ width: `${Math.round((tally.correct / tally.total) * 100)}%` }} />
               </span>
@@ -79,37 +75,37 @@ export function SessionResults({ mode, records, bonus, queued, onAgain, onMistak
 
       {weak && (
         <p className="revise">
-          Revise next: <a href={toHash({ name: "lesson", topic: weak[0] })}>{getTopic(weak[0])?.title}</a>
+          {t.results.revise} <a href={toHash({ name: "lesson", topic: weak[0] })}>{getTopic(weak[0], lang)?.title}</a>
         </p>
       )}
 
       <div className="action-row action-center">
         <button type="button" className="cta cta-inline" onClick={onAgain}>
-          <RotateCcw size={18} aria-hidden="true" /> {mode.id === "mistakes" ? "Back to practice" : "Try again"}
+          <RotateCcw size={18} aria-hidden="true" /> {mode.id === "mistakes" ? t.results.backToPractice : t.results.again}
         </button>
         {queued > 0 && mode.id !== "mistakes" && (
           <button type="button" className="button-secondary" onClick={onMistakes}>
-            Fix {queued} mistake{queued === 1 ? "" : "s"} <ArrowRight size={16} aria-hidden="true" />
+            {t.results.fix(queued)} <ArrowRight size={16} aria-hidden="true" />
           </button>
         )}
         <a className="button-secondary" href={toHash({ name: "practice" })}>
-          Other ways to practise
+          {t.results.other}
         </a>
       </div>
 
       {missed.length > 0 && (
         <section className="review" aria-labelledby="review-title">
-          <h2 id="review-title">Review your mistakes</h2>
+          <h2 id="review-title">{t.results.review}</h2>
           <ul>
             {missed.map((record, index) => {
-              const task = generateTask(record.spec);
+              const task = generateTask(record.spec, lang);
               return (
                 <li key={`${record.spec.seed}-${index}`}>
                   <details>
                     <summary>{task.prompt}</summary>
                     {task.display && <TaskDisplayView display={task.display} />}
                     <p>
-                      Your answer: <strong>{record.given || "–"}</strong>. Correct answer: <strong>{task.answerText}</strong>.
+                      {t.results.yourAnswer} <strong>{record.given || "–"}</strong>. {t.results.correctAnswer} <strong>{task.answerText}</strong>.
                     </p>
                     <ul className="explain">
                       {task.explanation.map((line) => (

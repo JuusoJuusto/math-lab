@@ -15,9 +15,11 @@
  * a step that does not.
  */
 
+import type { Lang } from "../lang";
 import { FractionRangeError, ONE, div, frac, isZero, type Fraction } from "./fraction";
 import { addExpr, expr, scaleExpr, subExpr, type Equation, type LinearExpr } from "./expression";
 import { sameSolution, solveEquation } from "./solve";
+import { engineText } from "./text";
 
 export type OperationKind = "add" | "subtract" | "multiply" | "divide";
 
@@ -84,34 +86,18 @@ export type ApplyResult =
   | { readonly ok: true; readonly step: AppliedStep }
   | { readonly ok: false; readonly problem: OperationProblem };
 
+function problem(code: InvalidOperationCode, lang: Lang): OperationProblem {
+  return { code, ...engineText(lang).problems[code] };
+}
+
 /**
  * Checks whether an operation is mathematically allowed, without applying it.
  * Returns `null` when the operation is allowed.
  */
-export function validateOperation(op: Operation): OperationProblem | null {
-  if (op.withVariable && (op.kind === "multiply" || op.kind === "divide")) {
-    return {
-      code: "variable-multiplier",
-      title: "Use a plain number here",
-      message:
-        "Multiplying or dividing by something that contains x can change which values work, or even make a solution disappear. Multiply or divide by a number only.",
-    };
-  }
-  if (op.kind === "divide" && isZero(op.amount)) {
-    return {
-      code: "divide-by-zero",
-      title: "You can't divide by zero",
-      message: "Dividing by 0 has no answer, so it is never allowed. Choose a different number.",
-    };
-  }
-  if (op.kind === "multiply" && isZero(op.amount)) {
-    return {
-      code: "multiply-by-zero",
-      title: "Multiplying by zero loses information",
-      message:
-        "Multiplying both sides by 0 turns them both into 0, and 0 = 0 is true for every x. The equation would no longer tell you anything about x, so this move is not allowed.",
-    };
-  }
+export function validateOperation(op: Operation, lang: Lang = "en"): OperationProblem | null {
+  if (op.withVariable && (op.kind === "multiply" || op.kind === "divide")) return problem("variable-multiplier", lang);
+  if (op.kind === "divide" && isZero(op.amount)) return problem("divide-by-zero", lang);
+  if (op.kind === "multiply" && isZero(op.amount)) return problem("multiply-by-zero", lang);
   return null;
 }
 
@@ -145,37 +131,23 @@ export function applyOperationToSide(side: LinearExpr, op: Operation): LinearExp
  * The same operation is always applied to the left and the right side, which
  * is what keeps the equation balanced.
  */
-export function applyOperation(eq: Equation, op: Operation): ApplyResult {
-  const problem = validateOperation(op);
-  if (problem) return { ok: false, problem };
+export function applyOperation(eq: Equation, op: Operation, lang: Lang = "en"): ApplyResult {
+  const invalid = validateOperation(op, lang);
+  if (invalid) return { ok: false, problem: invalid };
 
   let after: Equation;
   try {
     after = { left: applyOperationToSide(eq.left, op), right: applyOperationToSide(eq.right, op) };
   } catch (error) {
     if (error instanceof FractionRangeError) {
-      return {
-        ok: false,
-        problem: {
-          code: "too-large",
-          title: "That number gets too big",
-          message: "The numbers in this step would become too large to handle. Try a smaller number.",
-        },
-      };
+      return { ok: false, problem: problem("too-large", lang) };
     }
     throw error;
   }
 
   // Safety net: a valid operation must never change what x is allowed to be.
   if (!sameSolution(solveEquation(eq), solveEquation(after))) {
-    return {
-      ok: false,
-      problem: {
-        code: "not-equivalent",
-        title: "That would change the equation",
-        message: "This step would not keep both sides balanced, so it is not allowed.",
-      },
-    };
+    return { ok: false, problem: problem("not-equivalent", lang) };
   }
 
   return { ok: true, step: { before: eq, operation: op, after } };

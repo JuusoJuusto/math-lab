@@ -2,15 +2,20 @@
 
 import { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
-import { getTopic, topics } from "@/content/topics";
+import { getTopic, getTopics } from "@/content/topics";
+import { useI18n } from "@/hooks/useLang";
 import { resetProgress, useProgress } from "@/hooks/useProgress";
 import { accuracyOf, finishedTopics, levelOf, overallProgress, practisedTopics, weakestTopic, xpIntoLevel, XP_PER_LEVEL } from "@/lib/progress";
-import { GROUP_INFO, type TaskGroup } from "@/lib/tasks";
+import type { TaskGroup } from "@/lib/tasks";
 import { toHash } from "@/lib/routes";
 import { startSession } from "@/components/practice/start";
 import { TopicIcon } from "@/components/ui/icons";
 
+const GROUPS: readonly TaskGroup[] = ["quiz", "solve", "check", "step", "mistake", "equation"];
+
 export function ProgressScreen() {
+  const { lang, t } = useI18n();
+  const topics = getTopics(lang);
   const progress = useProgress();
   const [confirming, setConfirming] = useState(false);
   const finished = finishedTopics(progress);
@@ -22,20 +27,20 @@ export function ProgressScreen() {
   return (
     <div className="panel">
       <header className="page-head">
-        <h1>Progress</h1>
-        <p>Saved in this browser on this device only.</p>
+        <h1>{t.progress.title}</h1>
+        <p>{t.progress.saved}</p>
       </header>
 
-      <section className="level-card" aria-label="Level">
+      <section className="level-card" aria-label={t.progress.levelAria}>
         <span className="xp-coin xp-coin-large" aria-hidden="true">
           {level}
         </span>
         <div>
-          <strong>Level {level}</strong>
+          <strong>{t.progress.level(level)}</strong>
           <p>
-            {into} / {XP_PER_LEVEL} XP to level {level + 1}
+            {t.progress.toNext(into, XP_PER_LEVEL, level + 1)}
           </p>
-          <div className="bar" role="progressbar" aria-label="XP to next level" aria-valuenow={into} aria-valuemin={0} aria-valuemax={XP_PER_LEVEL}>
+          <div className="bar" role="progressbar" aria-label={t.progress.xpBar} aria-valuenow={into} aria-valuemin={0} aria-valuemax={XP_PER_LEVEL}>
             <span style={{ width: `${into}%` }} />
           </div>
         </div>
@@ -43,36 +48,36 @@ export function ProgressScreen() {
 
       <dl className="stats">
         <div>
-          <dt>Tasks answered</dt>
+          <dt>{t.progress.answered}</dt>
           <dd>{progress.attempts}</dd>
         </div>
         <div>
-          <dt>Correct</dt>
+          <dt>{t.progress.correct}</dt>
           <dd>{progress.attempts ? `${accuracyOf(progress)} %` : "–"}</dd>
         </div>
         <div>
-          <dt>Total XP</dt>
+          <dt>{t.progress.totalXp}</dt>
           <dd>{progress.xp}</dd>
         </div>
         <div>
-          <dt>Topics finished</dt>
+          <dt>{t.progress.topicsFinished}</dt>
           <dd>
             {finished.length} / {topics.length}
           </dd>
-          <dd className="sr-only">{overallProgress(progress, topics.length)} percent</dd>
+          <dd className="sr-only">{t.progress.percent(overallProgress(progress, topics.length))}</dd>
         </div>
       </dl>
 
       {(progress.missed.length > 0 || weak) && (
-        <section className="suggest" aria-label="What to do next">
+        <section className="suggest" aria-label={t.progress.next}>
           {progress.missed.length > 0 && (
             <button type="button" className="cta cta-inline" onClick={() => startSession("mistakes", "all", 10)}>
-              Fix your {progress.missed.length} mistake{progress.missed.length === 1 ? "" : "s"} <ArrowRight size={18} aria-hidden="true" />
+              {t.progress.fix(progress.missed.length)} <ArrowRight size={18} aria-hidden="true" />
             </button>
           )}
           {weak && (
             <p>
-              Revise next: <a href={toHash({ name: "lesson", topic: weak })}>{getTopic(weak)?.title}</a> ({accuracyOf(progress.byTopic[weak])} % correct).
+              {t.progress.revise} <a href={toHash({ name: "lesson", topic: weak })}>{getTopic(weak, lang)?.title}</a> ({t.progress.correctPercent(accuracyOf(progress.byTopic[weak]))}).
             </p>
           )}
         </section>
@@ -80,7 +85,7 @@ export function ProgressScreen() {
 
       <section aria-labelledby="by-topic">
         <h2 id="by-topic" className="sub-head">
-          By topic
+          {t.progress.byTopic}
         </h2>
         <ul className="rows">
           {topics.map((topic) => {
@@ -98,18 +103,18 @@ export function ProgressScreen() {
                       <span style={{ width: `${percent}%` }} />
                     </span>
                     <span className="row-sub">
-                      {tally ? `${tally.correct} of ${tally.attempts} correct (${percent} %)` : "Not practised yet"}
+                      {tally ? t.progress.tally(tally.correct, tally.attempts, percent) : t.progress.notPractised}
                     </span>
                   </span>
                   <span className="row-tags">
                     {progress.solverLevels.includes(topic.id) && (
                       <span className="tag">
-                        <Check size={12} aria-hidden="true" /> Solver
+                        <Check size={12} aria-hidden="true" /> {t.progress.solverTag}
                       </span>
                     )}
                     {practised.includes(topic.id) && (
                       <span className="tag">
-                        <Check size={12} aria-hidden="true" /> Practised
+                        <Check size={12} aria-hidden="true" /> {t.progress.practisedTag}
                       </span>
                     )}
                   </span>
@@ -122,20 +127,20 @@ export function ProgressScreen() {
 
       <section aria-labelledby="by-type">
         <h2 id="by-type" className="sub-head">
-          By type of task
+          {t.progress.byType}
         </h2>
         <ul className="rows rows-compact">
-          {(Object.keys(GROUP_INFO) as TaskGroup[]).map((group) => {
+          {GROUPS.map((group) => {
             const tally = progress.byGroup[group];
             const percent = tally ? accuracyOf(tally) : 0;
             return (
               <li key={group} className="row row-static">
                 <span className="row-main">
-                  <strong>{GROUP_INFO[group].label}</strong>
+                  <strong>{t.groups[group].label}</strong>
                   <span className="bar" aria-hidden="true">
                     <span style={{ width: `${percent}%` }} />
                   </span>
-                  <span className="row-sub">{tally ? `${tally.correct} of ${tally.attempts} correct (${percent} %)` : GROUP_INFO[group].hint}</span>
+                  <span className="row-sub">{tally ? t.progress.tally(tally.correct, tally.attempts, percent) : t.groups[group].hint}</span>
                 </span>
               </li>
             );
@@ -147,15 +152,15 @@ export function ProgressScreen() {
         {confirming ? (
           <>
             <button type="button" className="button-danger" onClick={() => { resetProgress(); setConfirming(false); }}>
-              Yes, delete my progress
+              {t.progress.resetYes}
             </button>
             <button type="button" className="button-secondary" onClick={() => setConfirming(false)}>
-              Keep it
+              {t.progress.keep}
             </button>
           </>
         ) : (
           <button type="button" className="button-secondary" onClick={() => setConfirming(true)}>
-            Reset progress
+            {t.progress.reset}
           </button>
         )}
       </div>

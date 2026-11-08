@@ -1,6 +1,4 @@
-import type { Token } from "@/lib/equations";
-
-const OPERATOR_TEXTS = new Set(["+", "−", "×", "÷"]);
+import { isOperatorText, type Token } from "@/lib/equations";
 
 /** Groups neighbouring tokens so the learner's operation reads as one highlighted unit. */
 function groupByApplied(tokens: readonly Token[]): { applied: boolean; tokens: Token[] }[] {
@@ -14,7 +12,7 @@ function groupByApplied(tokens: readonly Token[]): { applied: boolean; tokens: T
   return groups;
 }
 
-function TokenView({ token }: { token: Token }) {
+export function TokenView({ token }: { token: Token }) {
   if (token.denominator) {
     return (
       <span className="eq-term">
@@ -28,7 +26,7 @@ function TokenView({ token }: { token: Token }) {
   }
   if (token.text === "(") return <span className="eq-paren eq-paren-open">(</span>;
   if (token.text === ")") return <span className="eq-paren eq-paren-close">)</span>;
-  if (OPERATOR_TEXTS.has(token.text) && !token.prefix) return <span className="eq-op">{token.text}</span>;
+  if (isOperatorText(token.text) && !token.prefix) return <span className="eq-op">{token.text}</span>;
   return (
     <span className="eq-term">
       {token.prefix}

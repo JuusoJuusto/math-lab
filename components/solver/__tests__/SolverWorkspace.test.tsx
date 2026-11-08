@@ -153,7 +153,8 @@ describe("SolverWorkspace: a learner solving 2x + 5 = 17", () => {
     await applyOperation(user, "Subtract", 5);
     await user.click(screen.getByRole("button", { name: "Choose again" }));
     expect(spokenEquation()).toBe("Current equation: 2x plus 5 equals 17");
-    expect(screen.getAllByRole("radio")).toHaveLength(4);
+    // Four operations (the two move tabs are radios too, so look inside the operation group).
+    expect(within(screen.getByRole("group", { name: "What will you do to both sides?" })).getAllByRole("radio")).toHaveLength(4);
   });
 });
 

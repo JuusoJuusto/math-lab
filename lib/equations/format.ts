@@ -10,13 +10,13 @@
  * `2x + 5`, `-x + 4`, `x/3 - 2`. Negative numbers use the true minus sign.
  */
 
+import type { Lang } from "../lang";
 import { abs, isNegative, isOne, isZero, type Fraction } from "./fraction";
 import { termCount, type Equation, type LinearExpr } from "./expression";
 import type { Operation } from "./operations";
+import { engineText } from "./text";
 
 export const MINUS = "−";
-export const TIMES = "×";
-export const DIVIDE = "÷";
 
 export interface Token {
   /** Visible text, or the numerator when `denominator` is set. */
@@ -29,7 +29,13 @@ export interface Token {
   readonly applied?: boolean;
 }
 
-const OPERATOR_TEXTS = new Set(["+", MINUS, TIMES, DIVIDE]);
+/** Every symbol that can stand between two terms, in any language. */
+const OPERATOR_TEXTS = new Set(["+", MINUS, "×", "÷", "·", ":"]);
+
+/** True for a token that is an operator between terms rather than part of a term. */
+export function isOperatorText(text: string): boolean {
+  return OPERATOR_TEXTS.has(text);
+}
 
 /** Formats a fraction such as 5, -3 or 7/2. */
 export function formatFraction(value: Fraction): string {
@@ -38,7 +44,7 @@ export function formatFraction(value: Fraction): string {
   return magnitude.d === 1 ? `${sign}${magnitude.n}` : `${sign}${magnitude.n}/${magnitude.d}`;
 }
 
-function magnitudeToken(value: Fraction, withVariable: boolean, applied?: boolean): Token {
+export function magnitudeToken(value: Fraction, withVariable: boolean, applied?: boolean): Token {
   const magnitude = abs(value);
   const numerator = withVariable ? (magnitude.n === 1 ? "x" : `${magnitude.n}x`) : String(magnitude.n);
   return magnitude.d === 1
@@ -46,7 +52,7 @@ function magnitudeToken(value: Fraction, withVariable: boolean, applied?: boolea
     : { text: numerator, denominator: String(magnitude.d), applied };
 }
 
-function withPrefix(token: Token, prefix: string): Token {
+export function withPrefix(token: Token, prefix: string): Token {
   return { ...token, prefix };
 }
 
@@ -71,7 +77,7 @@ export function expressionTokens(expression: LinearExpr): Token[] {
   return tokens.length === 0 ? [{ text: "0" }] : tokens;
 }
 
-function operandTokens(op: Operation): Token[] {
+export function operandTokens(op: Operation): Token[] {
   const body = magnitudeToken(op.amount, op.withVariable, true);
   if (isNegative(op.amount)) {
     return [
@@ -83,16 +89,18 @@ function operandTokens(op: Operation): Token[] {
   return [body];
 }
 
-function operatorSymbol(op: Operation): string {
+/** The sign written for an operation: + − and the language's own × or · and ÷ or :. */
+export function operatorSymbol(op: Operation, lang: Lang = "en"): string {
+  const text = engineText(lang);
   switch (op.kind) {
     case "add":
       return "+";
     case "subtract":
       return MINUS;
     case "multiply":
-      return TIMES;
+      return text.times;
     case "divide":
-      return DIVIDE;
+      return text.divide;
   }
 }
 
@@ -107,11 +115,11 @@ function needsBrackets(side: LinearExpr): boolean {
  * Tokens for one side of the equation, optionally with an operation written
  * out but not yet simplified, for example `2x + 5 − 5`.
  */
-export function sideTokens(side: LinearExpr, op?: Operation): Token[] {
+export function sideTokens(side: LinearExpr, op?: Operation, lang: Lang = "en"): Token[] {
   const base = expressionTokens(side);
   if (!op) return base;
 
-  const symbol: Token = { text: operatorSymbol(op), applied: true };
+  const symbol: Token = { text: operatorSymbol(op, lang), applied: true };
 
   if (op.kind === "add" || op.kind === "subtract") {
     return [...base, symbol, ...operandTokens(op)];
@@ -126,7 +134,7 @@ export function tokensToText(tokens: readonly Token[]): string {
   let text = "";
   for (const token of tokens) {
     const body = `${token.prefix ?? ""}${token.text}${token.denominator ? `/${token.denominator}` : ""}`;
-    const isBinaryOperator = OPERATOR_TEXTS.has(token.text) && !token.prefix && !token.denominator;
+    const isBinaryOperator = isOperatorText(token.text) && !token.prefix && !token.denominator;
     text += isBinaryOperator ? ` ${body} ` : body;
   }
   return text.replace(/\s+/g, " ").trim();
@@ -141,13 +149,13 @@ export function formatEquation(eq: Equation): string {
 }
 
 /** One side with the operation written out, such as `2x + 5 − 5`. */
-export function formatSideWithOperation(side: LinearExpr, op: Operation): string {
-  return tokensToText(sideTokens(side, op));
+export function formatSideWithOperation(side: LinearExpr, op: Operation, lang: Lang = "en"): string {
+  return tokensToText(sideTokens(side, op, lang));
 }
 
 /** The whole equation with the operation written on both sides, before simplifying. */
-export function formatAppliedEquation(eq: Equation, op: Operation): string {
-  return `${formatSideWithOperation(eq.left, op)} = ${formatSideWithOperation(eq.right, op)}`;
+export function formatAppliedEquation(eq: Equation, op: Operation, lang: Lang = "en"): string {
+  return `${formatSideWithOperation(eq.left, op, lang)} = ${formatSideWithOperation(eq.right, op, lang)}`;
 }
 
 /** The amount of an operation: `5`, `3x`, `x`, `−2` or `1/2`. */
@@ -162,58 +170,31 @@ export function formatAmount(op: Operation): string {
 }
 
 /** A short symbol-and-number label such as `− 5` or `÷ 2`. */
-export function operationLabel(op: Operation): string {
+export function operationLabel(op: Operation, lang: Lang = "en"): string {
   const amount = isNegative(op.amount) ? `(${formatAmount(op)})` : formatAmount(op);
-  return `${operatorSymbol(op)} ${amount}`;
+  return `${operatorSymbol(op, lang)} ${amount}`;
+}
+
+/**
+ * The operation written beside the equation, the way it is in a notebook:
+ * `3x − 5 = 6 | + 5`. This returns the `| + 5` part.
+ */
+export function formatBar(op: Operation, lang: Lang = "en"): string {
+  return `| ${operationLabel(op, lang)}`;
 }
 
 /** A lower-case sentence fragment such as `subtract 5 from both sides`. */
-export function operationPhrase(op: Operation): string {
-  const amount = formatAmount(op);
-  switch (op.kind) {
-    case "add":
-      return `add ${amount} to both sides`;
-    case "subtract":
-      return `subtract ${amount} from both sides`;
-    case "multiply":
-      return `multiply both sides by ${amount}`;
-    case "divide":
-      return `divide both sides by ${amount}`;
-  }
-}
-
-/** A gerund phrase for use as a sentence subject, such as `Subtracting 5 from both sides`. */
-export function operationGerund(op: Operation): string {
-  const amount = formatAmount(op);
-  switch (op.kind) {
-    case "add":
-      return `Adding ${amount} to both sides`;
-    case "subtract":
-      return `Subtracting ${amount} from both sides`;
-    case "multiply":
-      return `Multiplying both sides by ${amount}`;
-    case "divide":
-      return `Dividing both sides by ${amount}`;
-  }
+export function operationPhrase(op: Operation, lang: Lang = "en"): string {
+  return engineText(lang).phrase(op.kind, formatAmount(op));
 }
 
 /** A sentence-case version of {@link operationPhrase}, such as `Subtract 5 from both sides`. */
-export function describeOperation(op: Operation): string {
-  const phrase = operationPhrase(op);
+export function describeOperation(op: Operation, lang: Lang = "en"): string {
+  const phrase = operationPhrase(op, lang);
   return phrase.charAt(0).toUpperCase() + phrase.slice(1);
 }
 
 /** Rewrites maths text so that screen readers pronounce it sensibly. */
-export function toSpeech(text: string): string {
-  return text
-    .replace(/(\d|x)\/(\d)/g, "$1 over $2")
-    .replace(/=/g, " equals ")
-    .replace(new RegExp(MINUS, "g"), " minus ")
-    .replace(new RegExp(TIMES, "g"), " times ")
-    .replace(new RegExp(DIVIDE, "g"), " divided by ")
-    .replace(/\+/g, " plus ")
-    .replace(/\(\s+/g, "(")
-    .replace(/\s+\)/g, ")")
-    .replace(/\s+/g, " ")
-    .trim();
+export function toSpeech(text: string, lang: Lang = "en"): string {
+  return engineText(lang).speech(text);
 }

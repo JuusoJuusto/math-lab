@@ -6,7 +6,6 @@ import {
   formatAmount,
   formatEquation,
   formatFraction,
-  operationGerund,
   operationLabel,
   sideTokens,
   toSpeech,
@@ -75,7 +74,6 @@ describe("operation wording", () => {
     expect(describeOperation(operation("add", 3, true))).toBe("Add 3x to both sides");
     expect(describeOperation(operation("multiply", 4))).toBe("Multiply both sides by 4");
     expect(describeOperation(operation("divide", -2))).toBe("Divide both sides by −2");
-    expect(operationGerund(operation("subtract", 5))).toBe("Subtracting 5 from both sides");
   });
 
   it("formats amounts", () => {

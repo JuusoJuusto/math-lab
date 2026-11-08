@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatEquation } from "../format";
-import { LEVELS, getLevel, getNextLevel, isLevelId, toExercise, type LevelDefinition } from "../levels";
+import { LEVELS as ALL_LEVELS, getLevel, getNextLevel, isLevelId, levelText, toExercise, type LevelDefinition } from "../levels";
 import { mustParseEquation } from "../parse";
 import { createRng, pickRound, shuffle, summariseRound } from "../round";
 import { isSolution, solveEquation, terminalState } from "../solve";
@@ -13,16 +13,21 @@ const level = (id: string): LevelDefinition => {
   return found;
 };
 
+/** The levels that draw from a pool of equations. Word problems are covered in the story tests. */
+const LEVELS = ALL_LEVELS.filter((l) => l.kind === "equations");
+
 /** Authors type "-" and "x/4"; the workspace shows "−" and "x/4". Compare ignoring that. */
 const asAuthored = (text: string) => text.replace(/−/g, "-");
 
 describe("level catalogue", () => {
-  it("defines the three levels in order", () => {
-    expect(LEVELS.map((l) => l.id)).toEqual(["one-step", "two-step", "both"]);
-    expect(LEVELS.map((l) => l.number)).toEqual([1, 2, 3]);
+  it("defines the four levels in order", () => {
+    expect(ALL_LEVELS.map((l) => l.id)).toEqual(["one-step", "two-step", "both", "word"]);
+    expect(ALL_LEVELS.map((l) => l.number)).toEqual([1, 2, 3, 4]);
+    expect(ALL_LEVELS.map((l) => l.kind)).toEqual(["equations", "equations", "equations", "stories"]);
     expect(getNextLevel("one-step")?.id).toBe("two-step");
     expect(getNextLevel("two-step")?.id).toBe("both");
-    expect(getNextLevel("both")).toBeUndefined();
+    expect(getNextLevel("both")?.id).toBe("word");
+    expect(getNextLevel("word")).toBeUndefined();
     expect(isLevelId("two-step")).toBe(true);
     expect(isLevelId("brackets")).toBe(false);
   });
@@ -47,11 +52,32 @@ describe("level catalogue", () => {
     }
   });
 
-  it("writes every intro in plain, short copy", () => {
-    for (const l of LEVELS) {
-      expect(l.intro.points).toHaveLength(3);
-      expect(l.intro.lead.length).toBeLessThan(260);
-      for (const point of l.intro.points) expect(point.length).toBeLessThan(120);
+  it("writes every intro in plain, short copy, in both languages", () => {
+    for (const l of ALL_LEVELS) {
+      for (const lang of ["en", "fi"] as const) {
+        const { intro } = levelText(l, lang);
+        expect(intro.points).toHaveLength(3);
+        expect(intro.lead.length).toBeLessThan(300);
+        for (const point of intro.points) expect(point.length).toBeLessThan(140);
+      }
+    }
+  });
+
+  it("has a Finnish version of every text that differs from the English one", () => {
+    for (const l of ALL_LEVELS) {
+      const en = levelText(l, "en");
+      const fi = levelText(l, "fi");
+      expect(fi.title).not.toBe(en.title);
+      expect(fi.intro.lead).not.toBe(en.intro.lead);
+      expect(fi.intro.points).toHaveLength(en.intro.points.length);
+      expect(fi.exampleLead).not.toBe(en.exampleLead);
+    }
+  });
+
+  it("has a worked example that parses and has a whole-number solution, for every level", () => {
+    for (const l of ALL_LEVELS) {
+      const solution = solveEquation(mustParseEquation(l.example.equation));
+      expect(solution.kind).toBe("one");
     }
   });
 });

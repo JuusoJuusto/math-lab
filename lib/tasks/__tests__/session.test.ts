@@ -45,7 +45,7 @@ describe("buildSession", () => {
       const specs = build(modeId, "all", mode.defaultCount, seed);
       expect(specs).toHaveLength(mode.defaultCount);
 
-      const tasks = specs.map(generateTask);
+      const tasks = specs.map((spec) => generateTask(spec));
       expect(new Set(tasks.map(taskFingerprint)).size, `${modeId} seed ${seed} repeats a task`).toBe(tasks.length);
       for (const spec of specs) expect(mode.kinds).toContain(spec.kind);
     }

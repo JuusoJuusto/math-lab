@@ -21,7 +21,7 @@ const stored = (): Progress => JSON.parse(window.localStorage.getItem(STORAGE_KE
 
 /** The tasks of a session, exactly as the app builds them from the address. */
 function tasksOf(mode: ModeId, topic: string, count: number, seed: number, missed: Progress["missed"] = []): Task[] {
-  return buildSession({ mode, topic, count, seed, missed }).map(generateTask);
+  return buildSession({ mode, topic, count, seed, missed }).map((spec) => generateTask(spec));
 }
 
 /** Answers the task on screen, rightly or wrongly. */
@@ -77,7 +77,7 @@ describe("home", () => {
   });
 
   it("sends a learner who finished every level to the practice hub", async () => {
-    const { user } = open("", { solverLevels: ["one-step", "two-step", "both"] });
+    const { user } = open("", { solverLevels: ["one-step", "two-step", "both", "word"] });
     await user.click(screen.getByRole("button", { name: /Continue learning/ }));
     expect(await screen.findByRole("heading", { level: 1, name: "Practice" })).toBeTruthy();
   });
@@ -332,7 +332,7 @@ describe("a practice session", () => {
   it("turns missed tasks into a 'fix your mistakes' session that removes them once solved", async () => {
     const missed = tasksOf("solve", "two-step", 2, 5).map((task) => task.spec);
     const { user } = open("#/practice/mistakes?topic=all&n=10&seed=1", { missed, attempts: 2, correct: 0 });
-    const tasks = missed.map(generateTask);
+    const tasks = missed.map((spec) => generateTask(spec));
 
     await screen.findByText("Task 1 / 2");
     answer(tasks[0], true);

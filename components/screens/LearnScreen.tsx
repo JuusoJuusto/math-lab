@@ -1,20 +1,22 @@
 "use client";
 
-import { topics } from "@/content/topics";
+import { getTopics } from "@/content/topics";
+import { useI18n } from "@/hooks/useLang";
 import { useProgress } from "@/hooks/useProgress";
 import { finishedTopics } from "@/lib/progress";
 import { ModuleCard } from "@/components/ui/Cards";
 
 export function LearnScreen() {
+  const { lang, t } = useI18n();
   const finished = finishedTopics(useProgress());
   return (
     <div className="panel">
       <header className="page-head">
-        <h1>Learn</h1>
-        <p>Pick a topic. Start with the idea, then solve equations step by step.</p>
+        <h1>{t.learn.title}</h1>
+        <p>{t.learn.intro}</p>
       </header>
       <div className="grid-4">
-        {topics.map((topic) => (
+        {getTopics(lang).map((topic) => (
           <ModuleCard key={topic.id} topic={topic} done={finished.includes(topic.id)} />
         ))}
       </div>

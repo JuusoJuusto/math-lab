@@ -2,21 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
-import type { LevelDefinition } from "@/lib/equations";
+import { useI18n } from "@/hooks/useLang";
+import { levelText, type LevelDefinition } from "@/lib/equations";
 import type { Topic } from "@/content/topics";
 import { TopicIcon } from "@/components/ui/icons";
 import { LevelComplete } from "./LevelComplete";
 import { LevelIntro } from "./LevelIntro";
 import { PracticeRound, type RoundReport } from "./PracticeRound";
 import { WorkedExample } from "./WorkedExample";
+import { WordExample, WordRound } from "./WordRound";
 
 type Stage = "learn" | "example" | "practice" | "complete";
 
-const STAGES: readonly { id: Exclude<Stage, "complete">; label: string }[] = [
-  { id: "learn", label: "Learn" },
-  { id: "example", label: "Example" },
-  { id: "practice", label: "Practise" },
-];
+const STAGES: readonly Exclude<Stage, "complete">[] = ["learn", "example", "practice"];
 
 interface SolverViewProps {
   level: LevelDefinition;
@@ -35,6 +33,8 @@ interface SolverViewProps {
  * The stage switcher lets learners revisit the idea or example at any time.
  */
 export function SolverView({ level, topic, onComplete, onEquationSolved, onExit, onOpenLevel, onQuiz }: SolverViewProps) {
+  const { lang, t } = useI18n();
+  const text = levelText(level, lang);
   const [stage, setStage] = useState<Stage>("learn");
   const [roundId, setRoundId] = useState(0);
   const [previousIds, setPreviousIds] = useState<readonly string[]>([]);
@@ -70,12 +70,12 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
     onComplete(level.id);
   }
 
-  const activeIndex = STAGES.findIndex((item) => item.id === stage);
+  const activeIndex = STAGES.findIndex((item) => item === stage);
 
   return (
-    <section className="panel solver" aria-label={`${level.title} solver`} ref={root}>
+    <section className="panel solver" aria-label={t.solver.label(text.title)} ref={root}>
       <button type="button" className="back-link" onClick={onExit}>
-        <ArrowLeft size={16} aria-hidden="true" /> All topics
+        <ArrowLeft size={16} aria-hidden="true" /> {t.solver.back}
       </button>
 
       <header className={`lesson-top solver-top mod-${topic.colour}`}>
@@ -83,29 +83,29 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
           <TopicIcon name={topic.icon} size={30} />
         </span>
         <div>
-          <p className="lesson-kicker">Level {level.number} · Equation solver</p>
-          <h1>{level.title}</h1>
-          <p className="lesson-formula">{level.tagline}</p>
+          <p className="lesson-kicker">{t.solver.kicker(level.number)}</p>
+          <h1>{text.title}</h1>
+          <p className="lesson-formula">{text.tagline}</p>
         </div>
       </header>
 
       {stage !== "complete" && (
-        <nav aria-label="Level steps">
+        <nav aria-label={t.solver.stagesNav}>
           <ol className="stages">
             {STAGES.map((item, index) => {
               const state = index < activeIndex ? "done" : index === activeIndex ? "current" : "todo";
               return (
-                <li key={item.id}>
+                <li key={item}>
                   <button
                     type="button"
                     className={`stage stage-${state}`}
                     aria-current={state === "current" ? "step" : undefined}
-                    onClick={() => (item.id === "practice" ? (stage === "practice" ? undefined : startPractice()) : setStage(item.id))}
+                    onClick={() => (item === "practice" ? (stage === "practice" ? undefined : startPractice()) : setStage(item))}
                   >
                     <span className="stage-number" aria-hidden="true">
                       {state === "done" ? <Check size={14} /> : index + 1}
                     </span>
-                    {item.label}
+                    {t.solver.stages[item]}
                   </button>
                 </li>
               );
@@ -115,10 +115,14 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
       )}
 
       {stage === "learn" && <LevelIntro level={level} onNext={() => setStage("example")} onSkip={startPractice} />}
-      {stage === "example" && <WorkedExample level={level} onPractise={startPractice} />}
-      {stage === "practice" && (
-        <PracticeRound key={roundId} level={level} avoid={previousIds} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
-      )}
+      {stage === "example" &&
+        (level.kind === "stories" ? <WordExample level={level} onPractise={startPractice} /> : <WorkedExample level={level} onPractise={startPractice} />)}
+      {stage === "practice" &&
+        (level.kind === "stories" ? (
+          <WordRound key={roundId} level={level} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
+        ) : (
+          <PracticeRound key={roundId} level={level} avoid={previousIds} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
+        ))}
       {stage === "complete" && report && (
         <LevelComplete
           level={level}

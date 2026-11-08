@@ -151,14 +151,13 @@ describe("SolverView: a level from introduction to completion", () => {
     expect(onExit).toHaveBeenCalled();
   });
 
-  it("points the last level back to the topic list instead of a missing next level", async () => {
+  it("leads from the both-sides level on to word problems", async () => {
     vi.spyOn(Math, "random").mockImplementation(createRng(1));
-    const { user, onExit } = setup("both");
+    const { user, onOpenLevel } = setup("both");
     await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
     await playRound(user);
-    expect(screen.queryByRole("button", { name: /^Next:/ })).toBeNull();
-    await user.click(screen.getByRole("button", { name: /Explore more topics/ }));
-    expect(onExit).toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: /Next: Word problems/ }));
+    expect(onOpenLevel).toHaveBeenCalledWith("word");
   });
 
   it("can leave a round part-way without recording completion", async () => {

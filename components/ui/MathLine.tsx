@@ -1,4 +1,7 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useLang } from "@/hooks/useLang";
 import { expressionTokens, formatEquation, parseEquation, toSpeech } from "@/lib/equations";
 import { SideView } from "@/components/solver/EquationParts";
 
@@ -8,13 +11,14 @@ import { SideView } from "@/components/solver/EquationParts";
  * A hidden spoken version is included for screen readers.
  */
 export function MathLine({ text }: { text: string }) {
+  const lang = useLang();
   const parsed = parseEquation(text);
   const standard = parsed.ok && formatEquation(parsed.value) === text;
   const sides = text.split(" = ");
 
   return (
     <span className="mathline" style={{ "--eq-chars": text.length } as CSSProperties}>
-      <span className="sr-only">{toSpeech(text)}</span>
+      <span className="sr-only">{toSpeech(text, lang)}</span>
       <span className="mathline-row" aria-hidden="true">
         {parsed.ok && standard ? (
           <>

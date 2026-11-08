@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useI18n } from "@/hooks/useLang";
 import { useRoute } from "@/hooks/useRoute";
 import { toHash, type Route } from "@/lib/routes";
 import { Footer } from "@/components/shell/Footer";
@@ -12,16 +13,6 @@ import { LessonScreen } from "@/components/screens/LessonScreen";
 import { PracticeHub } from "@/components/screens/PracticeHub";
 import { ProgressScreen } from "@/components/screens/ProgressScreen";
 import { SolverScreen } from "@/components/screens/SolverScreen";
-
-const TITLES: Record<Route["name"], string> = {
-  home: "MathLab",
-  learn: "Learn | MathLab",
-  lesson: "Lesson | MathLab",
-  solver: "Equation solver | MathLab",
-  practice: "Practice | MathLab",
-  session: "Practice | MathLab",
-  progress: "Progress | MathLab",
-};
 
 function Screen({ route }: { route: Route }) {
   switch (route.name) {
@@ -45,13 +36,19 @@ function Screen({ route }: { route: Route }) {
 /** The whole application: header, the current screen, footer. */
 export function App() {
   const route = useRoute();
+  const { lang, t } = useI18n();
   const main = useRef<HTMLElement>(null);
   const hash = toHash(route);
   const first = useRef(true);
 
+  // The page language and title follow the learner's choice, for screen readers and the tab.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = t.titles[route.name];
+  }, [lang, t, route.name]);
+
   // A new screen starts at the top, with focus moved into it for keyboard and screen-reader users.
   useEffect(() => {
-    document.title = TITLES[route.name];
     if (first.current) {
       first.current = false;
       return;
@@ -59,13 +56,12 @@ export function App() {
     document.documentElement.scrollTop = 0;
     main.current?.focus({ preventScroll: true });
     // The screen is identified by its address.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hash]);
 
   return (
     <div className="shell">
       <button type="button" className="skip-link" onClick={() => main.current?.focus()}>
-        Skip to content
+        {t.nav.skip}
       </button>
       <Header route={route} />
       <main id="main" className="main" tabIndex={-1} ref={main}>

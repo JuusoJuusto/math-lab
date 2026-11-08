@@ -1833,3 +1833,52 @@ a.row:hover {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ----------------------------------------------------- Language switch */
+
+.lang-switch {
+  display: inline-flex;
+  flex: none;
+  padding: 3px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: var(--shadow-pill);
+}
+
+.lang-option {
+  min-width: 42px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: 800 0.78rem/1 var(--font-sans);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+}
+
+.lang-option:hover:not([aria-pressed="true"]) {
+  background: var(--teal-tint);
+}
+
+.lang-option[aria-pressed="true"] {
+  background: var(--teal);
+  color: #fff;
+}
+
+.lang-option:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 899px) {
+  .lang-switch-bar {
+    margin-left: auto;
+  }
+
+  .lang-switch-bar + .xp-badge {
+    margin-left: 0;
+  }
+}

@@ -15,6 +15,7 @@
  *   - helpful       applied, with an explanation of why it works
  */
 
+import type { Lang } from "../lang";
 import {
   abs,
   compare,
@@ -35,20 +36,20 @@ import {
   operationsEqual,
   type AppliedStep,
   type Operation,
-  type OperationKind,
   type OperationProblem,
 } from "./operations";
 import { hasNoVariable, terminalState } from "./solve";
 import {
   MINUS,
+  formatAmount,
   formatAppliedEquation,
   formatEquation,
   formatExpression,
   formatFraction,
   formatSideWithOperation,
-  operationGerund,
   operationPhrase,
 } from "./format";
+import { engineText, type EngineText } from "./text";
 
 /* -------------------------------------------------------------------------- */
 /* Measuring progress                                                         */
@@ -250,10 +251,6 @@ export function solveWithTutor(eq: Equation, maxSteps = 12): AppliedStep[] {
 /* Wording helpers                                                            */
 /* -------------------------------------------------------------------------- */
 
-function capitalise(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 /** The side that still contains x when it lives on exactly one side. */
 function variableSideOf(eq: Equation): LinearExpr {
   return isZero(eq.right.x) ? eq.left : eq.right;
@@ -265,15 +262,15 @@ function attachedConstantText(constant: Fraction): string {
 }
 
 /** Plain words for what has been done to x, e.g. "multiplied by 2" or "divided by 3". */
-function coefficientWords(coefficient: Fraction): string {
+function coefficientWords(coefficient: Fraction, text: EngineText): string {
   if (isUnitFraction(coefficient)) {
-    return `divided by ${isNegative(coefficient) ? MINUS : ""}${coefficient.d}`;
+    return text.tutor.dividedBy(`${isNegative(coefficient) ? MINUS : ""}${coefficient.d}`);
   }
-  return `multiplied by ${formatFraction(coefficient)}`;
+  return text.tutor.multipliedBy(formatFraction(coefficient));
 }
 
-function sideWork(side: LinearExpr, after: LinearExpr, op: Operation): string {
-  return `${formatSideWithOperation(side, op)} = ${formatExpression(after)}`;
+function sideWork(side: LinearExpr, after: LinearExpr, op: Operation, lang: Lang): string {
+  return `${formatSideWithOperation(side, op, lang)} = ${formatExpression(after)}`;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -293,8 +290,6 @@ export interface StepExplanation {
   readonly note?: string;
 }
 
-const PRAISE = ["Nice choice!", "Exactly right!", "That works!", "Well spotted!", "Good thinking!"] as const;
-
 function cancelledConstant(before: Equation, after: Equation): LinearExpr | null {
   for (const key of ["left", "right"] as const) {
     if (!isZero(before[key].c) && isZero(after[key].c)) return before[key];
@@ -309,7 +304,8 @@ function cancelledVariable(before: Equation, after: Equation): LinearExpr | null
   return null;
 }
 
-function explainWhy(step: AppliedStep): { why: string; note?: string } {
+function explainWhy(step: AppliedStep, lang: Lang): { why: string; note?: string } {
+  const text = engineText(lang);
   const { before, operation: op, after } = step;
 
   if (op.kind === "add" || op.kind === "subtract") {
@@ -317,83 +313,73 @@ function explainWhy(step: AppliedStep): { why: string; note?: string } {
       const removed = cancelledVariable(before, after);
       if (removed) {
         const term = formatExpression(expr(removed.x, 0));
-        return {
-          why: `${capitalise(operationGerund(op))} cancels the ${term} on one side, so the x-terms now end up on a single side.`,
-        };
+        return { why: text.tutor.cancelsVariable(op.kind, formatAmount(op), term) };
       }
     } else {
       const removed = cancelledConstant(before, after);
       if (removed) {
         const amount = formatFraction(abs(removed.c));
+        const attached = attachedConstantText(removed.c);
         return {
-          why: isNegative(removed.c)
-            ? `The ${attachedConstantText(removed.c)} is subtracted. Adding is the inverse of subtracting, so ${MINUS} ${amount} and + ${amount} cancel each other out.`
-            : `The ${attachedConstantText(removed.c)} is added. Subtracting is the inverse of adding, so + ${amount} and ${MINUS} ${amount} cancel each other out.`,
+          why: isNegative(removed.c) ? text.tutor.cancelsSubtracted(attached, amount) : text.tutor.cancelsAdded(attached, amount),
         };
       }
     }
-    return { why: "This keeps both sides equal and moves the equation closer to x = a number." };
+    return { why: text.tutor.staysEqual };
   }
 
   const variableSide = isZero(before.left.x) ? before.right : before.left;
   const coefficient = variableSide.x;
-  const signNote = isNegative(op.amount)
-    ? "Multiplying or dividing by a negative number flips the sign of every term."
-    : undefined;
-  const orderNote = isZero(variableSide.c)
-    ? undefined
-    : "Undoing the multiplication or division first also works here. Many people undo the + or − first because it keeps the numbers simple.";
+  const signNote = isNegative(op.amount) ? text.tutor.negativeNote : undefined;
+  const orderNote = isZero(variableSide.c) ? undefined : text.tutor.orderNote;
   const note = [signNote, orderNote].filter(Boolean).join(" ") || undefined;
 
   const cancelsCoefficient = isOne(after.left.x) || isOne(after.right.x);
   if (cancelsCoefficient) {
+    const words = coefficientWords(coefficient, text);
+    const amount = formatFraction(op.amount);
     return {
-      why:
-        op.kind === "divide"
-          ? `x is ${coefficientWords(coefficient)}. Dividing is the inverse of multiplying, so dividing by ${formatFraction(op.amount)} leaves x on its own.`
-          : `x is ${coefficientWords(coefficient)}. Multiplying is the inverse of dividing, so multiplying by ${formatFraction(op.amount)} leaves x on its own.`,
+      why: op.kind === "divide" ? text.tutor.undoDivide(words, amount) : text.tutor.undoMultiply(words, amount),
       note,
     };
   }
-  return { why: "This keeps both sides equal and makes the equation simpler.", note };
+  return { why: text.tutor.simpler, note };
 }
 
 /** Explains a move that was accepted. `stepIndex` only varies the encouragement. */
-export function explainStep(step: AppliedStep, stepIndex = 0): StepExplanation {
+export function explainStep(step: AppliedStep, stepIndex = 0, lang: Lang = "en"): StepExplanation {
   const { before, operation: op, after } = step;
-  const { why, note } = explainWhy(step);
+  const { why, note } = explainWhy(step, lang);
+  const praise = engineText(lang).tutor.praise;
   return {
-    title: PRAISE[((stepIndex % PRAISE.length) + PRAISE.length) % PRAISE.length],
+    title: praise[((stepIndex % praise.length) + praise.length) % praise.length],
     why,
-    leftWork: sideWork(before.left, after.left, op),
-    rightWork: sideWork(before.right, after.right, op),
+    leftWork: sideWork(before.left, after.left, op, lang),
+    rightWork: sideWork(before.right, after.right, op, lang),
     note,
   };
 }
 
 /** What to do next after a step has been simplified. */
-export function describeNextStep(eq: Equation): string {
+export function describeNextStep(eq: Equation, lang: Lang = "en"): string {
+  const text = engineText(lang);
   const state = terminalState(eq);
   if (state === "solved") {
-    const value = isOne(eq.left.x) ? eq.right.c : eq.left.c;
-    return `x is on its own, so x = ${formatFraction(value)}${isOne(eq.right.x) ? ` (${formatEquation(eq)} means the same as x = ${formatFraction(value)})` : ""}. Check it by putting it back into the original equation.`;
+    const value = formatFraction(isOne(eq.left.x) ? eq.right.c : eq.left.c);
+    return text.tutor.solved(value, isOne(eq.right.x) ? formatEquation(eq) : null);
   }
-  if (state === "no-solution") {
-    return `x has disappeared, and ${formatEquation(eq)} is never true. No value of x can work, so this equation has no solution.`;
-  }
-  if (state === "infinite-solutions") {
-    return `x has disappeared, and ${formatEquation(eq)} is always true. Every value of x works, so there are infinitely many solutions.`;
-  }
+  if (state === "no-solution") return text.tutor.noSolution(formatEquation(eq));
+  if (state === "infinite-solutions") return text.tutor.infinite(formatEquation(eq));
 
   const suggestion = suggestNextMove(eq);
   if (!suggestion) return "";
   switch (suggestion.goal) {
     case "collect-variable":
-      return "Next: x is still on both sides, so collect the x-terms on one side.";
+      return text.tutor.nextCollect;
     case "remove-constant":
-      return "Next: there is still a number added to or subtracted from the x-term. Undo it.";
+      return text.tutor.nextConstant;
     case "remove-coefficient":
-      return `Next: x is still ${coefficientWords(variableSideOf(eq).x)}. Undo that with the inverse operation.`;
+      return text.tutor.nextCoefficient(coefficientWords(variableSideOf(eq).x, text));
   }
 }
 
@@ -436,17 +422,17 @@ const sameFamily = (a: Operation, b: Operation) =>
 function notHelpful(
   reason: NotHelpfulReason,
   severity: "error" | "warning",
-  title: string,
-  message: string,
+  wording: { readonly title: string; readonly message: string },
   step: AppliedStep,
+  lang: Lang,
 ): MoveEvaluation {
   return {
     verdict: "not-helpful",
     reason,
     severity,
-    title,
-    message,
-    preview: { applied: formatAppliedEquation(step.before, step.operation), result: formatEquation(step.after) },
+    title: wording.title,
+    message: wording.message,
+    preview: { applied: formatAppliedEquation(step.before, step.operation, lang), result: formatEquation(step.after) },
   };
 }
 
@@ -455,36 +441,24 @@ function notHelpful(
  *
  * @param stepIndex only used to vary the praise shown for good moves.
  */
-export function evaluateMove(eq: Equation, op: Operation, stepIndex = 0): MoveEvaluation {
-  const outcome = applyOperation(eq, op);
+export function evaluateMove(eq: Equation, op: Operation, stepIndex = 0, lang: Lang = "en"): MoveEvaluation {
+  const text = engineText(lang).tutor;
+  const outcome = applyOperation(eq, op, lang);
   if (!outcome.ok) return { verdict: "invalid", problem: outcome.problem };
 
   const { step } = outcome;
   const { after } = step;
+  const amount = formatAmount(op);
 
-  if (equalsEquation(eq, after)) {
-    return notHelpful(
-      "no-change",
-      "warning",
-      "That changes nothing",
-      "Adding or subtracting 0, or multiplying or dividing by 1, leaves the equation exactly as it was. Choose an amount that brings x closer to being alone.",
-      step,
-    );
-  }
+  if (equalsEquation(eq, after)) return notHelpful("no-change", "warning", text.noChange, step, lang);
 
   const analysis = analyseCandidates(eq);
 
   if (makesProgress(eq, after)) {
     if (analysis.tidyMoveExists && !isTidy(after)) {
-      return notHelpful(
-        "awkward",
-        "warning",
-        "Allowed, but it gets messy",
-        `${operationGerund(op)} is a valid move, but it leaves fractions: ${formatEquation(after)}. Whole numbers are easier to work with. Try a move that keeps the numbers whole, which often means dealing with a number added to or subtracted from x first.`,
-        step,
-      );
+      return notHelpful("awkward", "warning", text.awkward(op.kind, amount, formatEquation(after)), step, lang);
     }
-    return { verdict: "helpful", step, explanation: explainStep(step, stepIndex) };
+    return { verdict: "helpful", step, explanation: explainStep(step, stepIndex, lang) };
   }
 
   // A valid move that does not help. Work out the most useful thing to say.
@@ -496,54 +470,26 @@ export function evaluateMove(eq: Equation, op: Operation, stepIndex = 0): MoveEv
     return notHelpful(
       "wrong-direction",
       "error",
-      "Almost — try the opposite operation",
-      additive
-        ? `${operationGerund(op)} keeps the equation balanced, but it adds to the problem instead of cancelling it. To cancel a term, do the opposite of what it does.`
-        : `${operationGerund(op)} keeps the equation balanced, but it does even more of what was done to x. To undo multiplying, divide; to undo dividing, multiply.`,
+      additive ? text.wrongDirectionAdditive(op.kind, amount) : text.wrongDirectionMultiplicative(op.kind, amount),
       step,
+      lang,
     );
   }
 
   const sameKind = recommended.filter((rec) => rec.kind === op.kind);
   if (sameKind.some((rec) => rec.withVariable !== op.withVariable && equals(rec.amount, op.amount))) {
-    return notHelpful(
-      "wrong-term",
-      "error",
-      "Check what you are cancelling",
-      op.withVariable
-        ? "The term you want to cancel is a plain number, with no x. Try again without the x."
-        : "The term you want to remove contains x, so the amount you use needs an x as well.",
-      step,
-    );
+    return notHelpful("wrong-term", "error", op.withVariable ? text.wrongTermNumber : text.wrongTermVariable, step, lang);
   }
 
   if (sameKind.some((rec) => rec.withVariable === op.withVariable)) {
-    return notHelpful(
-      "wrong-amount",
-      "error",
-      "Right idea, different number",
-      "That is the right kind of move, but the number is not the one attached to x, so nothing cancels. Look closely at the number you want to remove.",
-      step,
-    );
+    return notHelpful("wrong-amount", "error", text.wrongAmount, step, lang);
   }
 
   if (distanceToSolved(after) > distanceToSolved(eq)) {
-    return notHelpful(
-      "moves-away",
-      "warning",
-      "That makes it harder",
-      `The equation stays balanced, but x ends up further from being alone. Think about what is attached to x and how to undo it${recommended.some((rec) => !sameFamily(rec, op)) ? " — a different kind of operation may be needed" : ""}.`,
-      step,
-    );
+    return notHelpful("moves-away", "warning", text.movesAway(recommended.some((rec) => !sameFamily(rec, op))), step, lang);
   }
 
-  return notHelpful(
-    "no-progress",
-    "warning",
-    "Balanced, but not helpful",
-    "Both sides are still equal, but x is no closer to being alone. Think about what is attached to x and which operation undoes it.",
-    step,
-  );
+  return notHelpful("no-progress", "warning", text.noProgress, step, lang);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -552,68 +498,44 @@ export function evaluateMove(eq: Equation, op: Operation, stepIndex = 0): MoveEv
 
 export type HintSet = readonly [string, string, string];
 
-const KIND_LABEL: Record<OperationKind, string> = {
-  add: "Add",
-  subtract: "Subtract",
-  multiply: "Multiply",
-  divide: "Divide",
-};
-
-/** Tells the learner which controls to use, matching the labels in the workspace. */
-function howToEnter(op: Operation): string {
-  const amount = formatFraction(op.amount);
-  return op.withVariable
-    ? `Choose “${KIND_LABEL[op.kind]}”, type ${amount} and turn on the x button.`
-    : `Choose “${KIND_LABEL[op.kind]}” and type ${amount}.`;
-}
-
 /**
  * Three progressively stronger hints for the current equation, or `null`
  * when there is nothing left to do.
  *
  *  1. A nudge about what is in the way.
  *  2. The inverse operation to use.
- *  3. A worked explanation of the exact move.
+ *  3. A worked explanation of the exact move, and the flip shortcut.
  */
-export function getHints(eq: Equation): HintSet | null {
+export function getHints(eq: Equation, lang: Lang = "en"): HintSet | null {
   const suggestion = suggestNextMove(eq);
   if (!suggestion) return null;
 
-  const result = applyOperation(eq, suggestion.operation);
+  const result = applyOperation(eq, suggestion.operation, lang);
   if (!result.ok) return null;
   const { after } = result.step;
   const op = suggestion.operation;
+  const text = engineText(lang);
+  const t = text.tutor;
 
-  const worked = `Try this: ${operationPhrase(op)}. Left side: ${sideWork(eq.left, after.left, op)}. Right side: ${sideWork(eq.right, after.right, op)}. ${howToEnter(op)}`;
+  // The number to type; the x button is turned on separately, so this is not "4x".
+  const howTo = t.howToEnter(text.kindNames[op.kind], formatFraction(op.amount), op.withVariable);
+  const worked = t.worked(
+    operationPhrase(op, lang),
+    sideWork(eq.left, after.left, op, lang),
+    sideWork(eq.right, after.right, op, lang),
+    howTo,
+  );
 
   switch (suggestion.goal) {
     case "collect-variable":
-      return [
-        "x appears on both sides. First, get all the x-terms onto one side of the equals sign.",
-        `Choose one x-term to remove. Removing the smaller one keeps the remaining x-term positive. ${
-          op.kind === "subtract" ? "It is added on its side, so subtract it from both sides." : "It is subtracted on its side, so add it to both sides."
-        }`,
-        worked,
-      ];
+      return [t.hintCollect1, t.hintCollect2(op.kind === "subtract"), worked];
     case "remove-constant": {
       const constant = variableSideOf(eq).c;
-      return [
-        "Look at the side with x. Is a number being added or subtracted there? That number is in the way of getting x alone.",
-        isNegative(constant)
-          ? `The number is subtracted (${attachedConstantText(constant)}). Subtraction is undone by addition, so use the opposite operation.`
-          : `The number is added (${attachedConstantText(constant)}). Addition is undone by subtraction, so use the opposite operation.`,
-        worked,
-      ];
+      return [t.hintConstant1, t.hintConstant2(isNegative(constant), attachedConstantText(constant)), worked];
     }
     case "remove-coefficient": {
       const coefficient = variableSideOf(eq).x;
-      return [
-        "Now x is multiplied or divided by a number. Which operation would undo that?",
-        isUnitFraction(coefficient)
-          ? `x is ${coefficientWords(coefficient)}. Division is undone by multiplication, so multiply both sides by that number.`
-          : `x is ${coefficientWords(coefficient)}. Multiplication is undone by division, so divide both sides by that number.`,
-        worked,
-      ];
+      return [t.hintCoefficient1, t.hintCoefficient2(isUnitFraction(coefficient), coefficientWords(coefficient, text)), worked];
     }
   }
 }

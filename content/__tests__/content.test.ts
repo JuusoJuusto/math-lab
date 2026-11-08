@@ -29,7 +29,7 @@ describe("topics", () => {
     for (const level of LEVELS) {
       expect(getTopic(level.id), `topic for level ${level.id}`).toBeDefined();
     }
-    expect(topics.filter((topic) => getLevel(topic.id)).map((topic) => topic.id)).toEqual(["one-step", "two-step", "both"]);
+    expect(topics.filter((topic) => getLevel(topic.id)).map((topic) => topic.id)).toEqual(["one-step", "two-step", "both", "word"]);
   });
 
   it("no longer contains the retired combined 'simple' topic", () => {

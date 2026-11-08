@@ -5,6 +5,7 @@
  * can be tested in isolation and reused by any interface.
  */
 
+export type { Lang } from "../lang";
 export * from "./fraction";
 export * from "./expression";
 export * from "./parse";
@@ -13,6 +14,9 @@ export * from "./solve";
 export * from "./format";
 export * from "./check";
 export * from "./tutor";
+export * from "./flip";
+export * from "./build";
+export { engineText, type EngineText } from "./text";
 export * from "./levels";
 export * from "./round";
 export * from "./session";

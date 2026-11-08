@@ -1,7 +1,8 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
-import { topics } from "@/content/topics";
+import { getTopics } from "@/content/topics";
+import { useI18n } from "@/hooks/useLang";
 import { navigate } from "@/hooks/useRoute";
 import { useProgress } from "@/hooks/useProgress";
 import { LEVELS } from "@/lib/equations";
@@ -13,18 +14,9 @@ import { ModeCard, ModuleCard } from "@/components/ui/Cards";
 import { TryItNow } from "@/components/ui/TryItNow";
 
 const HOME_MODES: readonly ModeId[] = ["daily", "quiz", "solve", "truefalse", "step", "mistake", "equation", "exam"];
-const CAPTIONS: Partial<Record<ModeId, string>> = {
-  daily: "5 tasks · +25 XP",
-  quiz: "10 questions",
-  solve: "Type the answer",
-  truefalse: "Is it a solution?",
-  step: "Name the step",
-  mistake: "Spot the error",
-  equation: "From a story",
-  exam: "20 tasks",
-};
-
 export function HomeScreen() {
+  const { lang, t } = useI18n();
+  const topics = getTopics(lang);
   const progress = useProgress();
   const finished = finishedTopics(progress);
   const overall = overallProgress(progress, topics.length);
@@ -43,26 +35,24 @@ export function HomeScreen() {
           <LogoMark size={76} />
           <Wordmark large />
         </div>
-        <h1 id="hero-title">Solve equations, step by step!</h1>
-        <p>
-          Learn how equations work, then practise for your exam with quizzes, mistake hunts and timed challenges. Every answer comes with an explanation.
-        </p>
+        <h1 id="hero-title">{t.home.heroTitle}</h1>
+        <p>{t.home.heroText}</p>
         <a className="mastery" href={toHash({ name: "progress" })}>
-          <span>Overall progress</span>
+          <span>{t.home.overall}</span>
           <strong>{overall} %</strong>
         </a>
       </section>
 
       <div className="panel">
         <button type="button" className="cta" onClick={start}>
-          {started ? "Continue learning" : "Start learning"} <ArrowRight size={20} aria-hidden="true" />
+          {started ? t.home.continue : t.home.start} <ArrowRight size={20} aria-hidden="true" />
         </button>
 
         <section className="block" aria-labelledby="learn-title">
           <div className="block-head">
-            <h2 id="learn-title">Learn equations</h2>
+            <h2 id="learn-title">{t.home.learnTitle}</h2>
             <a className="inline-link" href={toHash({ name: "learn" })}>
-              All topics
+              {t.home.allTopics}
             </a>
           </div>
           <div className="grid-4">
@@ -74,59 +64,47 @@ export function HomeScreen() {
 
         <section className="block" aria-labelledby="practise-title">
           <div className="block-head">
-            <h2 id="practise-title">Practise</h2>
+            <h2 id="practise-title">{t.home.practiseTitle}</h2>
             <a className="inline-link" href={toHash({ name: "practice" })}>
-              All ways to practise
+              {t.home.allWays}
             </a>
           </div>
           <div className="grid-4">
             {HOME_MODES.map((id) => {
               const mode = getMode(id)!;
-              return <ModeCard key={id} mode={mode} caption={CAPTIONS[id]} />;
+              return <ModeCard key={id} mode={mode} caption={t.modes[id].homeCaption} />;
             })}
           </div>
         </section>
 
         <section className="progress-note" aria-labelledby="note-title">
           <div className="block-head">
-            <h2 id="note-title">Your progress</h2>
+            <h2 id="note-title">{t.home.progressTitle}</h2>
             <a className="inline-link" href={toHash({ name: "progress" })}>
-              All stats
+              {t.home.allStats}
               <ArrowRight size={14} aria-hidden="true" />
             </a>
           </div>
           {progress.attempts === 0 ? (
-            <p>You have not practised yet. The first round takes only a few minutes, and every correct answer earns XP.</p>
+            <p>{t.home.notStarted}</p>
           ) : (
-            <p>
-              {progress.attempts} tasks answered · {accuracyOf(progress)} % correct · level {levelOf(progress.xp)} ({xpIntoLevel(progress.xp)} / {XP_PER_LEVEL} XP to the next level)
-            </p>
+            <p>{t.home.summary(progress.attempts, accuracyOf(progress), levelOf(progress.xp), xpIntoLevel(progress.xp), XP_PER_LEVEL)}</p>
           )}
         </section>
       </div>
 
       <div className="duo">
         <section className="panel how" aria-labelledby="how-title">
-          <h2 id="how-title">How MathLab works</h2>
+          <h2 id="how-title">{t.home.howTitle}</h2>
           <ol>
-            <li>
-              <span aria-hidden="true">1</span>
-              <p>
-                <strong>Learn the idea.</strong> Open a topic, read the key ideas and watch a worked example.
-              </p>
-            </li>
-            <li>
-              <span aria-hidden="true">2</span>
-              <p>
-                <strong>Solve it yourself.</strong> Choose what to do to both sides. You get feedback on every step.
-              </p>
-            </li>
-            <li>
-              <span aria-hidden="true">3</span>
-              <p>
-                <strong>Practise for the exam.</strong> Mix task types, fix your mistakes and earn XP.
-              </p>
-            </li>
+            {t.home.how.map((item, index) => (
+              <li key={item.title}>
+                <span aria-hidden="true">{index + 1}</span>
+                <p>
+                  <strong>{item.title}</strong> {item.text}
+                </p>
+              </li>
+            ))}
           </ol>
         </section>
         <div className="panel">

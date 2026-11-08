@@ -1,12 +1,16 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { Check } from "lucide-react";
 import type { Topic } from "@/content/topics";
+import { useI18n } from "@/hooks/useLang";
 import { toHash } from "@/lib/routes";
 import type { ModeInfo } from "@/lib/tasks";
 import { ModeIcon, TopicIcon } from "./icons";
 
 /** A topic as a coloured card: large formula, darker title band, short description. */
 export function ModuleCard({ topic, done }: { topic: Topic; done: boolean }) {
+  const { t } = useI18n();
   const { before, mark, after, caption } = topic.formula;
   return (
     <a className={`module mod-${topic.colour}`} href={toHash({ name: "lesson", topic: topic.id })}>
@@ -20,7 +24,7 @@ export function ModuleCard({ topic, done }: { topic: Topic; done: boolean }) {
         {done && (
           <span className="module-done">
             <Check size={14} aria-hidden="true" />
-            <span className="sr-only">Finished</span>
+            <span className="sr-only">{t.topic.finished}</span>
           </span>
         )}
       </span>
@@ -49,6 +53,8 @@ export function modeTone(id: string): string {
 
 /** A practice mode as a card, in the same style as the module cards. */
 export function ModeCard({ mode, caption, selected = false }: { mode: ModeInfo; caption: ReactNode; selected?: boolean }) {
+  const { t } = useI18n();
+  const text = t.modes[mode.id];
   return (
     <a
       className={`game ${modeTone(mode.id)}`}
@@ -61,8 +67,8 @@ export function ModeCard({ mode, caption, selected = false }: { mode: ModeInfo; 
         </span>
         <span className="game-caption">{caption}</span>
       </span>
-      <span className="game-band">{mode.title}</span>
-      <span className="game-text">{mode.description}</span>
+      <span className="game-band">{text.title}</span>
+      <span className="game-text">{text.description}</span>
     </a>
   );
 }

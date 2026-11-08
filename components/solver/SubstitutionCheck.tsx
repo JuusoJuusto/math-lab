@@ -2,6 +2,7 @@
 
 import { forwardRef } from "react";
 import { CircleCheck, CircleX, ScanSearch } from "lucide-react";
+import { useI18n } from "@/hooks/useLang";
 import { checkSolution, formatFraction, type Equation, type Fraction } from "@/lib/equations";
 
 interface SubstitutionCheckProps {
@@ -21,33 +22,37 @@ export const SubstitutionCheck = forwardRef<HTMLButtonElement, SubstitutionCheck
   { original, value, checked, onCheck },
   checkButtonRef,
 ) {
+  const { lang, t } = useI18n();
   const answer = formatFraction(value);
 
   if (!checked) {
+    const text = t.solver.verify.text(answer);
     return (
-      <section className="verify" aria-label="Check your answer">
+      <section className="verify" aria-label={t.solver.verify.region}>
         <div className="verify-head">
           <ScanSearch size={22} aria-hidden="true" />
-          <h2>Is x = {answer} really right?</h2>
+          <h2>{t.solver.verify.head(answer)}</h2>
         </div>
         <p className="verify-text">
-          Put {answer} in place of x in the <strong>original</strong> equation. If both sides come out equal, the answer works.
+          {text.before}
+          <strong>{text.strong}</strong>
+          {text.after}
         </p>
         <button type="button" className="button-primary" onClick={onCheck} ref={checkButtonRef}>
-          Check by substituting
+          {t.solver.verify.button}
         </button>
       </section>
     );
   }
 
-  const result = checkSolution(original, value);
+  const result = checkSolution(original, value, lang);
   const Icon = result.holds ? CircleCheck : CircleX;
 
   return (
-    <section className={`verify verify-done ${result.holds ? "verify-pass" : "verify-fail"}`} aria-label="Substitution check">
+    <section className={`verify verify-done ${result.holds ? "verify-pass" : "verify-fail"}`} aria-label={t.solver.verify.done}>
       <div className="verify-head">
         <Icon size={22} aria-hidden="true" />
-        <h2>{result.holds ? `Both sides are equal, so x = ${answer} is correct!` : `The sides are different, so x = ${answer} is not a solution.`}</h2>
+        <h2>{result.holds ? t.solver.verify.pass(answer) : t.solver.verify.fail(answer)}</h2>
       </div>
       <ol className="verify-lines">
         {result.lines.map((line, index) => (
@@ -59,8 +64,8 @@ export const SubstitutionCheck = forwardRef<HTMLButtonElement, SubstitutionCheck
       </ol>
       <p className="verify-text">
         {result.holds
-          ? `Left side: ${formatFraction(result.leftValue)}. Right side: ${formatFraction(result.rightValue)}. A solution is exactly a value that makes both sides equal, so this check proves the answer.`
-          : "A solution must make both sides equal. Go back and look for the step where something went wrong."}
+          ? t.solver.verify.passText(formatFraction(result.leftValue), formatFraction(result.rightValue))
+          : t.solver.verify.failText}
       </p>
     </section>
   );

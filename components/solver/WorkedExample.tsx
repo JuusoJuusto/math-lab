@@ -2,13 +2,16 @@
 
 import { useMemo, useReducer } from "react";
 import { ArrowRight, Play, RotateCcw } from "lucide-react";
+import { useI18n } from "@/hooks/useLang";
 import {
   createSession,
   describeOperation,
+  levelText,
   mustParseEquation,
   sessionReducer,
   solutionOf,
   suggestNextMove,
+  type Equation,
   type LevelDefinition,
 } from "@/lib/equations";
 import { EquationDisplay } from "./EquationDisplay";
@@ -23,11 +26,12 @@ interface WorkedExampleProps {
 
 /**
  * A guided demonstration. It runs on the same engine as the exercises, but
- * the tutor chooses the moves, one click at a time, and explains each one.
+ * the tutor, not the learner, chooses the moves, one click at a time, and explains each one.
  */
 export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
+  const { lang, t } = useI18n();
   const equation = useMemo(() => mustParseEquation(level.example.equation), [level.example.equation]);
-  const [state, dispatch] = useReducer(sessionReducer, equation, createSession);
+  const [state, dispatch] = useReducer(sessionReducer, equation, (start: Equation) => createSession(start, lang));
 
   const suggestion = suggestNextMove(state.current);
   const solution = solutionOf(state);
@@ -38,10 +42,10 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
     else if (suggestion) dispatch({ type: "apply", operation: suggestion.operation });
   }
 
-  // In a demonstration the tutor, not the learner, picks the move, so name the step instead of praising a choice.
+  // In a demonstration the tutor picks the move, so name the step instead of praising a choice.
   const notice =
     state.notice && state.pending
-      ? { ...state.notice, title: `Step ${state.steps.length + 1}: ${describeOperation(state.pending.operation)}` }
+      ? { ...state.notice, title: t.solver.example.stepTitle(state.steps.length + 1, describeOperation(state.pending.operation, lang)) }
       : state.notice;
 
   return (
@@ -51,10 +55,10 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
           equation={state.current}
           applied={state.pending?.operation ?? null}
           solved={state.outcome === "solved"}
-          label="Worked example"
+          label={t.solver.display.worked}
         />
 
-        <FeedbackPanel notice={notice} hints={[]} emptyText={level.example.lead} />
+        <FeedbackPanel notice={notice} hints={[]} emptyText={levelText(level, lang).exampleLead} />
 
         {solution ? (
           <>
@@ -66,20 +70,20 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
             />
             <div className="action-buttons action-finish">
               <button type="button" className="button-primary" onClick={onPractise}>
-                Try it yourself <ArrowRight size={17} aria-hidden="true" />
+                {t.solver.example.tryIt} <ArrowRight size={17} aria-hidden="true" />
               </button>
               <button type="button" className="button-secondary" onClick={() => dispatch({ type: "restart" })}>
-                <RotateCcw size={16} aria-hidden="true" /> Watch again
+                <RotateCcw size={16} aria-hidden="true" /> {t.solver.example.again}
               </button>
             </div>
           </>
         ) : (
           <div className="action-buttons">
             <button type="button" className="button-primary" onClick={advance}>
-              <Play size={16} aria-hidden="true" /> {state.pending ? "Simplify both sides" : started ? "Show the next step" : "Show the first step"}
+              <Play size={16} aria-hidden="true" /> {state.pending ? t.solver.simplify : started ? t.solver.example.next : t.solver.example.first}
             </button>
             <button type="button" className="text-link" onClick={onPractise}>
-              Skip to practice
+              {t.solver.example.skip}
             </button>
           </div>
         )}
