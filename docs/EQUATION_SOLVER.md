@@ -32,6 +32,14 @@ The first two are the same rule: a flip *is* the balance operation it stands for
 
 Equations that are written with brackets or fractions begin with a **clean-up**: the order Finnish textbooks use is *brackets first, then simplify, then balance*.
 
+## The worksheet
+
+Every finished step stays on the screen, stacked above the current equation, written as in a notebook: the equation with its `||` bar (`2x + 5 = 17 || − 5`), then the same line with the step done on both sides (`2x + 5 − 5 = 17 − 5`). The current equation is the last card, with an arrow pointing down to it, and each new line slides in. Undo and Start over sit under the sheet. After "work out both sides" the screen spells out the real numbers (`Left side: 2x + 5 − 5 becomes 2x`), so the step is never a mystery.
+
+## Solving by hand
+
+`HandWorkspace` has no operation buttons and no terms to tap. The learner types each line of the solution; `judgeLine` (`lib/equations/hand.ts`) compares it with the line above: it is accepted when one step on both sides (or a flip) gives it, or when it is the same equation written more simply (brackets opened, like terms put together). It says so when a line is the same as before, jumps over a step, changes the solution, or cannot be read. A note beside the line (`|| − 5`) is allowed and read. The last exercise of every round is solved this way, and so are the "solve the whole equation" tasks of the practice test. A test checks every line of the tutor's own solution of 1,500 equations is accepted, and a changed copy of each is not. "I am stuck" gives the usual three hints and counts as hints.
+
 ## Decimals
 
 An equation written with decimals (`0.5x + 1.2 = 3.7`, `0.25x + 1 = 2.5`) has one clean-up question: *multiply every term by 10 (or 100) so that the decimals disappear*. `decimalFactor` picks 10 for one decimal place and 100 for two. The balance moves then start from the whole-number equation (`startEquation`: `5x + 12 = 37`), which has the same solution. The wrong answers are the usual slips (a term left as it was written, a decimal point moved one place too far, a lost sign, an arithmetic slip), and a test checks that none of them is an alternative right answer. Inside the engine numbers use a point; Finnish shows them with a comma (`localiseDecimals`). Decimal exercises are in the fractions level, written with a point in `levels.ts`, and are chosen so that the answer is a whole number.

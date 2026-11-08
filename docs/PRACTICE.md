@@ -1,6 +1,6 @@
 # Practice and exam preparation
 
-MathLab has ten ways to practise, so a learner can prepare for an exam with the kinds of question an exam actually asks, not only multiple choice. All of them live under **Practice** in the navigation.
+MathLab has eleven ways to practise, so a learner can prepare for an exam with the kinds of question an exam actually asks, not only multiple choice. All of them live under **Practice** in the navigation.
 
 ## Ways to practise
 
@@ -14,7 +14,8 @@ MathLab has ten ways to practise, so a learner can prepare for an exam with the 
 | Find the mistake | Read a worked solution and find the first wrong line (or "no mistake") | multiple choice |
 | Write the equation | Turn a story into the right equation | multiple choice |
 | Time attack | As many tasks as possible in **60 seconds** | mixed, quick |
-| Exam practice | A mixed test with every kind of task, climbing from easy topics to hard | all |
+| Mixed practice | Every kind of task, climbing from easy topics to hard | all |
+| Practice test (Koe) | A test on the chapters the learner chooses, with whole equations solved by hand (`hand` tasks); results are shown per chapter. It is set up on its own screen, `/test/` | chosen chapters |
 | Fix your mistakes | Retry the tasks you got wrong | the mistake queue |
 
 Most modes can be narrowed to one topic and to a shorter or longer session. The topic list only shows topics the mode really has tasks for.

@@ -36,7 +36,7 @@ export function MoveTabs({ mode, onChange, canChain = false, canGuess = false, c
 
   return (
     <fieldset className="move-tabs">
-      <legend className="sr-only">{t.solver.moveHow}</legend>
+      <legend className="move-title">{t.solver.moveHow}</legend>
       <div className="move-options">
         {options.map((option) => (
           <label className="move-option" key={option.id} title={option.description}>
@@ -49,6 +49,9 @@ export function MoveTabs({ mode, onChange, canChain = false, canGuess = false, c
           </label>
         ))}
       </div>
+      <p className="move-hint" aria-live="polite">
+        {options.find((option) => option.id === mode)?.description}
+      </p>
       {children}
     </fieldset>
   );

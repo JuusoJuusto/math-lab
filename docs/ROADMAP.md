@@ -22,6 +22,13 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 - [x] Several ways to solve: both sides with the `|| + 5` notation, flipping a term, working backwards, guess and check, a second way to solve (Tapa 2) and a check on a graph
 - [x] Solver equations with decimals (one clean-up question: multiply every term by 10 or 100; shown with a comma in Finnish)
 - [x] Trial and improvement ("guess and check") as another way to solve
+- [x] Learn in nine chapters in the order of the textbook, each with its lessons and a marked next lesson
+- [x] Solving by hand: every line typed and checked, with no buttons, as the last exercise of every round
+- [x] A practice test (Koe): choose chapters, mixed tasks from easy to hard, whole equations by hand, results per chapter
+- [x] A short-quiz popup when a lesson is solved without help
+- [x] The worksheet: finished steps stack above the current equation
+- [x] Negative numbers in every level, and much harder mixed equations in the challenge level
+- [x] Logo, favicon and app icons; Docker and nginx for Coolify
 - [x] Mistake review and retry queue ("Fix your mistakes")
 - [x] Varied task types for exam practice: typed answers, true or false, which step, find the mistake, write the equation, time attack, daily challenge
 - [x] XP and levels
