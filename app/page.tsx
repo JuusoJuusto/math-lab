@@ -36,7 +36,7 @@ const questions: Question[] = [
   { id:"q9", topic:"proportion", level:"Intermediate", prompt:"On a map, 1 cm represents 4 km. What distance does 3.5 cm represent?", choices:["7 km","12 km","14 km","16 km"], answer:"14 km", explanation:"Distance is directly proportional to map length: 3.5 × 4 km = 14 km." },
   { id:"q10", topic:"word", level:"Intermediate", prompt:"Three identical pens cost €6 in total. What is the price of one pen?", choices:["1 €","2 €","3 €","6 €"], answer:"2 €", explanation:"Let x be the price of one pen: 3x = 6. Divide by three to get x = €2." },
   { id:"q11", topic:"basics", level:"Beginner", prompt:"Which of the following is an equation?", choices:["3x + 2","3x + 2 = 11","x > 4","2 + 5"], answer:"3x + 2 = 11", explanation:"An equation has an equals sign and two expressions with the same value." },
-  { id:"q12", topic:"proportion", level:"Advanced", prompt:"Four workers complete a job in 12 hours. How long would eight workers take at the same rate?", choices:["3 tuntia","6 tuntia","12 tuntia","24 tuntia"], answer:"6 tuntia", explanation:"The number of workers and the time are inversely proportional. Doubling the workforce halves the time: 12 / 2 = 6 hours." }
+  { id:"q12", topic:"proportion", level:"Advanced", prompt:"Four workers complete a job in 12 hours. How long would eight workers take at the same rate?", choices:["3 hours","6 hours","12 hours","24 hours"], answer:"6 hours", explanation:"The number of workers and the time are inversely proportional. Doubling the workforce halves the time: 12 / 2 = 6 hours." }
 ];
 
 const STORAGE_KEY = "mathlab:progress:v1";
@@ -144,15 +144,15 @@ function HomeView({completed,attempts,accuracy,onStart,onTopics,onProgress,onLes
   return <>
     <section className="hero panel">
       <div className="hero-copy">
-        <div className="eyebrow"><span className="eyebrow-dot"/> 8. LUOKAN MATEMATIIKKA</div>
-        <h1>Matikka haltuun.<br/><span>Yksi oivallus kerrallaan.</span></h1>
+        <div className="eyebrow"><span className="eyebrow-dot"/> GRADE 8 MATHEMATICS</div>
+        <h1>Make maths make sense.<br/><span>One discovery at a time.</span></h1>
         <p>Build confidence with equations and proportional relationships through clear examples, short exercises and instant feedback.</p>
         <div className="hero-actions"><button className="button-primary" onClick={onStart}>Start learning <ArrowRight size={18}/></button><button className="button-secondary" onClick={onTopics}>Explore topics</button></div>
         <div className="hero-meta"><span><CheckCircle2 size={15}/> Learn at your own pace</span><span><Sparkles size={15}/> Instant feedback</span><span><Target size={15}/> Progress saved</span></div>
       </div>
       <div className="hero-illustration" aria-label="Equation-solving illustration">
         <div className="orbit orbit-one"/><div className="orbit orbit-two"/>
-        <div className="math-card card-main"><span className="math-label">RATKAISE X</span><strong>2x + 6 = 18</strong><div className="math-divider"/><span className="math-answer">x = 6 <CheckCircle2 size={18}/></span></div>
+        <div className="math-card card-main"><span className="math-label">SOLVE FOR X</span><strong>2x + 6 = 18</strong><div className="math-divider"/><span className="math-answer">x = 6 <CheckCircle2 size={18}/></span></div>
         <div className="float-note note-one">+ 7</div><div className="float-note note-two">÷ 2</div><div className="float-note note-three">x ?</div>
         <div className="sparkle sparkle-one">✳</div><div className="sparkle sparkle-two">✦</div>
       </div>
@@ -160,12 +160,12 @@ function HomeView({completed,attempts,accuracy,onStart,onTopics,onProgress,onLes
 
     <section className="stats-grid" aria-label="Learning overview">
       <StatCard icon={<Target/>} label="Questions answered" value={String(attempts)} tone="blue"/>
-      <StatCard icon={<CheckCircle2/>} label="Correct" value={attempts?accuracy+" %":"–"} tone="green"/>
+      <StatCard icon={<CheckCircle2/>} label="Accuracy" value={attempts?accuracy+" %":"–"} tone="green"/>
       <StatCard icon={<Trophy/>} label="Topics completed" value={String(completed.length)} tone="orange"/>
     </section>
 
     <section className="section-block">
-      <div className="section-heading"><div><span className="section-kicker">OPPIMISPOLKU</span><h2>Where should we start?</h2><p>Choose a topic and learn at your own pace.</p></div><button className="text-link" onClick={onTopics}>All topics <ChevronRight size={17}/></button></div>
+      <div className="section-heading"><div><span className="section-kicker">LEARNING PATH</span><h2>Where should we start?</h2><p>Choose a topic and learn at your own pace.</p></div><button className="text-link" onClick={onTopics}>All topics <ChevronRight size={17}/></button></div>
       <div className="topic-grid">
         {topics.slice(0,4).map((topic,i)=><TopicCard key={topic.id} topic={topic} number={i+1} done={completed.includes(topic.id)} onClick={()=>onLesson(topic.id)}/>)}
       </div>
