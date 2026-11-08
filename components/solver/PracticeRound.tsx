@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, PenLine } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import { pickRound, type Exercise, type ExerciseResult, type LevelDefinition } from "@/lib/equations";
 import type { MoveMode } from "./MoveTabs";
+import { HandWorkspace } from "./HandWorkspace";
 import { SolverWorkspace, type WorkspaceOutcome } from "./SolverWorkspace";
 
 export interface RoundReport {
@@ -78,16 +79,31 @@ export function PracticeRound({ level, avoid, onComplete, onEquationSolved, onEx
           </li>
         ))}
       </ol>
-      <SolverWorkspace
-        // A change of language starts the equation again, so every message is in one language.
-        key={`${exercise.id}-${lang}`}
-        equation={exercise.equation}
-        prelude={exercise.prelude}
-        continueLabel={isLast ? t.solver.finishLevel : t.solver.nextEquation}
-        moveMode={moveMode}
-        onMoveModeChange={setMoveMode}
-        onContinue={next}
-      />
+      {isLast && exercises.length > 1 ? (
+        <>
+          <p className="hand-banner">
+            <PenLine size={18} aria-hidden="true" /> {t.solver.round.lastByHand}
+          </p>
+          <HandWorkspace
+            key={`${exercise.id}-${lang}-hand`}
+            source={exercise.source}
+            equation={exercise.equation}
+            continueLabel={t.solver.finishLevel}
+            onContinue={next}
+          />
+        </>
+      ) : (
+        <SolverWorkspace
+          // A change of language starts the equation again, so every message is in one language.
+          key={`${exercise.id}-${lang}`}
+          equation={exercise.equation}
+          prelude={exercise.prelude}
+          continueLabel={isLast ? t.solver.finishLevel : t.solver.nextEquation}
+          moveMode={moveMode}
+          onMoveModeChange={setMoveMode}
+          onContinue={next}
+        />
+      )}
     </section>
   );
 }

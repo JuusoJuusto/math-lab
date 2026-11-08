@@ -16,6 +16,7 @@ import {
 import { EXAMPLE_STORIES, pickStoryRound, type Story } from "@/lib/tasks";
 import { EquationWriter, type BuiltResult } from "./EquationWriter";
 import type { RoundReport } from "./PracticeRound";
+import { HandWorkspace } from "./HandWorkspace";
 import { StoryCard } from "./StoryCard";
 import { SolverWorkspace, type WorkspaceOutcome } from "./SolverWorkspace";
 import { WorkedExample } from "./WorkedExample";
@@ -94,11 +95,13 @@ interface WordProblemProps {
   moveMode: MoveMode;
   onMoveModeChange: (mode: MoveMode) => void;
   continueLabel: string;
+  /** The last story of a round is solved by hand, line by line, with no buttons. */
+  byHand?: boolean;
   onDone: (outcome: WorkspaceOutcome) => void;
 }
 
 /** One story: write the equation, solve it, then answer the question in words. */
-function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, onDone }: WordProblemProps) {
+function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, byHand = false, onDone }: WordProblemProps) {
   const { lang, t } = useI18n();
   const intended = mustParseEquation(story.equations[0]);
   const [stage, setStage] = useState<Stage>("build");
@@ -137,7 +140,20 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, onDone 
         />
       )}
 
-      {stage === "solve" && built && (
+      {stage === "solve" && built && byHand && (
+        <HandWorkspace
+          key={`${lang}-hand`}
+          source={formatEquation(built.equation)}
+          equation={built.equation}
+          continueLabel={t.word.answerTitle}
+          onContinue={(outcome) => {
+            setSolved(outcome);
+            setStage("answer");
+          }}
+        />
+      )}
+
+      {stage === "solve" && built && !byHand && (
         <SolverWorkspace
           key={lang}
           equation={built.equation}
@@ -252,6 +268,7 @@ export function WordRound({ level, onComplete, onEquationSolved, onExit }: WordR
         moveMode={moveMode}
         onMoveModeChange={setMoveMode}
         continueLabel={isLast ? t.word.finish : t.word.next}
+        byHand={isLast && stories.length > 1}
         onDone={next}
       />
     </section>

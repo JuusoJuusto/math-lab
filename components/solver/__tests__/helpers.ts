@@ -1,5 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
 import type { UserEvent } from "@testing-library/user-event";
+import { formatEquation, solveWithTutor, startEquation } from "@/lib/equations";
 
 type Kind = "Add" | "Subtract" | "Multiply" | "Divide";
 
@@ -40,9 +41,23 @@ export async function playHintedMove(user: UserEvent) {
 
 /** Solves the equation on screen, then verifies it, and returns when "Next"/"Finish" is available. */
 export async function solveOnScreenEquation(user: UserEvent) {
+  // The last equation of a round is solved by hand: type every line, as the tutor would write it.
+  if (document.querySelector(".hand")) return solveByHand(user);
   for (let guard = 0; guard < 8 && !screen.queryByText("Solved"); guard += 1) {
     await playHintedMove(user);
   }
   if (!screen.queryByText("Solved")) throw new Error("Equation was not solved");
+  await user.click(screen.getByRole("button", { name: "Check by substituting" }));
+}
+
+/** Types each line of the tutor's own solution into the by-hand field, then checks the answer. */
+export async function solveByHand(user: UserEvent) {
+  const source = document.querySelector(".hand .eq-written")?.getAttribute("data-source");
+  if (!source) throw new Error("No by-hand equation on screen");
+  const lines = solveWithTutor(startEquation(source.replace(/−/g, "-"))).map((step) => formatEquation(step.after).replace(/−/g, "-"));
+  for (const line of lines) {
+    fireEvent.change(screen.getByLabelText(/Write the next line|Kirjoita seuraava rivi/), { target: { value: line } });
+    await user.click(screen.getByRole("button", { name: /Add line|Lisää rivi/ }));
+  }
   await user.click(screen.getByRole("button", { name: "Check by substituting" }));
 }

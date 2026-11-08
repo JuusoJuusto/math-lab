@@ -20,7 +20,8 @@ async function playRound(user: ReturnType<typeof userEvent.setup>) {
   const seen: string[] = [];
   for (let n = 1; n <= 5; n += 1) {
     await screen.findByText(`Equation ${n} of 5`);
-    seen.push(spokenEquation());
+    // The last equation of a round is solved by hand, and is shown as it is written.
+    seen.push(spokenEquation() || document.querySelector(".hand .eq-written")?.getAttribute("data-source") || "");
     await solveOnScreenEquation(user);
     await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
   }
