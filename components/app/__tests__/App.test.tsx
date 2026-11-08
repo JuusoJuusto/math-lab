@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { solveByHand } from "@/components/solver/__tests__/helpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { questionsFor } from "@/content/questions";
 import { STORAGE_KEY, type Progress } from "@/lib/progress";
@@ -134,7 +135,7 @@ describe("navigation", () => {
 
     await user.click(button);
     const menu = screen.getByRole("navigation", { name: "Menu" });
-    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["Home", "Learn", "Practice", "Progress"]);
+    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["Home", "Learn", "Practice", "Test", "Progress"]);
     expect(screen.getByRole("button", { name: "Close menu", expanded: true })).toBeTruthy();
 
     await user.keyboard("{Escape}");
@@ -213,10 +214,10 @@ describe("learning", () => {
 });
 
 describe("the practice hub", () => {
-  it("offers ten ways to practise", () => {
+  it("offers eleven ways to practise", () => {
     open("#/practice");
-    expect(screen.getAllByRole("link", { name: /tasks|questions|seconds|waiting|XP|Your queue/i }).length).toBeGreaterThanOrEqual(10);
-    for (const title of ["Daily challenge", "Quick quiz", "Solve it", "True or false", "Which step?", "Find the mistake", "Write the equation", "Time attack", "Exam practice", "Fix your mistakes"]) {
+    expect(screen.getAllByRole("link", { name: /tasks|questions|seconds|waiting|XP|Your queue/i }).length).toBeGreaterThanOrEqual(11);
+    for (const title of ["Daily challenge", "Quick quiz", "Solve it", "True or false", "Which step?", "Find the mistake", "Write the equation", "Time attack", "Mixed practice", "Practice test", "Fix your mistakes"]) {
       expect(screen.getByText(title, { selector: ".game-band" })).toBeTruthy();
     }
   });
@@ -249,6 +250,65 @@ describe("the practice hub", () => {
     open("#/practice?mode=mistakes", { missed: [{ kind: "solve", topic: "two-step", seed: 4 }] });
     expect((screen.getByRole("button", { name: "Start" }) as HTMLButtonElement).disabled).toBe(false);
     expect(screen.getByText("1 task waiting for another try.")).toBeTruthy();
+  });
+});
+
+describe("the practice test", () => {
+  it("lets the learner choose chapters and starts a test on exactly those topics", async () => {
+    const { user } = open("#/test");
+    expect(screen.getByRole("heading", { level: 1, name: "Practice test" })).toBeTruthy();
+    const boxes = screen.getAllByRole("checkbox");
+    expect(boxes).toHaveLength(9);
+    // A new learner starts with the first two chapters chosen.
+    expect(boxes.map((box) => (box as HTMLInputElement).checked)).toEqual([true, true, false, false, false, false, false, false, false]);
+
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    expect(screen.getByRole("alert").textContent).toContain("Choose at least one chapter");
+    expect((screen.getByRole("button", { name: /Start the test/ }) as HTMLButtonElement).disabled).toBe(true);
+
+    await user.click(screen.getByRole("checkbox", { name: /Brackets in an equation/ }));
+    await user.click(screen.getByRole("checkbox", { name: /Denominators in an equation/ }));
+    await user.click(screen.getByRole("radio", { name: "10 tasks" }));
+    await user.click(screen.getByRole("button", { name: /Start the test/ }));
+
+    expect(window.location.pathname).toBe("/en/practice/test/");
+    expect(window.location.search).toContain("topic=brackets,fractions");
+    expect(window.location.search).toContain("n=10");
+    expect(await screen.findByText("Task 1 / 10")).toBeTruthy();
+  });
+
+  it("is a session on the chosen topics, with whole equations solved by hand and results by chapter", async () => {
+    const topic = "one-step,two-step,both";
+    const tasks = tasksOf("test", topic, 8, 21);
+    expect(new Set(tasks.map((task) => task.topic)).size).toBeGreaterThan(1);
+    expect(tasks.every((task) => topic.split(",").includes(task.topic))).toBe(true);
+    expect(tasks.some((task) => task.kind === "hand")).toBe(true);
+
+    const { user } = open(`#/practice/test?topic=${topic}&n=8&seed=21`);
+    for (const [index, task] of tasks.entries()) {
+      await screen.findByText(`Task ${index + 1} / 8`);
+      if (task.input.type === "hand") {
+        await solveByHand(user);
+        await user.click(screen.getByRole("button", { name: "See how you did" }));
+        expect(await screen.findByText("Correct!")).toBeTruthy();
+      } else {
+        answer(task, true);
+      }
+      await next(user);
+    }
+
+    expect(await screen.findByText("practice test complete", { exact: false })).toBeTruthy();
+    expect(document.querySelector(".results-score")!.textContent).toBe("8 / 8 correct");
+    const chapters = within(screen.getByRole("list", { name: "Results by chapter" })).getAllByRole("listitem");
+    expect(chapters.map((item) => item.textContent)).toEqual(
+      expect.arrayContaining([expect.stringContaining("Solving an equation"), expect.stringContaining("Practising solving")]),
+    );
+  });
+
+  it("is on the home page as its own section, and in the main navigation", () => {
+    open("");
+    expect(screen.getByRole("heading", { level: 2, name: "Practise for a test" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Take a practice test/ }).getAttribute("href")).toBe("/en/test/");
   });
 });
 
@@ -366,7 +426,7 @@ describe("a practice session", () => {
     }
 
     expect(await screen.findByRole("heading", { level: 1, name: /practising|progress|work|Perfect/i })).toBeTruthy();
-    expect(screen.getByText("exam practice complete", { exact: false })).toBeTruthy();
+    expect(screen.getByText("mixed practice complete", { exact: false })).toBeTruthy();
     expect(document.querySelector(".results-score")!.textContent).toBe("4 / 8 correct");
     expect(screen.getByText("+40 XP")).toBeTruthy();
     expect(within(screen.getByRole("list", { name: "Results by type of task" })).getAllByRole("listitem").length).toBeGreaterThan(2);

@@ -11,6 +11,9 @@ export interface TaskText {
   readonly expandBrackets: (equation: string) => string;
   readonly solveChoice: string;
   readonly solveTyped: string;
+  readonly handPrompt: string;
+  readonly handWorked: (lines: number, mistakes: number) => string;
+  readonly handNeedsMore: string;
   readonly so: (answer: string) => string;
   readonly trueFalse: readonly [string, string];
   readonly checkPrompt: (value: string) => string;
@@ -38,6 +41,9 @@ const en: TaskText = {
   expandBrackets: (equation) => `Expand the brackets: ${equation}.`,
   solveChoice: "Solve the equation.",
   solveTyped: "Solve the equation. Type the value of x.",
+  handPrompt: "Solve the whole equation. Write every line of the solution yourself.",
+  handWorked: (lines, mistakes) => `You wrote ${lines} ${lines === 1 ? "line" : "lines"} and made ${mistakes} ${mistakes === 1 ? "mistake" : "mistakes"}.`,
+  handNeedsMore: "A task like this counts as right when it is solved with at most one wrong line and no hints.",
   so: (answer) => `So ${answer}.`,
   trueFalse: ["True", "False"],
   checkPrompt: (value) => `Is x = ${value} a solution of this equation?`,
@@ -72,6 +78,9 @@ const fi: TaskText = {
   expandBrackets: (equation) => `Poista sulut: ${equation}.`,
   solveChoice: "Ratkaise yhtälö.",
   solveTyped: "Ratkaise yhtälö. Kirjoita x:n arvo.",
+  handPrompt: "Ratkaise koko yhtälö. Kirjoita ratkaisun jokainen rivi itse.",
+  handWorked: (lines, mistakes) => `Kirjoitit ${lines} ${lines === 1 ? "rivin" : "riviä"} ja teit ${mistakes} ${mistakes === 1 ? "virheen" : "virhettä"}.`,
+  handNeedsMore: "Tällainen tehtävä lasketaan oikeaksi, kun se ratkaistaan enintään yhdellä väärällä rivillä ja ilman vihjeitä.",
   so: (answer) => `Siis ${answer}.`,
   trueFalse: ["Tosi", "Epätosi"],
   checkPrompt: (value) => `Onko x = ${value} tämän yhtälön ratkaisu?`,

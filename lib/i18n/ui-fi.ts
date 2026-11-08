@@ -15,6 +15,7 @@ export const fi: UiMessages = {
     home: "Etusivu",
     learn: "Opi",
     practice: "Harjoittele",
+    test: "Koe",
     progress: "Edistyminen",
     main: "Päävalikko",
     menu: "Valikko",
@@ -40,9 +41,13 @@ export const fi: UiMessages = {
     solver: "Yhtälönratkaisija | MathLab",
     practice: "Harjoittele | MathLab",
     session: "Harjoittele | MathLab",
+    test: "Koeharjoittelu | MathLab",
     progress: "Edistyminen | MathLab",
   },
   home: {
+    testTitle: "Harjoittele kokeeseen",
+    testText: "Valitse kokeesi luvut ja harjoittele samanlaisilla tehtävillä: lyhyitä kysymyksiä, ratkaistavia yhtälöitä ja kokonaisia yhtälöitä, jotka kirjoitat rivi riviltä.",
+    testButton: "Tee koeharjoitus",
     heroTitle: "Ratkaise yhtälöitä askel askeleelta!",
     heroText:
       "Opi, miten yhtälöt toimivat, ja harjoittele sitten kokeeseen visoilla, virheiden metsästyksellä ja aikahaasteilla. Jokaiseen vastaukseen kuuluu selitys.",
@@ -120,7 +125,8 @@ export const fi: UiMessages = {
     mistake: { title: "Etsi virhe", description: "Löydä rivi, jossa meni pieleen", homeCaption: "Löydä virhe" },
     equation: { title: "Kirjoita yhtälö", description: "Muuta tarina yhtälöksi", homeCaption: "Tarinasta" },
     time: { title: "Aikahaaste", description: "60 sekuntia. Montako ehdit?", homeCaption: "60 sekuntia" },
-    exam: { title: "Koeharjoittelu", description: "Sekakoe, jossa on kaikenlaisia tehtäviä", homeCaption: "20 tehtävää" },
+    exam: { title: "Sekaharjoittelu", description: "Kaikenlaisia tehtäviä helposta vaikeaan", homeCaption: "20 tehtävää" },
+    test: { title: "Koeharjoittelu", description: "Koe valitsemistasi luvuista, mukana kokonaisia yhtälöitä, jotka ratkaiset käsin", homeCaption: "Valitse luvut" },
     mistakes: { title: "Korjaa virheesi", description: "Yritä uudelleen sitä, mikä meni väärin", homeCaption: "Jonosi" },
   },
   groups: {
@@ -171,6 +177,7 @@ export const fi: UiMessages = {
     onlyTopic: (title: string) => `Vain tämä aihe: ${title}`,
   },
   task: {
+    handDone: "Katso, miten sinulla meni",
     line: (n) => `Rivi ${n}:`,
     correctAnswer: "Oikea vastaus",
     yourWrongAnswer: "Sinun vastauksesi, väärin",
@@ -185,7 +192,23 @@ export const fi: UiMessages = {
     next: "Seuraava",
     seeResults: "Näytä tulokset",
   },
+  testScreen: {
+    title: "Koeharjoittelu",
+    intro: "Harjoittele oikeaa koetta varten. Valitse luvut, jotka koe kattaa. Saat tehtäviä helposta vaikeaan, mukana kokonaisia yhtälöitä, jotka ratkaiset rivi riviltä, ja lopuksi näet, miten sinulla meni jokaisessa luvussa.",
+    chapters: "Kokeen luvut",
+    count: "Tehtävien määrä",
+    start: "Aloita koe",
+    noneChosen: "Valitse vähintään yksi luku aloittaaksesi.",
+    all: "Kaikki luvut",
+    clear: "Tyhjennä",
+    chosenFor: "Valittu sinulle: luvut, jotka olet aloittanut.",
+    kinds: "Mitä kokeessa on",
+    kindsList: ["Lyhyitä kysymyksiä ja tosi vai epätosi -tehtäviä", "Ratkaistavia yhtälöitä ja seuraavan vaiheen valintaa", "Kokonaisia yhtälöitä, jotka ratkaiset rivi riviltä ilman apupainikkeita"],
+    tasks: (n: number) => `${n} tehtävää`,
+  },
   results: {
+    byChapter: "Tulokset luvuittain",
+    chapterLine: (correct: number, total: number) => `${correct}/${total} oikein`,
     complete: (mode) => `${mode} suoritettu`,
     timeHeadline: (n) => `${n} oikein 60 sekunnissa`,
     headline: (percent) =>

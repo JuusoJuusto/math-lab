@@ -609,6 +609,7 @@ button:disabled {
 .game-night { --art: #1c2733; --art-ink: #fff; }
 .game-gold { --art: #e8a812; --art-ink: var(--ink); }
 .game-slate { --art: #4e5d6c; --art-ink: #fff; }
+.game-ruby { --art: #b3174f; --art-ink: #fff; }
 
 .module,
 .game {
@@ -1934,3 +1935,26 @@ a.row:hover {
   .chapter-progress { grid-column: 1 / -1; justify-self: start; }
   .chapter-titles h2 { font-size: 21px; }
 }
+
+/* Practice test (Koe) */
+.test-promo { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 18px 20px; border-radius: 20px; background: linear-gradient(135deg, #b3174f, #7b1450); color: #fff; box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18); }
+.test-promo h2 { margin: 0 0 4px; font: 700 22px/1.2 var(--font-display, sans-serif); }
+.test-promo p { margin: 0; font-size: 15px; line-height: 1.5; opacity: 0.95; }
+.test-promo-icon { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 16px; background: rgba(255, 255, 255, 0.18); }
+.test-promo .cta { background: #fff; color: #7b1450; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22); }
+@media (max-width: 720px) { .test-promo { grid-template-columns: auto minmax(0, 1fr); } .test-promo .cta { grid-column: 1 / -1; justify-content: center; } }
+.test-screen h1 { display: flex; align-items: center; gap: 10px; }
+.test-kinds { margin: 0 0 18px; padding: 14px 18px; border-radius: 14px; background: #eef5f8; }
+.test-kinds h2 { margin: 0 0 6px; font: 700 15px/1.2 var(--font-display, sans-serif); text-transform: uppercase; letter-spacing: 0.05em; color: #4a6b78; }
+.test-kinds ul { margin: 0; padding-left: 20px; line-height: 1.7; }
+.test-chapters { margin: 0 0 18px; padding: 0; border: 0; }
+.test-chapters legend { margin-bottom: 8px; font: 700 18px/1.2 var(--font-display, sans-serif); }
+.test-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+.test-note { margin: 0 0 10px; color: #14573b; font-weight: 700; }
+.test-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.test-chapter { --chapter: #2f6edb; display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 14px; border-radius: 14px; border: 2px solid #d4e6ec; background: #fff; cursor: pointer; }
+.test-chapter input { width: 22px; height: 22px; accent-color: var(--chapter); }
+.test-chapter-on { border-color: var(--chapter); background: #f6faff; box-shadow: 0 3px 0 rgba(22, 88, 105, 0.1); }
+.test-chapter .chapter-number { width: 40px; height: 40px; font-size: 20px; }
+.test-chapter-text { display: grid; gap: 2px; }
+.test-chapter-text span { color: #4a6b78; font-size: 14px; }

@@ -11,6 +11,7 @@ import { useToday } from "@/hooks/useToday";
 import { ModeCard, modeTone } from "@/components/ui/Cards";
 import { ModeIcon } from "@/components/ui/icons";
 import { startSession } from "@/components/practice/start";
+import { AppLink } from "@/components/ui/AppLink";
 
 function caption(mode: ModeInfo, t: UiMessages): string {
   if (mode.id === "daily") return t.practice.dailyCaption;
@@ -20,6 +21,32 @@ function caption(mode: ModeInfo, t: UiMessages): string {
 }
 
 function Setup({ mode }: { mode: ModeInfo }) {
+  if (mode.id === "test") return <TestSetup mode={mode} />;
+  return <ModeSetup mode={mode} />;
+}
+
+/** The practice test is set up on its own screen, where the chapters are chosen. */
+function TestSetup({ mode }: { mode: ModeInfo }) {
+  const { t } = useI18n();
+  return (
+    <section className="setup" aria-labelledby="setup-title">
+      <div className="setup-head">
+        <span className={`setup-icon ${modeTone(mode.id)}`}>
+          <ModeIcon id={mode.id} size={30} />
+        </span>
+        <div>
+          <h2 id="setup-title">{t.modes[mode.id].title}</h2>
+          <p>{t.modes[mode.id].description}</p>
+        </div>
+      </div>
+      <AppLink className="cta cta-inline" route={{ name: "test" }}>
+        <Play size={18} aria-hidden="true" /> {t.testScreen.start}
+      </AppLink>
+    </section>
+  );
+}
+
+function ModeSetup({ mode }: { mode: ModeInfo }) {
   const { lang, t } = useI18n();
   const progress = useProgress();
   const today = useToday();

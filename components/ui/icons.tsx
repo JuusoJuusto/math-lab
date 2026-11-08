@@ -6,6 +6,7 @@ import {
   Flame,
   Footprints,
   GraduationCap,
+  ClipboardCheck,
   Infinity,
   ListChecks,
   MessageSquareText,
@@ -54,6 +55,7 @@ const MODE_ICONS: Record<ModeId, LucideIcon> = {
   equation: MessageSquareText,
   time: Timer,
   exam: GraduationCap,
+  test: ClipboardCheck,
   mistakes: RotateCcw,
 };
 

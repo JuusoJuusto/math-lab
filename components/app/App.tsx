@@ -14,6 +14,7 @@ import { LessonScreen } from "@/components/screens/LessonScreen";
 import { PracticeHub } from "@/components/screens/PracticeHub";
 import { ProgressScreen } from "@/components/screens/ProgressScreen";
 import { SolverScreen } from "@/components/screens/SolverScreen";
+import { TestScreen } from "@/components/screens/TestScreen";
 
 function Screen({ route }: { route: Route }) {
   switch (route.name) {
@@ -29,6 +30,8 @@ function Screen({ route }: { route: Route }) {
       return <PracticeHub modeId={route.mode} />;
     case "session":
       return <PracticeSession key={toPath(route, DEFAULT_LANG)} route={route} />;
+    case "test":
+      return <TestScreen />;
     case "progress":
       return <ProgressScreen />;
   }

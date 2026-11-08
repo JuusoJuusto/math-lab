@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ClipboardCheck } from "lucide-react";
 import { getTopics } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
 import { navigate } from "@/hooks/useRoute";
@@ -47,6 +47,19 @@ export function HomeScreen() {
         <button type="button" className="cta" onClick={start}>
           {started ? t.home.continue : t.home.start} <ArrowRight size={20} aria-hidden="true" />
         </button>
+
+        <section className="test-promo" aria-labelledby="test-promo-title">
+          <span className="test-promo-icon" aria-hidden="true">
+            <ClipboardCheck size={34} />
+          </span>
+          <div>
+            <h2 id="test-promo-title">{t.home.testTitle}</h2>
+            <p>{t.home.testText}</p>
+          </div>
+          <AppLink className="cta cta-inline" route={{ name: "test" }}>
+            {t.home.testButton} <ArrowRight size={18} aria-hidden="true" />
+          </AppLink>
+        </section>
 
         <section className="block" aria-labelledby="learn-title">
           <div className="block-head">

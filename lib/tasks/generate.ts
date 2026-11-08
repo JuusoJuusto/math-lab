@@ -157,6 +157,26 @@ function parseEquationOrThrow(text: string): Equation {
   return parsed.value;
 }
 
+/* ------------------------------- solve by hand ------------------------------- */
+
+/** An equation to solve completely, writing every line. It is graded by what happens in the workspace. */
+function handTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
+  const text = taskText(lang);
+  const sample = sampleFor(spec, rng);
+  return {
+    spec,
+    kind: "hand",
+    topic: spec.topic,
+    prompt: text.handPrompt,
+    display: { type: "equation", text: displayEquation(sample) },
+    input: { type: "hand", source: sample.text },
+    answerText: xEquals(sample.solution),
+    answerValue: frac(sample.solution),
+    checkEquation: sample.text,
+    explanation: [...workingLines(sample, lang), text.so(xEquals(sample.solution))],
+  };
+}
+
 /* -------------------------------- true or false ------------------------------ */
 
 function checkTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
@@ -359,6 +379,8 @@ export function generateTask(spec: TaskSpec, lang: Lang = "en"): Task {
       return mistakeTask(spec, rng, lang);
     case "equation":
       return equationTask(spec, rng, lang);
+    case "hand":
+      return handTask(spec, rng, lang);
   }
 }
 

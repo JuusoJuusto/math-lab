@@ -9,7 +9,8 @@ import { useProgress, updateProgress } from "@/hooks/useProgress";
 import { localDate } from "@/hooks/useToday";
 import { XP, recordDailyDone, recordTask, recordTimeAttack } from "@/lib/progress";
 import { type Route } from "@/lib/routes";
-import { buildSession, generateTask, getMode, gradeChoice, gradeNumber, isInvalid, type Grade } from "@/lib/tasks";
+import { buildSession, generateTask, getMode, gradeChoice, gradeHand, gradeNumber, isInvalid, type Grade } from "@/lib/tasks";
+import type { WorkspaceOutcome } from "@/components/solver/SolverWorkspace";
 import { startSession } from "./start";
 import { SessionResults, type AnswerRecord } from "./SessionResults";
 import { TaskCard, type Phase } from "./TaskCard";
@@ -125,6 +126,11 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
     [task, phase],
   );
 
+  function submitHand(outcome: WorkspaceOutcome) {
+    if (!task || phase !== "answering") return;
+    record(gradeHand(task, { lines: outcome.steps, mistakes: outcome.mistakes, hints: outcome.hints }, lang));
+  }
+
   function submit(text: string): string | null {
     if (!task || phase !== "answering") return null;
     const result = gradeNumber(task, text, lang);
@@ -214,6 +220,7 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
           picked={picked}
           onChoose={choose}
           onSubmit={submit}
+          onHand={submitHand}
           onNext={advance}
         />
       )}

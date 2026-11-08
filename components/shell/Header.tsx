@@ -14,6 +14,7 @@ const LINKS = [
   { section: "home", route: { name: "home" } },
   { section: "learn", route: { name: "learn" } },
   { section: "practice", route: { name: "practice" } },
+  { section: "test", route: { name: "test" } },
   { section: "progress", route: { name: "progress" } },
 ] as const;
 

@@ -26,9 +26,11 @@ const build = (mode: ModeId, topic = "all", count?: number, seed = 1, missed?: T
 
 describe("practice modes", () => {
   it("offers a wide variety of ways to practise", () => {
-    expect(MODES.map((mode) => mode.id)).toEqual(["daily", "quiz", "solve", "truefalse", "step", "mistake", "equation", "time", "exam", "mistakes"]);
+    expect(MODES.map((mode) => mode.id)).toEqual(["daily", "quiz", "solve", "truefalse", "step", "mistake", "equation", "time", "exam", "test", "mistakes"]);
     const kinds = new Set(MODES.flatMap((mode) => mode.kinds));
-    expect(kinds.size).toBe(7);
+    expect(kinds.size).toBe(8);
+    // Only the practice test asks for whole equations written line by line.
+    expect(MODES.filter((mode) => mode.kinds.includes("hand")).map((mode) => mode.id)).toEqual(["test"]);
   });
 
   it("only lists topics a mode can really produce tasks for", () => {

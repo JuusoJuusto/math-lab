@@ -13,7 +13,7 @@ import { int, pick } from "./sample";
 import { KIND_TOPICS, TOPIC_ORDER, difficultyOf } from "./support";
 import type { TaskKind, TaskSpec } from "./types";
 
-export type ModeId = "daily" | "quiz" | "solve" | "truefalse" | "step" | "mistake" | "equation" | "time" | "exam" | "mistakes";
+export type ModeId = "daily" | "quiz" | "solve" | "truefalse" | "step" | "mistake" | "equation" | "time" | "exam" | "test" | "mistakes";
 
 /** Where a mode's title and description live: `modes` in lib/i18n/ui-*.ts. */
 export interface ModeInfo {
@@ -93,6 +93,14 @@ export const MODES: readonly ModeInfo[] = [
     topicFilter: true,
   },
   {
+    // A practice test for the chapters the learner picks, with whole equations solved by hand.
+    id: "test",
+    kinds: ["bank", "choose", "solve", "check", "step", "mistake", "equation", "hand"],
+    defaultCount: 20,
+    counts: [10, 20, 30],
+    topicFilter: true,
+  },
+  {
     id: "mistakes",
     kinds: [],
     defaultCount: 10,
@@ -123,7 +131,7 @@ export function dateSeed(date: string): number {
 
 export interface SessionOptions {
   readonly mode: ModeId;
-  /** A topic id, or "all". */
+  /** A topic id, several topic ids separated by commas, or "all". */
   readonly topic: string;
   readonly count: number;
   readonly seed: number;
@@ -154,12 +162,13 @@ export function buildSession(options: SessionOptions): TaskSpec[] {
   const specs: TaskSpec[] = [];
   const seen = new Set<string>();
   const usedBank = new Set<string>();
-  const climb = mode.id === "exam";
+  const climb = mode.id === "exam" || mode.id === "test";
+  const wanted = options.topic === "all" ? null : options.topic.split(",");
   let failures = 0;
 
   for (let index = 0; specs.length < options.count && failures < options.count * 6; index += 1) {
     const kind = kinds[index % kinds.length];
-    const allowed = KIND_TOPICS[kind].filter((topic) => options.topic === "all" || topic === options.topic);
+    const allowed = KIND_TOPICS[kind].filter((topic) => wanted === null || wanted.includes(topic));
     if (allowed.length === 0) {
       failures += 1;
       continue;

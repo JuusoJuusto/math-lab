@@ -23,11 +23,14 @@ export type Route =
   /** The practice hub. A mode can be pre-selected, which shows its setup. */
   | { readonly name: "practice"; readonly mode?: ModeId }
   | { readonly name: "session"; readonly mode: ModeId; readonly topic: string; readonly count: number; readonly seed: number }
+  | { readonly name: "test" }
   | { readonly name: "progress" };
 
 export const HOME: Route = { name: "home" };
 
 const isTopic = (id: string) => topicDefinitions.some((topic) => topic.id === id);
+/** One topic, or several separated by commas (a practice test over chapters). */
+const isTopicList = (value: string) => value.split(",").every(isTopic);
 
 function clampInt(text: string | null, fallback: number, min: number, max: number): number {
   const n = text === null ? Number.NaN : Number(text);
@@ -58,11 +61,13 @@ export function parseAddress(address: string): Route {
       return {
         name: "session",
         mode: mode.id,
-        topic: topic === "all" || isTopic(topic) ? topic : "all",
+        topic: topic === "all" || isTopicList(topic) ? topic : "all",
         count: clampInt(params.get("n"), mode.defaultCount, 1, 50),
         seed: clampInt(params.get("seed"), 1, 1, 2147483646),
       };
     }
+    case "test":
+      return { name: "test" };
     case "progress":
       return { name: "progress" };
     default:
@@ -90,6 +95,8 @@ export function toAddress(route: Route): string {
       return route.mode ? `practice?mode=${route.mode}` : "practice";
     case "session":
       return `practice/${route.mode}?topic=${route.topic}&n=${route.count}&seed=${route.seed}`;
+    case "test":
+      return "test";
     case "progress":
       return "progress";
   }
@@ -133,6 +140,7 @@ export function staticSegments(): string[][] {
     ...LEVELS.map((level) => ["solve", level.id]),
     ["practice"],
     ...MODES.map((mode) => ["practice", mode.id]),
+    ["test"],
     ["progress"],
   ];
 }
@@ -140,7 +148,7 @@ export function staticSegments(): string[][] {
 export { LANGS };
 
 /** Which item of the main navigation a route belongs to. */
-export function sectionOf(route: Route): "home" | "learn" | "practice" | "progress" {
+export function sectionOf(route: Route): "home" | "learn" | "practice" | "test" | "progress" {
   switch (route.name) {
     case "home":
       return "home";
@@ -151,6 +159,8 @@ export function sectionOf(route: Route): "home" | "learn" | "practice" | "progre
     case "practice":
     case "session":
       return "practice";
+    case "test":
+      return "test";
     case "progress":
       return "progress";
   }

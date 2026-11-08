@@ -44,6 +44,7 @@ const MODE_TONE: Record<string, string> = {
   equation: "game-purple",
   time: "game-night",
   exam: "game-gold",
+  test: "game-ruby",
   mistakes: "game-slate",
 };
 

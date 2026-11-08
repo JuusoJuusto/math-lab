@@ -8,7 +8,7 @@
 
 import type { Fraction } from "../equations";
 
-export type TaskKind = "bank" | "choose" | "solve" | "check" | "step" | "mistake" | "equation";
+export type TaskKind = "bank" | "choose" | "solve" | "check" | "step" | "mistake" | "equation" | "hand";
 
 /** Kinds that count together in the progress overview. */
 export type TaskGroup = "quiz" | "solve" | "check" | "step" | "mistake" | "equation";
@@ -36,7 +36,9 @@ export type TaskDisplay =
 
 export type TaskInput =
   | { readonly type: "choice"; readonly options: readonly string[]; readonly correct: number }
-  | { readonly type: "number"; readonly unit?: string };
+  | { readonly type: "number"; readonly unit?: string }
+  /** Solve the whole equation by writing every line. `source` is the equation as it is written. */
+  | { readonly type: "hand"; readonly source: string };
 
 export interface Task {
   readonly spec: TaskSpec;
@@ -74,6 +76,8 @@ export const TASK_GROUPS: Record<TaskKind, TaskGroup> = {
   step: "step",
   mistake: "mistake",
   equation: "equation",
+  // Solving by hand counts with the other ways of solving.
+  hand: "solve",
 };
 
 export function groupOf(kind: TaskKind): TaskGroup {
