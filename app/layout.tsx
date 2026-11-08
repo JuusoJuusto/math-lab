@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/fredoka";
 import "@fontsource-variable/open-sans";
 import "./globals.css";
+import "./solver.css";
 
 export const metadata: Metadata = {
   title: {
