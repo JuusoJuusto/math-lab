@@ -562,3 +562,4 @@ line.graph-right { stroke: #f39a14; }
 /* Which way to solve it: a visible question and a plain-words description of the chosen way */
 .move-title { padding: 0; margin: 0 0 6px; font: 700 14px/1.2 var(--font-display, sans-serif); letter-spacing: 0.05em; text-transform: uppercase; color: #4a6b78; }
 .move-hint { margin: 8px 2px 0; color: #2f4d5a; font-size: 15px; line-height: 1.5; }
+.hand-task { margin: 10px 0 0; padding: 10px 14px; border-radius: 12px; background: #fff3d6; border: 2px solid #f0c75e; color: #5d4210; font: 700 18px/1.4 var(--font-display, sans-serif); }

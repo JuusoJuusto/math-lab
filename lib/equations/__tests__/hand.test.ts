@@ -142,3 +142,75 @@ describe("every exercise of every level can be finished by hand", () => {
     expect(finished).toBeGreaterThan(150);
   });
 });
+
+import { afterStep, planHand } from "../hand";
+import { equalsEquation } from "../expression";
+
+describe("the ways a task can be solved by hand", () => {
+  it("is the whole equation when it is asked for in full, or when the equation is solved in one step", () => {
+    const full = planHand("2x + 5 = 17", "full");
+    expect(full).toMatchObject({ variant: "full", source: "2x + 5 = 17", given: [], step: null });
+    expect(planHand("x + 5 = 17", "continue").variant).toBe("full");
+    expect(planHand("x + 5 = 17", "write").variant).toBe("full");
+  });
+
+  it("gives the first lines of the tutor's solution and leaves the rest, for continuing", () => {
+    const plan = planHand("3x + 2 = 5x - 8", "continue");
+    expect(plan.variant).toBe("continue");
+    expect(plan.given.length).toBeGreaterThanOrEqual(1);
+    const path = solveWithTutor(plan.original);
+    expect(plan.given.length).toBeLessThan(path.length);
+    plan.given.forEach((line, index) => expect(equalsEquation(line.equation, path[index].after)).toBe(true));
+  });
+
+  it("asks for one step and knows the equation that step gives, for writing", () => {
+    const plan = planHand("2x + 5 = 17", "write", 0);
+    expect(plan.variant).toBe("write");
+    expect(plan.step).toMatchObject({ kind: "subtract", amount: { n: 5, d: 1 } });
+    expect(formatEquation(afterStep(plan.equation, plan.step!)!)).toBe("2x = 12");
+    // A later step starts from the line before it.
+    const later = planHand("2x + 5 = 17", "write", 1);
+    expect(formatEquation(later.equation)).toBe("2x = 12");
+    expect(later.step).toMatchObject({ kind: "divide" });
+  });
+
+  it("works for every exercise of every level, whatever step is asked for", () => {
+    let plans = 0;
+    for (const level of LEVELS.filter((item) => item.kind === "equations")) {
+      for (const exercise of level.exercises) {
+        for (const variant of ["full", "continue", "write"] as const) {
+          for (const pick of [0, 1, 2]) {
+            const plan = planHand(exercise.equation, variant, pick);
+            expect(sameSolution(solveEquation(plan.equation), solveEquation(plan.original)), `${exercise.id} ${variant}`).toBe(true);
+            for (const line of plan.given) expect(sameSolution(solveEquation(line.equation), solveEquation(plan.original))).toBe(true);
+            if (plan.step) expect(afterStep(plan.equation, plan.step)).not.toBeNull();
+            plans += 1;
+          }
+        }
+      }
+    }
+    expect(plans).toBeGreaterThan(1000);
+  });
+});
+
+import { pickFrom, roundVariant } from "../hand";
+
+describe("how a round is shared between the buttons and writing by hand", () => {
+  it("uses the buttons for the first exercise and writing by hand for four in five, in rotating formats", () => {
+    const variants = [0, 1, 2, 3, 4].map((index) => roundVariant(index, 5));
+    expect(variants).toEqual([null, "continue", "full", "write", "full"]);
+    expect(variants.filter((variant) => variant !== null).length / variants.length).toBe(0.8);
+  });
+
+  it("writes whole solutions most of the time, so the learner has to solve fully", () => {
+    const variants = Array.from({ length: 20 }, (_, index) => roundVariant(index, 20)).filter((variant) => variant !== null);
+    expect(variants.filter((variant) => variant === "full").length).toBeGreaterThanOrEqual(variants.length * 0.45);
+    expect(new Set(variants)).toEqual(new Set(["continue", "full", "write"]));
+  });
+
+  it("keeps a one-exercise round on the buttons, and picks a stable number from a name", () => {
+    expect(roundVariant(0, 1)).toBeNull();
+    expect(pickFrom("both-03")).toBe(pickFrom("both-03"));
+    expect(pickFrom("both-03")).not.toBe(pickFrom("both-04"));
+  });
+});

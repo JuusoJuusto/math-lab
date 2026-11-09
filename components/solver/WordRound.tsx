@@ -8,8 +8,12 @@ import {
   formatFraction,
   frac,
   mustParseEquation,
+  pickFrom,
+  planHand,
+  roundVariant,
   toExercise,
   type Exercise,
+  type HandVariant,
   type ExerciseResult,
   type LevelDefinition,
 } from "@/lib/equations";
@@ -95,13 +99,13 @@ interface WordProblemProps {
   moveMode: MoveMode;
   onMoveModeChange: (mode: MoveMode) => void;
   continueLabel: string;
-  /** The last story of a round is solved by hand, line by line, with no buttons. */
-  byHand?: boolean;
+  /** How the built equation is solved: by hand in one of the formats, or with the buttons when `null`. */
+  handVariant?: HandVariant | null;
   onDone: (outcome: WorkspaceOutcome) => void;
 }
 
 /** One story: write the equation, solve it, then answer the question in words. */
-function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, byHand = false, onDone }: WordProblemProps) {
+function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, handVariant = null, onDone }: WordProblemProps) {
   const { lang, t } = useI18n();
   const intended = mustParseEquation(story.equations[0]);
   const [stage, setStage] = useState<Stage>("build");
@@ -140,11 +144,12 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, byHand 
         />
       )}
 
-      {stage === "solve" && built && byHand && (
+      {stage === "solve" && built && handVariant !== null && (
         <HandWorkspace
           key={`${lang}-hand`}
           source={formatEquation(built.equation)}
           equation={built.equation}
+          plan={planHand(formatEquation(built.equation), handVariant, pickFrom(story.id))}
           continueLabel={t.word.answerTitle}
           onContinue={(outcome) => {
             setSolved(outcome);
@@ -153,7 +158,7 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, byHand 
         />
       )}
 
-      {stage === "solve" && built && !byHand && (
+      {stage === "solve" && built && handVariant === null && (
         <SolverWorkspace
           key={lang}
           equation={built.equation}
@@ -268,7 +273,7 @@ export function WordRound({ level, onComplete, onEquationSolved, onExit }: WordR
         moveMode={moveMode}
         onMoveModeChange={setMoveMode}
         continueLabel={isLast ? t.word.finish : t.word.next}
-        byHand={isLast && stories.length > 1}
+        handVariant={roundVariant(index, stories.length)}
         onDone={next}
       />
     </section>

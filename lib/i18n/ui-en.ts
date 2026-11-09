@@ -377,6 +377,14 @@ export const en = {
       flipNote: "Look: the highlighted part crossed the equals sign.",
     },
     hand: {
+      givenLabel: (n: number, what: string) => `Given · step ${n} · ${what}`,
+      continueIntro: "The first lines of the solution are written for you. Write the rest, line by line, until x is alone.",
+      writeIntro: "You do not have to solve the whole equation this time: do one step, and write the equation it gives.",
+      writePrompt: (what: string) => `Do this to both sides: ${what}. Then write the new equation.`,
+      writeDone: (what: string) => `Right: ${what}.`,
+      writeOther: { title: "That is a correct step, but a different one", body: "Do the step you were asked for, and write the equation it gives." },
+      writeHint1: (applied: string) => `Write the step on both sides first: ${applied}`,
+      writeHint2: (after: string) => `Then work out both sides. The new equation is ${after}`,
       title: "Solve it by hand",
       intro: "Write every line of the solution yourself. On each line, do one thing to both sides and write the new equation. You may write the step beside it, like this: 2x + 5 = 17 || − 5.",
       start: "The equation",
@@ -416,7 +424,11 @@ export const en = {
       skip: "Skip to practice",
     },
     round: {
-      lastByHand: "The last one is all yours: write every line of the solution yourself, with no buttons to help.",
+      byHand: {
+        full: "By hand: write every line of the solution yourself. There are no buttons to help.",
+        continue: "By hand: the solution is begun. Write the rest of it yourself.",
+        write: "By hand: do one step and write the equation it gives.",
+      },
       label: "Practice round",
       leave: "Leave practice",
       title: (i: number, n: number) => `Equation ${i} of ${n}`,

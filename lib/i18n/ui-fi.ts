@@ -372,6 +372,14 @@ export const fi: UiMessages = {
       flipNote: "Katso: korostettu osa meni yhtäsuuruusmerkin yli.",
     },
     hand: {
+      givenLabel: (n: number, what: string) => `Annettu · askel ${n} · ${what}`,
+      continueIntro: "Ratkaisun ensimmäiset rivit on kirjoitettu valmiiksi. Kirjoita loput rivi riviltä, kunnes x on yksin.",
+      writeIntro: "Nyt sinun ei tarvitse ratkaista koko yhtälöä: tee yksi vaihe ja kirjoita yhtälö, jonka se antaa.",
+      writePrompt: (what: string) => `Tee tämä molemmille puolille: ${what}. Kirjoita sitten uusi yhtälö.`,
+      writeDone: (what: string) => `Oikein: ${what}.`,
+      writeOther: { title: "Se on oikea vaihe, mutta eri vaihe", body: "Tee vaihe, jota pyydettiin, ja kirjoita yhtälö, jonka se antaa." },
+      writeHint1: (applied: string) => `Kirjoita ensin vaihe molemmille puolille: ${applied}`,
+      writeHint2: (after: string) => `Laske sitten molemmat puolet. Uusi yhtälö on ${after}`,
       title: "Ratkaise itse käsin",
       intro: "Kirjoita ratkaisun jokainen rivi itse. Tee jokaisella rivillä yksi asia molemmille puolille ja kirjoita uusi yhtälö. Voit kirjoittaa vaiheen viereen näin: 2x + 5 = 17 || − 5.",
       start: "Yhtälö",
@@ -411,7 +419,11 @@ export const fi: UiMessages = {
       skip: "Siirry harjoitteluun",
     },
     round: {
-      lastByHand: "Viimeinen on kokonaan sinun: kirjoita ratkaisun jokainen rivi itse ilman apupainikkeita.",
+      byHand: {
+        full: "Käsin: kirjoita ratkaisun jokainen rivi itse. Apupainikkeita ei ole.",
+        continue: "Käsin: ratkaisu on aloitettu. Kirjoita loput itse.",
+        write: "Käsin: tee yksi vaihe ja kirjoita yhtälö, jonka se antaa.",
+      },
       label: "Harjoituskierros",
       leave: "Poistu harjoituksesta",
       title: (i, n) => `Yhtälö ${i}/${n}`,

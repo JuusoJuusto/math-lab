@@ -21,12 +21,14 @@ import {
   isSolution,
   operation,
   parseEquation,
+  planHand,
   shuffle,
   solveWithTutor,
   solvedValue,
   terminalState,
   type AppliedStep,
   type Equation,
+  type HandVariant,
   type Lang,
   type Operation,
   type Rng,
@@ -163,13 +165,18 @@ function parseEquationOrThrow(text: string): Equation {
 function handTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
   const text = taskText(lang);
   const sample = sampleFor(spec, rng);
+  // Mostly whole solutions, with some to finish and some single steps, so the tasks stay varied.
+  const roll = rng();
+  const wanted: HandVariant = roll < 0.55 ? "full" : roll < 0.8 ? "continue" : "write";
+  const pick = int(rng, 0, 9);
+  const plan = planHand(sample.text, wanted, pick);
   return {
     spec,
     kind: "hand",
     topic: spec.topic,
-    prompt: text.handPrompt,
+    prompt: plan.variant === "continue" ? text.handContinue : plan.variant === "write" ? text.handWrite : text.handPrompt,
     display: { type: "equation", text: displayEquation(sample) },
-    input: { type: "hand", source: sample.text },
+    input: { type: "hand", source: sample.text, variant: plan.variant, pick },
     answerText: xEquals(sample.solution),
     answerValue: frac(sample.solution),
     checkEquation: sample.text,

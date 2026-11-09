@@ -6,7 +6,7 @@
  * what makes a "fix your mistakes" queue and shareable sessions possible.
  */
 
-import type { Fraction } from "../equations";
+import type { Fraction, HandVariant } from "../equations";
 
 export type TaskKind = "bank" | "choose" | "solve" | "check" | "step" | "mistake" | "equation" | "hand";
 
@@ -38,7 +38,7 @@ export type TaskInput =
   | { readonly type: "choice"; readonly options: readonly string[]; readonly correct: number }
   | { readonly type: "number"; readonly unit?: string }
   /** Solve the whole equation by writing every line. `source` is the equation as it is written. */
-  | { readonly type: "hand"; readonly source: string };
+  | { readonly type: "hand"; readonly source: string; readonly variant: HandVariant; readonly pick: number };
 
 export interface Task {
   readonly spec: TaskSpec;

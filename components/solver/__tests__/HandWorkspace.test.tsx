@@ -2,15 +2,21 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { LangProvider } from "@/hooks/useLang";
-import { startEquation } from "@/lib/equations";
+import { formatEquation, planHand, solveWithTutor, startEquation } from "@/lib/equations";
 import { HandWorkspace } from "../HandWorkspace";
 
-function setup(source: string, lang: "en" | "fi" = "en") {
+function setup(source: string, lang: "en" | "fi" = "en", variant?: "full" | "continue" | "write", pick = 0) {
   const onContinue = vi.fn();
   const user = userEvent.setup();
   render(
     <LangProvider lang={lang}>
-      <HandWorkspace source={source} equation={startEquation(source)} continueLabel="Next equation" onContinue={onContinue} />
+      <HandWorkspace
+        source={source}
+        equation={startEquation(source)}
+        plan={variant ? planHand(source, variant, pick) : undefined}
+        continueLabel="Next equation"
+        onContinue={onContinue}
+      />
     </LangProvider>,
   );
   return { user, onContinue };
@@ -159,5 +165,65 @@ describe("solving by hand", () => {
     await write(user, "x = 12 : 2", "fi");
     expect(screen.getByText("Ratkaistu")).toBeTruthy();
     expect(document.querySelector(".history-bar:last-of-type")?.textContent).toContain("||");
+  });
+});
+
+describe("the other ways of writing by hand", () => {
+  it("continue: the first lines are written for you, and only the lines you write count", async () => {
+    const { user, onContinue } = setup("3x + 2 = 5x - 8", "en", "continue");
+    expect(screen.getByText(/The first lines of the solution are written for you/)).toBeTruthy();
+
+    const lines = within(sheet()!).getAllByRole("listitem");
+    expect(lines.length).toBeGreaterThanOrEqual(1);
+    expect(lines[0].querySelector(".history-label")?.textContent).toMatch(/^Given · step 1/);
+    // A line that was given cannot be deleted; there is nothing of yours to delete yet.
+    expect((screen.getByRole("button", { name: "Delete the last line" }) as HTMLButtonElement).disabled).toBe(true);
+
+    // Write the rest, as the tutor would, and finish.
+    const section = document.querySelector(".eq-written")!;
+    const given = Number(section.getAttribute("data-given"));
+    const path = solveWithTutor(startEquation("3x + 2 = 5x - 8")).map((step) => step.after);
+    for (const equation of path.slice(given)) await write(user, formatEquation(equation).replace(/−/g, "-"));
+    await user.click(screen.getByRole("button", { name: "Check by substituting" }));
+    await user.click(screen.getByRole("button", { name: /Next equation/ }));
+    expect(onContinue).toHaveBeenCalledWith({ steps: path.length - given, mistakes: 0, hints: 0 });
+  });
+
+  it("write one step: the step is named, the equation is the one just before it, and only that step's result is right", async () => {
+    const { user, onContinue } = setup("2x + 5 = 17", "en", "write", 0);
+    expect(screen.getByText("Do this to both sides: Subtract 5 from both sides. Then write the new equation.")).toBeTruthy();
+
+    // A correct step that is not the one asked for is not a mistake, and is not accepted either.
+    await write(user, "x + 5/2 = 17/2");
+    expect(screen.getByText("That is a correct step, but a different one")).toBeTruthy();
+
+    await write(user, "2x = 22");
+    expect(screen.getByText("That is not equal to the line above")).toBeTruthy();
+
+    await write(user, "2x = 12");
+    expect(screen.queryByLabelText("Write the next line")).toBeNull();
+    // There is nothing to check by substituting after a single step.
+    expect(screen.queryByRole("button", { name: "Check by substituting" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: /Next equation/ }));
+    expect(onContinue).toHaveBeenCalledWith({ steps: 1, mistakes: 1, hints: 0 });
+  });
+
+  it("write one step, later in the solution: the equation shown is the line before that step", () => {
+    setup("2x + 5 = 17", "en", "write", 1);
+    expect(document.querySelector(".eq-written")?.getAttribute("data-source")).toBe("2x = 12");
+    expect(screen.getByText(/Divide both sides by 2/)).toBeTruthy();
+  });
+
+  it("write one step: the hints show how to write it", async () => {
+    const { user } = setup("2x + 5 = 17", "en", "write", 0);
+    await user.click(screen.getByRole("button", { name: "I am stuck" }));
+    expect(screen.getByText(/Write the step on both sides first: 2x \+ 5 − 5 = 17 − 5/)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: /More help/ }));
+    expect(screen.getByText(/The new equation is 2x = 12/)).toBeTruthy();
+  });
+
+  it("speaks Finnish in each format", async () => {
+    setup("2x + 5 = 17", "fi", "write", 0);
+    expect(screen.getByText("Tee tämä molemmille puolille: Vähennä molemmilta puolilta 5. Kirjoita sitten uusi yhtälö.")).toBeTruthy();
   });
 });

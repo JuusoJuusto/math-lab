@@ -9,7 +9,7 @@ import { GroupIcon } from "@/components/ui/icons";
 import { MathLine } from "@/components/ui/MathLine";
 import { HandWorkspace } from "@/components/solver/HandWorkspace";
 import type { WorkspaceOutcome } from "@/components/solver/SolverWorkspace";
-import { startEquation } from "@/lib/equations";
+import { planHand, startEquation } from "@/lib/equations";
 
 export type Phase = "answering" | "feedback";
 
@@ -130,7 +130,13 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
       {task.display && task.input.type !== "hand" && <TaskDisplayView display={task.display} />}
 
       {task.input.type === "hand" && answering && onHand && (
-        <HandWorkspace source={task.input.source} equation={startEquation(task.input.source)} continueLabel={t.task.handDone} onContinue={onHand} />
+        <HandWorkspace
+          source={task.input.source}
+          equation={startEquation(task.input.source)}
+          plan={planHand(task.input.source, task.input.variant, task.input.pick)}
+          continueLabel={t.task.handDone}
+          onContinue={onHand}
+        />
       )}
       {task.input.type === "hand" && !answering && task.display && <TaskDisplayView display={task.display} />}
 

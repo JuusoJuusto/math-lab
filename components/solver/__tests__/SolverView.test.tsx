@@ -197,11 +197,17 @@ describe("SolverView: a level from introduction to completion", () => {
     expect(onQuiz).toHaveBeenCalledWith("two-step");
   });
 
-  it("does not interrupt a learner who needed hints, and a popup can be closed with Escape", async () => {
+  it("does not interrupt a learner who needed help with every equation", async () => {
     vi.spyOn(Math, "random").mockImplementation(createRng(4));
     const { user } = setup("two-step");
     await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
-    await playRound(user);
+    for (let n = 1; n <= 5; n += 1) {
+      await screen.findByText(`Equation ${n} of 5`);
+      // Written by hand or with the buttons, each one is solved with help.
+      if (document.querySelector(".hand")) await user.click(screen.getByRole("button", { name: "I am stuck" }));
+      await solveOnScreenEquation(user);
+      await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
+    }
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByRole("heading", { name: /Two-step equations: done!/ })).toBeTruthy();
   });

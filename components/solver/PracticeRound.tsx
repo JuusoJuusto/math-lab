@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, PenLine } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
-import { pickRound, type Exercise, type ExerciseResult, type LevelDefinition } from "@/lib/equations";
+import { pickFrom, pickRound, planHand, roundVariant, type Exercise, type ExerciseResult, type LevelDefinition } from "@/lib/equations";
 import type { MoveMode } from "./MoveTabs";
 import { HandWorkspace } from "./HandWorkspace";
 import { SolverWorkspace, type WorkspaceOutcome } from "./SolverWorkspace";
@@ -46,6 +46,8 @@ export function PracticeRound({ level, avoid, onComplete, onEquationSolved, onEx
 
   const exercise = exercises[index];
   const isLast = index + 1 === exercises.length;
+  // Four in five exercises are written by hand, in varied formats; the first uses the buttons.
+  const handVariant = roundVariant(index, exercises.length);
 
   function next(outcome: WorkspaceOutcome) {
     const updated = [...results, { id: exercise.id, ...outcome }];
@@ -79,16 +81,17 @@ export function PracticeRound({ level, avoid, onComplete, onEquationSolved, onEx
           </li>
         ))}
       </ol>
-      {isLast && exercises.length > 1 ? (
+      {handVariant !== null ? (
         <>
           <p className="hand-banner">
-            <PenLine size={18} aria-hidden="true" /> {t.solver.round.lastByHand}
+            <PenLine size={18} aria-hidden="true" /> {t.solver.round.byHand[handVariant]}
           </p>
           <HandWorkspace
             key={`${exercise.id}-${lang}-hand`}
             source={exercise.source}
             equation={exercise.equation}
-            continueLabel={t.solver.finishLevel}
+            plan={planHand(exercise.source, handVariant, pickFrom(exercise.id))}
+            continueLabel={isLast ? t.solver.finishLevel : t.solver.nextEquation}
             onContinue={next}
           />
         </>

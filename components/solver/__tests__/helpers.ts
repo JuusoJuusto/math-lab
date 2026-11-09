@@ -50,16 +50,24 @@ export async function solveOnScreenEquation(user: UserEvent) {
   await user.click(screen.getByRole("button", { name: "Check by substituting" }));
 }
 
-/** Types each line of the tutor's own solution into the by-hand field, then checks the answer. */
+/**
+ * Types the lines a by-hand task asks for, as the tutor would write them: every line, the rest of a begun
+ * solution, or the one step that was asked for. Then it checks the answer when there is one to check.
+ */
 export async function solveByHand(user: UserEvent) {
-  const source = document.querySelector(".hand .eq-written")?.getAttribute("data-source");
+  const section = document.querySelector(".hand .eq-written");
+  const source = section?.getAttribute("data-source");
   if (!source) throw new Error("No by-hand equation on screen");
-  const lines = solveWithTutor(startEquation(source.replace(/−/g, "-"))).map((step) => formatEquation(step.after).replace(/−/g, "-"));
+  const variant = section?.getAttribute("data-variant") ?? "full";
+  const given = Number(section?.getAttribute("data-given") ?? 0);
+  const path = solveWithTutor(startEquation(source.replace(/−/g, "-"))).map((step) => formatEquation(step.after).replace(/−/g, "-"));
+  const lines = variant === "continue" ? path.slice(given) : variant === "write" ? path.slice(0, 1) : path;
   for (const line of lines) {
     fireEvent.change(screen.getByLabelText(/Write the next line|Kirjoita seuraava rivi/), { target: { value: line } });
     await user.click(screen.getByRole("button", { name: /Add line|Lisää rivi/ }));
   }
-  await user.click(screen.getByRole("button", { name: "Check by substituting" }));
+  const check = screen.queryByRole("button", { name: "Check by substituting" });
+  if (check) await user.click(check);
 }
 
 /**

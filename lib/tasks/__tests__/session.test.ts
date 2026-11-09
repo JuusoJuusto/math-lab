@@ -206,3 +206,50 @@ describe("grading", () => {
     expect(() => gradeChoice(solveTask, 0)).toThrow();
   });
 });
+
+describe("the practice test is mostly written by hand, and varied", () => {
+  it("makes four in five tasks by hand when the chosen topics allow it, and the others from other kinds in turn", () => {
+    for (const seed of [1, 7, 21, 99]) {
+      const specs = buildSession({ mode: "test", topic: "all", count: 20, seed, missed: [] });
+      expect(specs).toHaveLength(20);
+      const hand = specs.filter((spec) => spec.kind === "hand");
+      expect(hand.length / specs.length, `seed ${seed}`).toBeGreaterThanOrEqual(0.75);
+      expect(hand.length / specs.length).toBeLessThanOrEqual(0.85);
+      // The rest are not all one kind.
+      expect(new Set(specs.filter((spec) => spec.kind !== "hand").map((spec) => spec.kind)).size).toBeGreaterThan(1);
+    }
+  });
+
+  it("mixes the formats of the tasks written by hand: whole solutions, solutions to finish, and single steps", () => {
+    const variants = new Set<string>();
+    let whole = 0;
+    let total = 0;
+    for (let seed = 1; seed <= 12; seed += 1) {
+      for (const spec of buildSession({ mode: "test", topic: "all", count: 20, seed, missed: [] })) {
+        if (spec.kind !== "hand") continue;
+        const task = generateTask(spec);
+        if (task.input.type !== "hand") throw new Error("not a by-hand task");
+        variants.add(task.input.variant);
+        total += 1;
+        if (task.input.variant === "full") whole += 1;
+      }
+    }
+    expect(variants).toEqual(new Set(["full", "continue", "write"]));
+    // Most of them are the whole equation.
+    expect(whole / total).toBeGreaterThan(0.4);
+  });
+
+  it("falls back to the other kinds for topics that cannot be written by hand, and still builds a whole test", () => {
+    const specs = buildSession({ mode: "test", topic: "word,hard-word", count: 10, seed: 3, missed: [] });
+    expect(specs).toHaveLength(10);
+    expect(specs.every((spec) => spec.kind !== "hand")).toBe(true);
+  });
+
+  it("builds a whole test when only some chosen topics allow writing by hand", () => {
+    for (const topic of ["brackets,fractions", "basics,one-step", "one-step,word"]) {
+      for (const seed of [1, 7, 21]) {
+        expect(buildSession({ mode: "test", topic, count: 10, seed, missed: [] }), `${topic} ${seed}`).toHaveLength(10);
+      }
+    }
+  });
+});
