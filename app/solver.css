@@ -438,6 +438,7 @@
 .key-equals { background: #dff3ee; border-color: #9fd6c8; color: var(--s-teal); }
 .key-bar { background: #fff7e6; border-color: #efd9a6; letter-spacing: 3px; }
 .key-clear { color: #a02b3d; }
+.keypad-number { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .key-fraction { display: flex; align-items: center; justify-content: center; gap: 10px; background: #efe9fb; border-color: #cbbcf0; color: #4b2f94; font-size: 15px; }
 .key-frac { display: inline-grid; gap: 3px; width: 18px; }
 .key-frac i { display: block; height: 7px; border: 2px solid currentColor; border-radius: 2px; }
@@ -643,3 +644,26 @@ line.graph-right { stroke: #f39a14; }
   .stage-view, .intro-demo > *, .task, .results-card .results-medal, .results-card .complete-heading, .results-card .results-score, .recap li,
   .feedback-region .notice, .feedback-region .notice-icon, .feedback-region .hint, .feedback-region .hint-icon { animation: none; }
 }
+
+/* ---------- The final answer, and doing the whole equation yourself ---------- */
+
+.final-answer { display: grid; gap: 12px; padding: 18px; border: 2px solid #b7d6dd; border-radius: var(--radius); background: #f3fafc; animation: rise 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.final-answer-title { display: flex; align-items: center; gap: 8px; margin: 0; font: 700 1.2rem var(--font-display, sans-serif); color: #164655; }
+.final-answer-text { margin: 0; color: var(--s-ink); font-size: 1.02rem; line-height: 1.55; }
+.final-answer-done { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; border-color: #9fd6c0; background: #eaf8f0; }
+.final-answer-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #20a876; color: #fff; animation: icon-pop 520ms 100ms cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.final-answer-body h2 { margin: 0 0 2px; font: 800 0.8rem var(--font-display, sans-serif); letter-spacing: 0.1em; text-transform: uppercase; color: #14573b; }
+.final-answer-body .mathline-row { justify-content: flex-start; font-size: clamp(24px, calc(100cqi / (0.54 * var(--eq-chars, 10) + 3.2)), 40px); }
+.final-answer-body p { margin: 4px 0 0; color: #14573b; font-size: 0.95rem; }
+.hand-whole { margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .final-answer, .final-answer-icon { animation: none; } }
+
+/* ---------- Counting both sides yourself ---------- */
+
+.count { display: grid; gap: 10px; margin: 12px 0 4px; padding: 14px 16px; border: 2px solid #cbbcf0; border-radius: 14px; background: #f7f4fe; animation: pad-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.count-title { display: flex; align-items: center; gap: 8px; margin: 0; font: 700 1.05rem var(--font-display, sans-serif); color: #4b2f94; }
+.count-text { margin: 0; color: var(--s-ink); line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { .count { animation: none; } }
+.count-toggle { display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin: 4px 0 0; padding: 8px 14px; border: 2px solid #d9cff3; border-radius: 12px; background: #f7f4fe; color: #4b2f94; font: 700 0.95rem var(--font-display, sans-serif); cursor: pointer; }
+.count-toggle input { width: 20px; height: 20px; flex: none; accent-color: #6b45d6; }
+.count-toggle:has(input:focus-visible) { outline: 3px solid #0c5e9a; outline-offset: 2px; }

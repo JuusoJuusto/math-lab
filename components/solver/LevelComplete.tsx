@@ -1,8 +1,10 @@
 "use client";
 
-import { ArrowRight, CircleCheck, RotateCcw, Trophy } from "lucide-react";
+import { ArrowRight, CircleCheck, Lightbulb, RotateCcw, Trophy } from "lucide-react";
+import { getTopic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
 import { formatEquation, formatFraction, getNextLevel, levelText, localiseDecimals, solveEquation, summariseRound, type LevelDefinition } from "@/lib/equations";
+import { keepMathTogether } from "@/lib/mathText";
 import type { RoundReport } from "./PracticeRound";
 
 interface LevelCompleteProps {
@@ -20,6 +22,8 @@ export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQ
   const summary = summariseRound(report.results);
   const next = getNextLevel(level.id);
   const words = t.solver.complete;
+  const mistakes = report.results.reduce((total, result) => total + result.mistakes, 0);
+  const idea = getTopic(level.id, lang)?.remember;
 
   return (
     <section className="results-card level-complete" aria-labelledby="complete-heading">
@@ -31,6 +35,12 @@ export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQ
         {words.heading(levelText(level, lang).title)}
       </h2>
       <p>{words.solved(summary.solved, summary.hintsUsed, level.kind === "stories")}</p>
+
+      <ul className="round-stats" aria-label={words.statsLabel}>
+        <li className={summary.cleanSolves === summary.solved ? "stat stat-good" : "stat"}>{words.statClean(summary.cleanSolves, summary.solved)}</li>
+        {summary.hintsUsed > 0 && <li className="stat">{words.statHints(summary.hintsUsed)}</li>}
+        {mistakes > 0 && <li className="stat">{words.statMistakes(mistakes)}</li>}
+      </ul>
 
       <ul className="recap">
         {report.exercises.map((exercise) => {
@@ -48,6 +58,15 @@ export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQ
           );
         })}
       </ul>
+
+      {idea && (
+        <div className="complete-remember">
+          <div className="example-label">
+            <Lightbulb size={16} aria-hidden="true" /> {words.remember}
+          </div>
+          <p>{keepMathTogether(idea)}</p>
+        </div>
+      )}
 
       <div className="action-row action-center">
         {next ? (

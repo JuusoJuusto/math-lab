@@ -31,12 +31,17 @@ Only fixed labels and ids are sent: the lesson or practice name, a stable `ref`,
 | `started` | `lesson-<id>` | the lesson's title | | A lesson round begins: `SolverView.startPractice` (`components/solver/SolverView.tsx`) |
 | `progress` | `lesson-<id>` | the lesson's title | 25, 50, 75 | A lesson round passes a quarter, half, three quarters: `PracticeRound.tsx`, `WordRound.tsx` |
 | `score` | `lesson-<id>` | the lesson's title | equations solved with no hint or wrong move / equations in the round | A lesson round ends: `SolverView.finishRound` |
-| `completed` | `lesson-<id>` | the lesson's title | | The lesson is finished for the first time: `components/screens/SolverScreen.tsx` |
-| `completed` | `chapter-<id>` | the chapter's title | | That first finish completes the last lesson of a chapter: `SolverScreen.tsx` |
+| `completed` | `lesson-<id>` | the lesson's title | | A topic becomes finished for the first time, **however it got there**: a lesson round, practising it until it counts as known, or a quiz round. Worked out from the change in `hooks/useProgress.ts` (`progressEvents` in `src/studyHubChanges.ts`) |
+| `completed` | `chapter-<id>` | the chapter's title | | The last lesson of a chapter becomes finished |
+| `progress` | `overall` | `Overall progress` | 0 to 100 | The share of the lessons that are finished goes up (it never reports a fall, so resetting progress reports nothing) |
 | `started` | `practice-<mode>` | the practice name | | A practice session opens, once: `components/practice/PracticeSession.tsx` |
 | `progress` | `practice-<mode>` | the practice name | 25, 50, 75 | A session passes a quarter, half, three quarters (not for time attack, which has no fixed length) |
 | `score` | `practice-<mode>` | the practice name | correct answers / tasks | A session ends (time attack gives the number correct and no `max`) |
 | `level` | `xp-level` | `Level <n>` | the new level | The XP level goes up: `updateProgress` in `hooks/useProgress.ts` |
+
+### What a student already has
+
+A student who arrives from Study Hub may have earned progress in this browser before. When the app opens for a visit that came from Study Hub, everything earned so far is reported once (`reportSnapshotOnce` in `src/studyHubSnapshot.ts`): every finished lesson and chapter, the overall number and the XP level, as if it had just been earned, under the same refs. It is sent once per browser tab (the next page of the visit does not repeat it), never for a visit without a token, and it is at most a few dozen events even for a student who has finished everything. Progress that is only loaded when the page opens is otherwise not reported as new.
 
 The same `ref` is used for the same activity every time, so Study Hub can combine the reports. "Completed" is sent only the first time a lesson is finished, not every time it is practised again. The `<mode>` is a practice mode id such as `solve`, `truefalse`, `exam` or `test`.
 
@@ -58,6 +63,8 @@ Study Hub has to allow `https://mathlab.insaneones.xyz` with CORS headers. Its a
 
 - `src/__tests__/studyHubProgress.test.ts`: no token sends nothing; the token is read, kept and removed from the address; the request has the right address, body and options; limits; every kind of failure.
 - `src/__tests__/studyHubMilestones.test.ts`: the 25/50/75 marks.
+- `src/__tests__/studyHubChanges.test.ts`: what a change in progress reports, by every route, in both languages; and the snapshot.
+- `src/__tests__/studyHubSnapshot.test.ts`: the snapshot is sent once per visit, only with a token, and never throws.
 - `src/__tests__/securityHeaders.test.ts`: the policy in both header files.
 - `components/app/__tests__/StudyHubEvents.test.tsx`: which events a lesson, a practice session and an XP level-up send, and that nothing typed is in them.
 - `components/app/__tests__/StudyHubStartup.test.tsx`: the app loads the page asked for, with and without a token.

@@ -174,6 +174,132 @@ describe("solving by hand", () => {
     expect(document.querySelector(".notice-success")).toBeTruthy();
   });
 
+  describe("the final answer", () => {
+    const answerField = () => screen.getByLabelText("x =") as HTMLInputElement;
+    const checkAnswer = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByRole("button", { name: "Check my answer" }));
+
+    it("is shown as the answer, with nothing more to do, when the last line is already a number", async () => {
+      const { user } = setup("2x + 5 = 17");
+      await write(user, "2x = 12");
+      await write(user, "x = 6");
+      expect(screen.getByRole("region", { name: "Final answer" })).toBeTruthy();
+      expect(screen.queryByLabelText("x =")).toBeNull();
+      expect(screen.getByRole("button", { name: "Check by substituting" })).toBeTruthy();
+    });
+
+    it("has to be worked out when the last line is still a calculation: x = 12 : 2 is not an answer yet", async () => {
+      const { user, onContinue } = setup("2x + 5 = 17");
+      await write(user, "2x = 12");
+      await write(user, "x = 12 : 2");
+
+      expect(screen.getByRole("heading", { name: "Your final answer" })).toBeTruthy();
+      // Nothing more until the number is worked out.
+      expect(screen.queryByRole("button", { name: "Check by substituting" })).toBeNull();
+      expect(screen.queryByRole("button", { name: /Next equation/ })).toBeNull();
+
+      fireEvent.change(answerField(), { target: { value: "6" } });
+      await checkAnswer(user);
+      expect(screen.getByRole("button", { name: "Check by substituting" })).toBeTruthy();
+      await user.click(screen.getByRole("button", { name: "Check by substituting" }));
+      await user.click(screen.getByRole("button", { name: /Next equation/ }));
+      expect(onContinue).toHaveBeenCalledWith({ steps: 2, mistakes: 0, hints: 0 });
+    });
+
+    it("does not count the number for the learner: no solved picture, and no x = 6 anywhere, until it is counted", async () => {
+      const { user } = setup("2x + 5 = 17");
+      await write(user, "2x = 12");
+      await write(user, "x = 12 : 2");
+      // The learner's own line is in the sheet, as they wrote it.
+      expect(within(sheet()!).getByText("x = 12 : 2")).toBeTruthy();
+      // But the app has not turned it into x = 6, or said it is solved.
+      expect(document.querySelector(".eq-solved")).toBeNull();
+      expect(document.querySelector(".eq[data-equation=\"x = 6\"]")).toBeNull();
+      expect(document.querySelector(".final-answer")?.textContent).not.toMatch(/x = 6|Solved/);
+      expect(document.querySelector(".feedback-region")?.textContent).toContain("the number is not counted yet");
+      expect(document.querySelector(".feedback-region")?.textContent).not.toContain("x is alone! Now check your answer");
+
+      fireEvent.change(answerField(), { target: { value: "6" } });
+      await checkAnswer(user);
+      expect(document.querySelector(".eq-solved")).toBeTruthy();
+    });
+
+    it("counts a wrong final answer as a mistake", async () => {
+      const { user, onContinue } = setup("2x + 5 = 17");
+      await write(user, "2x = 12");
+      await write(user, "x = 12 : 2");
+      fireEvent.change(answerField(), { target: { value: "5" } });
+      await checkAnswer(user);
+      expect(screen.queryByRole("button", { name: "Check by substituting" })).toBeNull();
+      fireEvent.change(answerField(), { target: { value: "6" } });
+      await checkAnswer(user);
+      await user.click(screen.getByRole("button", { name: "Check by substituting" }));
+      await user.click(screen.getByRole("button", { name: /Next equation/ }));
+      expect(onContinue).toHaveBeenCalledWith({ steps: 2, mistakes: 1, hints: 0 });
+    });
+
+    it("asks for a fraction written as simply as it gets", async () => {
+      const { user } = setup("4x = 6");
+      await write(user, "x = 6/4");
+      expect(screen.getByRole("heading", { name: "Your final answer" })).toBeTruthy();
+      fireEvent.change(answerField(), { target: { value: "6/4" } });
+      await checkAnswer(user);
+      expect(document.querySelector(".final-answer .notice")?.textContent).toContain("simplest form");
+      fireEvent.change(answerField(), { target: { value: "3/2" } });
+      await checkAnswer(user);
+      expect(screen.getByRole("button", { name: "Check by substituting" })).toBeTruthy();
+    });
+
+    it("is asked again after the last line is taken back", async () => {
+      const { user } = setup("2x + 5 = 17");
+      await write(user, "2x = 12");
+      await write(user, "x = 12 : 2");
+      fireEvent.change(answerField(), { target: { value: "6" } });
+      await checkAnswer(user);
+      await user.click(screen.getByRole("button", { name: "Delete the last line" }));
+      await write(user, "x = 12 : 2");
+      expect(screen.getByRole("heading", { name: "Your final answer" })).toBeTruthy();
+      expect(screen.queryByRole("button", { name: "Check by substituting" })).toBeNull();
+    });
+  });
+
+  describe("doing the whole equation yourself", () => {
+    it("is offered when some lines are given, and starts again from the equation", async () => {
+      const { user } = setup("2x + 5 = 17", "en", "continue");
+      expect(sheet()).toBeTruthy();
+      await user.click(screen.getByRole("button", { name: "I want to work out the whole equation myself" }));
+      expect(sheet()).toBeNull();
+      expect(screen.getByRole("region", { name: "The equation" }).getAttribute("data-variant")).toBe("full");
+      expect(screen.getByRole("region", { name: "The equation" }).getAttribute("data-source")).toBe("2x + 5 = 17");
+      // The button has done its job.
+      expect(screen.queryByRole("button", { name: "I want to work out the whole equation myself" })).toBeNull();
+      // And the whole equation can be solved from the first line.
+      await write(user, "2x = 12");
+      await write(user, "x = 6");
+      expect(screen.getByRole("region", { name: "Final answer" })).toBeTruthy();
+    });
+
+    it("is offered when one step is asked for, and the whole equation then has to be solved", async () => {
+      const { user } = setup("2x + 5 = 17", "en", "write");
+      await user.click(screen.getByRole("button", { name: "I want to work out the whole equation myself" }));
+      await write(user, "2x = 12");
+      expect(screen.queryByRole("button", { name: "Check by substituting" })).toBeNull();
+      await write(user, "x = 6");
+      expect(screen.getByRole("button", { name: "Check by substituting" })).toBeTruthy();
+    });
+
+    it("is not offered when the whole equation is already the task", () => {
+      setup("2x + 5 = 17");
+      expect(screen.queryByRole("button", { name: "I want to work out the whole equation myself" })).toBeNull();
+    });
+
+    it("is not offered once the learner has written a line of their own", async () => {
+      const { user } = setup("2x + 5 = 17", "en", "continue");
+      expect(screen.getByRole("button", { name: "I want to work out the whole equation myself" })).toBeTruthy();
+      await write(user, "x = 6");
+      expect(screen.queryByRole("button", { name: "I want to work out the whole equation myself" })).toBeNull();
+    });
+  });
+
   it("speaks Finnish, with the Finnish signs", async () => {
     const { user } = setup("2x + 5 = 17", "fi");
     expect(screen.getByRole("region", { name: "Yhtälö" })).toBeTruthy();
@@ -181,6 +307,11 @@ describe("solving by hand", () => {
     expect(document.querySelector(".history-label")?.textContent).toBe("Askel 1 · Vähennä molemmilta puolilta 5");
     expect(document.querySelector(".history-bar")?.textContent).toBe("|| − 5");
     await write(user, "x = 12 : 2", "fi");
+    // x is alone, but 12 : 2 is not counted yet, so it is not solved until the learner counts it.
+    expect(screen.queryByText("Ratkaistu")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Lopullinen vastauksesi" })).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("x ="), { target: { value: "6" } });
+    await user.click(screen.getByRole("button", { name: "Tarkista vastaukseni" }));
     expect(screen.getByText("Ratkaistu")).toBeTruthy();
     expect(document.querySelector(".history-bar:last-of-type")?.textContent).toContain("||");
   });

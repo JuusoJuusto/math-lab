@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useReducer, useRef, useState } from "react";
-import { ArrowRight, Lightbulb } from "lucide-react";
+import { ArrowRight, Lightbulb, PenLine } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   canGetHint,
@@ -25,6 +25,7 @@ import { MathLine } from "@/components/ui/MathLine";
 import { PreludeCard } from "./PreludeCard";
 import { BalanceScale } from "./BalanceScale";
 import { EquationDisplay } from "./EquationDisplay";
+import { CountMyself } from "./CountMyself";
 import { FeedbackPanel } from "./FeedbackPanel";
 import { MoveTabs, type MoveMode } from "./MoveTabs";
 import { GraphView } from "./GraphView";
@@ -70,6 +71,9 @@ export function SolverWorkspace({
   const { lang, t } = useI18n();
   const [state, dispatch] = useReducer(sessionReducer, equation, (start: Equation) => createSession(start, lang, prelude ?? null));
   const [ownMode, setOwnMode] = useState<MoveMode>("balance");
+  // Counting both sides by yourself instead of pressing the button: opened once, it stays open for the equation.
+  const [countOwn, setCountOwn] = useState(false);
+  const [countMisses, setCountMisses] = useState(0);
   const chosenMode = controlledMode ?? ownMode;
   const changeMode = onMoveModeChange ?? setOwnMode;
   // "Work backwards" needs x once, on one side; if the equation no longer fits, the usual way takes over.
@@ -111,7 +115,7 @@ export function SolverWorkspace({
   const flipping = moveMode === "flip" && !state.pending && !finished;
 
   function finish() {
-    onContinue({ steps: state.steps.length, mistakes: state.mistakes, hints: state.hintsUsed });
+    onContinue({ steps: state.steps.length, mistakes: state.mistakes + countMisses, hints: state.hintsUsed });
   }
 
   const hintLabel =
@@ -158,12 +162,17 @@ export function SolverWorkspace({
 
         <BalanceScale equation={state.current} />
 
-        <FeedbackPanel notice={state.notice} hints={shownHints} emptyText={moveMode === "flip" ? t.solver.emptyFlip : t.solver.empty} />
+        {/* How each side goes is the counting: it is left out while the learner counts for themselves. */}
+        <FeedbackPanel
+          notice={countOwn && state.pending && state.notice ? { ...state.notice, work: undefined } : state.notice}
+          hints={shownHints}
+          emptyText={moveMode === "flip" ? t.solver.emptyFlip : t.solver.empty}
+        />
 
         {state.pending ? (
           <section className="action-card" aria-label={t.solver.simplifyLabel}>
             <p className="action-text">{t.solver.simplifyText}</p>
-            {state.pending && !state.pending.flip && (
+            {state.pending && !state.pending.flip && !countOwn && (
               <ul className="simplify-explain">
                 {(() => {
                   const [leftFrom, rightFrom] = formatAppliedEquation(state.pending.before, state.pending.operation, lang).split(" = ");
@@ -178,10 +187,29 @@ export function SolverWorkspace({
                 })()}
               </ul>
             )}
+            {countOwn && (
+              <CountMyself
+                key={state.steps.length}
+                after={state.pending.after}
+                hint={(() => {
+                  const [leftFrom, rightFrom] = formatAppliedEquation(state.pending.before, state.pending.operation, lang).split(" = ");
+                  const [leftTo, rightTo] = formatEquation(state.pending.after).split(" = ");
+                  const lines = t.solver.simplifyExplain(leftFrom, leftTo, rightFrom, rightTo);
+                  return [lines.left, lines.right];
+                })()}
+                onCounted={() => dispatch({ type: "simplify" })}
+                onMiss={() => setCountMisses((n) => n + 1)}
+              />
+            )}
             <div className="action-buttons">
               <button type="button" className="button-primary" ref={simplifyButton} onClick={() => dispatch({ type: "simplify" })}>
                 {t.solver.simplify}
               </button>
+              {!countOwn && (
+                <button type="button" className="button-secondary" onClick={() => setCountOwn(true)}>
+                  <PenLine size={16} aria-hidden="true" /> {t.count.open}
+                </button>
+              )}
               <button type="button" className="button-secondary" onClick={() => dispatch({ type: "undo" })}>
                 {t.solver.chooseAgain}
               </button>
@@ -217,6 +245,12 @@ export function SolverWorkspace({
             <MoveTabs mode={moveMode} onChange={changeMode} canChain={chain !== null} canGuess={canGuess}>
               {moveMode === "flip" ? hintButton : null}
             </MoveTabs>
+            {(moveMode === "balance" || moveMode === "flip") && (
+              <label className="count-toggle">
+                <input type="checkbox" checked={countOwn} onChange={(event) => setCountOwn(event.target.checked)} />
+                <span>{t.count.toggle}</span>
+              </label>
+            )}
             {moveMode === "chain" && chain ? (
               <ReverseChain
                 chain={chain}

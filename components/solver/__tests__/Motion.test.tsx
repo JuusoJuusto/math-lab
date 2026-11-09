@@ -110,7 +110,10 @@ describe("the stages of a lesson", () => {
 
   it("does not slide the stage in for someone who asked for less motion", async () => {
     const sheet = (await import("node:fs")).readFileSync("app/solver.css", "utf8");
-    const reduced = sheet.slice(sheet.lastIndexOf("@media (prefers-reduced-motion: reduce)"));
-    for (const selector of [".stage-view", ".recap li", ".feedback-region .notice", ".task"]) expect(reduced).toContain(selector);
+    // Any of the reduced-motion blocks may hold the rule; each block is read up to the next block's start.
+    const blocks = sheet.split("@media (prefers-reduced-motion: reduce)").slice(1).map((block) => block.slice(0, 700));
+    for (const selector of [".stage-view", ".recap li", ".feedback-region .notice", ".task", ".final-answer"]) {
+      expect(blocks.some((block) => block.includes(selector)), selector).toBe(true);
+    }
   });
 });

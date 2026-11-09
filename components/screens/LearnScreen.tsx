@@ -14,6 +14,7 @@ export function LearnScreen() {
   const finished = finishedTopics(useProgress());
   const chapters = getChapters(lang);
   const upNext = lessonOrder().find((id) => !finished.includes(id));
+  const nextLesson = chapters.flatMap((chapter) => chapter.lessons).find((lesson) => lesson.id === upNext);
 
   return (
     <div className="panel">
@@ -21,6 +22,28 @@ export function LearnScreen() {
         <h1>{t.learn.title}</h1>
         <p>{t.learn.intro}</p>
       </header>
+
+      <section className="learn-next" aria-label={t.learn.bannerTitle}>
+        {nextLesson ? (
+          <>
+            <div className="learn-next-text">
+              <p className="learn-next-kicker">{t.learn.bannerTitle}</p>
+              <p className="learn-next-title">{nextLesson.title}</p>
+              <p className="learn-next-sub">{nextLesson.subtitle}</p>
+            </div>
+            <AppLink className="cta cta-inline" route={{ name: "lesson", topic: nextLesson.id }}>
+              {t.learn.bannerGo} <ArrowRight size={18} aria-hidden="true" />
+            </AppLink>
+          </>
+        ) : (
+          <>
+            <p className="learn-next-text learn-next-title">{t.learn.bannerDone}</p>
+            <AppLink className="cta cta-inline" route={{ name: "test" }}>
+              {t.learn.bannerTest} <ArrowRight size={18} aria-hidden="true" />
+            </AppLink>
+          </>
+        )}
+      </section>
 
       <div className="chapters">
         {chapters.map((chapter) => {

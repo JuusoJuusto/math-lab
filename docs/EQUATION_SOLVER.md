@@ -56,6 +56,22 @@ The **fraction key** is for writing x over 3 the way it looks. It opens two boxe
 
 Under the box the line is drawn as it will look, with fractions stacked (`MathLine`), from the first key. The space is always there, so the keys do not move down when the first key is pressed.
 
+### The final answer: counting the number yourself
+
+A solution has not ended just because x is alone. `x = 12 : 2` has x alone, but nobody has counted 12 : 2, and `x = 6/4` is not as simple as it gets. When the last line still has something to count (`needsWorkingOut` in `lib/equations/answer.ts`), the by-hand screen asks for the answer before anything else: **Your final answer**, with the last line shown, a number pad (digits, a minus sign, a decimal sign, the fraction key) and **Check my answer**. The number has to be right, and a fraction has to be in its simplest form (`6/4` is told to be written as `3/2`, and is not counted as a mistake). After two wrong tries the part still to be counted is shown as a hint. A wrong try counts as a mistake in the round; only then does **Check by substituting** appear.
+
+When the last line is already a plain number (`x = 6`), nothing is asked twice: the card just shows the **Final answer**, and the check follows. `FinalAnswer` is in `components/solver/FinalAnswer.tsx`.
+
+### Counting both sides yourself
+
+With the buttons, the learner chooses an operation and it is written on both sides (`2x + 5 − 5 = 17 − 5`). Next to **Work out both sides**, which counts for them, is **I will count it myself**: the learner writes the equation that is left, and it is checked by the engine (`CountMyself`, `components/solver/CountMyself.tsx`). It has to be the right equation (`2x = 12`, or `12 = 2x`) and it has to be counted: `2x = 17 − 5` is the right equation, but the subtraction is still to do, and `isWorkedOut` says so without counting it as a mistake. A wrong equation counts as a mistake, and after the second one each side's working is shown. Above the operation buttons is a switch, **I will count the results myself**, so the choice is made before the answer is on the screen: with it on, the field opens by itself after every step. While the learner counts, nothing on the screen may do the counting for them, so the lines that say how each side goes (`Left side: 2x + 5 − 5 = 2x`, in the feedback and in the explanation under the buttons) are left out; they come back as a hint after the second wrong try. Once opened, the field stays open for the rest of the equation. The button that counts for the learner is always there.
+
+The same rule holds on the by-hand screen: a last line such as `x = 1 · 2` is shown in the learner's own lines, but the screen does not draw it as `x = 2`, does not say **Solved**, and does not say "check your answer" until the learner has worked the number out. A test in `HandWorkspace.test.tsx` and one in `CountMyself.test.tsx` hold both.
+
+### Doing the whole equation yourself
+
+A by-hand task can give some lines (**continue**) or ask for one step (**write**). Both have **I want to work out the whole equation myself** until the learner has written a line of their own: it takes the given lines away and the task becomes the whole equation, from the first line to the final answer.
+
 ## Decimals
 
 An equation written with decimals (`0.5x + 1.2 = 3.7`, `0.25x + 1 = 2.5`) has one clean-up question: *multiply every term by 10 (or 100) so that the decimals disappear*. `decimalFactor` picks 10 for one decimal place and 100 for two. The balance moves then start from the whole-number equation (`startEquation`: `5x + 12 = 37`), which has the same solution. The wrong answers are the usual slips (a term left as it was written, a decimal point moved one place too far, a lost sign, an arithmetic slip), and a test checks that none of them is an alternative right answer. Inside the engine numbers use a point; Finnish shows them with a comma (`localiseDecimals`). Decimal exercises are in the fractions level, written with a point in `levels.ts`, and are chosen so that the answer is a whole number.

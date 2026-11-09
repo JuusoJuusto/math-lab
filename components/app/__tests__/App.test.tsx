@@ -49,6 +49,30 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("the next lesson, on the Learn page", () => {
+  const banner = () => document.querySelector(".learn-next")!;
+
+  it("is the first lesson for a new learner, with a way in", () => {
+    open("#/learn");
+    expect(banner().textContent).toContain("Your next lesson");
+    expect(banner().textContent).toContain("Understanding equations");
+    expect(within(banner() as HTMLElement).getByRole("link", { name: /Open the lesson/ }).getAttribute("href")).toBe("/en/learn/basics/");
+  });
+
+  it("moves on to the next lesson when one is finished", () => {
+    open("#/learn", { solverLevels: ["basics", "one-step"] });
+    expect(banner().textContent).toContain("Two-step equations");
+    expect(within(banner() as HTMLElement).getByRole("link", { name: /Open the lesson/ }).getAttribute("href")).toBe("/en/learn/two-step/");
+  });
+
+  it("points to a practice test when every lesson is finished", () => {
+    const every = ["basics", "one-step", "two-step", "both", "brackets", "fractions", "special", "proportion", "word", "hard-word", "challenge"];
+    open("#/learn", { solverLevels: every });
+    expect(banner().textContent).toContain("You have finished every lesson");
+    expect(within(banner() as HTMLElement).getByRole("link", { name: /Take a practice test/ }).getAttribute("href")).toBe("/en/test/");
+  });
+});
+
 describe("home", () => {
   it("introduces MathLab and offers the first level to a new learner", () => {
     open("");
@@ -254,6 +278,55 @@ describe("learning", () => {
       await user.click(screen.getByRole("button", { name: "Take a 5-question quiz" }));
       expect(`${window.location.pathname}${window.location.search}`).toMatch(/^\/en\/practice\/quiz\/\?topic=both&n=5&seed=\d+$/);
       expect(await screen.findByText("Task 1 / 5")).toBeTruthy();
+    });
+
+    it("shows an equation of the lesson solved line by line, to the check", () => {
+      open("#/learn/two-step");
+      const example = document.querySelector(".lesson-example")!;
+      expect(within(example as HTMLElement).getByRole("heading", { name: "A worked example" })).toBeTruthy();
+      const lines = Array.from(example.querySelectorAll(".example-line")).map((line) => line.textContent!.replace(/\u00a0/g, " "));
+      expect(lines[0]).toContain("2x + 5 = 17");
+      expect(lines[1]).toContain("Subtract 5 from both sides");
+      expect(lines[1]).toContain("2x + 5 − 5 = 17 − 5");
+      expect(lines[1]).toContain("|| − 5");
+      expect(lines[1]).toContain("2x = 12");
+      expect(lines[2]).toContain("Divide both sides by 2");
+      expect(lines[2]).toContain("x = 6");
+      expect(example.querySelector(".example-answer")!.textContent).toContain("x = 6");
+      // And the check: the answer put back in the equation.
+      expect(example.querySelector(".example-check")!.textContent).toContain("17 = 17");
+    });
+
+    it("starts an example with brackets by opening them", () => {
+      open("#/learn/brackets");
+      const lines = Array.from(document.querySelectorAll(".lesson-example .example-line"));
+      expect(lines.length).toBeGreaterThan(2);
+      expect(lines[1].textContent).toMatch(/brackets/i);
+    });
+
+    it("ends the example of 'no solution' with the statement it leaves, and has no answer to check", () => {
+      open("#/learn/special");
+      const example = document.querySelector(".lesson-example")!;
+      expect(example.textContent).toContain("3 = 7");
+      expect(example.querySelector(".example-answer")).toBeNull();
+      expect(example.querySelector(".example-check")).toBeNull();
+    });
+
+    it("has no example where there is no equation to solve", () => {
+      for (const topic of ["basics", "proportion", "word"]) {
+        document.body.innerHTML = "";
+        open(`#/learn/${topic}`);
+        expect(document.querySelector(".lesson-example"), topic).toBeNull();
+      }
+    });
+
+    it("is written in Finnish too, with the Finnish step names", () => {
+      window.history.replaceState(null, "", "/fi/learn/two-step/");
+      render(<App />);
+      const example = document.querySelector(".lesson-example")!;
+      expect(example.querySelector("h2")!.textContent).toBe("Esimerkki");
+      expect(example.textContent).toContain("Vastaus:");
+      expect(example.textContent).toMatch(/Vähennä molemmilta puolilta 5/i);
     });
 
     it("does not let an expression break across two lines", () => {

@@ -18,6 +18,7 @@ export * from "./flip";
 export * from "./methods";
 export * from "./ways";
 export * from "./hand";
+export * from "./answer";
 export * from "./build";
 export { engineText, type EngineText } from "./text";
 export * from "./levels";

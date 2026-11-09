@@ -2020,3 +2020,40 @@ a.row:hover {
   .module, .button-primary, .cta, .answer { transition: none; }
   .module:hover, .button-primary:hover, .cta:hover, .answer:not(:disabled):hover { transform: none; }
 }
+
+/* A worked example on the lesson page, written like a notebook */
+.lesson-example { margin-top: 18px; padding: 20px; border: 2px solid var(--line); border-radius: var(--radius); background: #fff; }
+.lesson-example h2 { margin: 0 0 6px; font-size: 1.4rem; }
+.lesson-example-lead { margin: 0 0 16px; color: var(--ink-2); line-height: 1.55; }
+.example-lines { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.example-line { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 12px 14px; border-radius: 12px; background: #f3f8fa; animation: row-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.example-line-start { background: #eef6f9; animation: none; }
+.example-badge { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: #fff; font: 700 0.85rem var(--font-display, sans-serif); }
+.example-label { display: block; margin-bottom: 4px; color: #4a6b78; font-size: 0.85rem; font-weight: 800; }
+.example-math { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 2px 0; font: 700 1.2rem/1.35 var(--font-display, sans-serif); color: #164655; overflow-wrap: anywhere; }
+.example-bar { padding: 1px 8px; border-radius: 8px; background: #ffe3a6; color: #5c3a00; font-size: 1rem; }
+.example-result { color: #0f5a45; }
+.example-end { display: grid; gap: 10px; margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: #eaf8f0; }
+.example-answer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: #14573b; font: 700 1.1rem var(--font-display, sans-serif); }
+.example-answer strong { font-size: 1.35rem; }
+.example-check { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.example-check li { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+@media (prefers-reduced-motion: reduce) { .example-line { animation: none; } }
+
+/* Learn: the next lesson first, so nobody has to scroll to find where to go on */
+.learn-next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; margin: 4px 0 22px; padding: 18px 22px; border: 2px solid #9fd6c0; border-radius: var(--radius); background: #eaf8f0; animation: rise 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.learn-next-text { min-width: 0; flex: 1 1 260px; }
+.learn-next-kicker { margin: 0 0 2px; color: #14573b; font: 800 0.75rem var(--font-display, sans-serif); letter-spacing: 0.12em; text-transform: uppercase; }
+.learn-next-title { margin: 0; color: #0e3b2c; font: 700 1.35rem/1.25 var(--font-display, sans-serif); }
+.learn-next-sub { margin: 2px 0 0; color: #1f6b4f; font-size: 0.98rem; }
+@media (prefers-reduced-motion: reduce) { .learn-next { animation: none; } }
+
+/* The finish of a round: how it went, and the one idea to take away */
+.round-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 14px 0 6px; padding: 0; list-style: none; }
+.stat { padding: 6px 14px; border-radius: 999px; background: #eef5f8; color: #164655; font: 700 0.92rem var(--font-display, sans-serif); animation: pop-chip 420ms 300ms cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.stat-good { background: #dff3ea; color: #14573b; }
+.complete-remember { margin: 16px auto 4px; max-width: 520px; padding: 14px 16px; border-radius: var(--radius); background: #fff6dc; text-align: left; animation: rise 520ms 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.complete-remember .example-label { display: flex; align-items: center; gap: 6px; margin: 0; color: #7a4d00; letter-spacing: 0.1em; text-transform: uppercase; }
+.complete-remember p { margin: 4px 0 0; color: #4f3508; line-height: 1.55; }
+@keyframes pop-chip { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .stat, .complete-remember { animation: none; } }

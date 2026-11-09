@@ -1,7 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { EMPTY_PROGRESS, STORAGE_KEY, levelOf, parseProgress, serialiseProgress, type Progress } from "@/lib/progress";
+import { EMPTY_PROGRESS, STORAGE_KEY, parseProgress, serialiseProgress, type Progress } from "@/lib/progress";
+import { progressEvents } from "@/src/studyHubChanges";
 import { reportProgress } from "@/src/studyHubProgress";
 
 /**
@@ -70,9 +71,9 @@ function subscribe(listener: () => void): () => void {
 export function updateProgress(change: (progress: Progress) => Progress): void {
   const before = getSnapshot();
   const changed = change(before);
-  // Reaching a new XP level is worth telling Study Hub about; going back (resetting progress) is not.
-  const reached = levelOf(changed.xp);
-  if (reached > levelOf(before.xp)) reportProgress("level", { label: `Level ${reached}`, ref: "xp-level", value: reached });
+  // Study Hub is told about what grew: a topic or chapter finished, how far along the student is, a new level.
+  const lang = typeof document !== "undefined" && document.documentElement.lang === "fi" ? "fi" : "en";
+  for (const report of progressEvents(before, changed, lang)) reportProgress(report.kind, report.details);
   const next = serialiseProgress(changed);
   try {
     window.localStorage.setItem(STORAGE_KEY, next);
@@ -81,6 +82,11 @@ export function updateProgress(change: (progress: Progress) => Progress): void {
     memoryRaw = next;
   }
   listeners.forEach((listener) => listener());
+}
+
+/** The saved progress as it is now, for reading outside a component. */
+export function readProgress(): Progress {
+  return getSnapshot();
 }
 
 export function resetProgress(): void {

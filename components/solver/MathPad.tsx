@@ -15,6 +15,13 @@ export interface MathPadProps {
   disabled?: boolean;
   /** The two bars (`||`) that write the step beside a line: only the by-hand screen has them. */
   bar?: { name: string };
+  /**
+   * `line` is a whole equation, with every key. `number` is for one number, such as the final answer: digits,
+   * a decimal sign, a minus sign and the fraction key, and nothing else.
+   */
+  mode?: "line" | "number";
+  /** Written before the number in the picture of it, such as `x = `. */
+  prefix?: string;
 }
 
 /** Which part of a fraction is being filled in. */
@@ -33,7 +40,7 @@ interface PadKey {
   label: string;
   insert: string;
   name: string;
-  kind: "digit" | "sign" | "x" | "bracket" | "equals" | "delete";
+  kind: "digit" | "sign" | "x" | "bracket" | "equals" | "delete" | "clear";
 }
 
 /**
@@ -77,7 +84,8 @@ function tidy(text: string): { line: string; note: string } {
  * pressing the keys. It puts `x/3` (or `(x + 2)/3`) in the line, which the engine reads and which the line
  * shows as a stacked fraction as soon as it is there.
  */
-export function MathPad({ inputId, value, onChange, disabled = false, bar }: MathPadProps) {
+export function MathPad({ inputId, value, onChange, disabled = false, bar, mode = "line", prefix = "" }: MathPadProps) {
+  const numberMode = mode === "number";
   const { lang, t } = useI18n();
   const words = engineText(lang);
   const pad = t.pad;
@@ -167,7 +175,7 @@ export function MathPad({ inputId, value, onChange, disabled = false, bar }: Mat
     } else if (event.key === "Backspace") {
       event.preventDefault();
       backspace();
-    } else if (/^[0-9]$/.test(event.key) || event.key === "x" || event.key === "X") {
+    } else if (/^[0-9]$/.test(event.key) || (!numberMode && (event.key === "x" || event.key === "X"))) {
       event.preventDefault();
       press(event.key.toLowerCase());
     } else if (event.key === "." || event.key === ",") {
@@ -183,28 +191,48 @@ export function MathPad({ inputId, value, onChange, disabled = false, bar }: Mat
   }
 
   const shown = tidy(value);
-  const keys: readonly PadKey[] = [
-    { label: "7", insert: "7", name: "7", kind: "digit" },
-    { label: "8", insert: "8", name: "8", kind: "digit" },
-    { label: "9", insert: "9", name: "9", kind: "digit" },
+  const point = lang === "fi" ? "," : ".";
+  const digit = (n: string): PadKey => ({ label: n, insert: n, name: n, kind: "digit" });
+  const lineKeys: readonly PadKey[] = [
+    digit("7"),
+    digit("8"),
+    digit("9"),
     { label: words.divide, insert: ` ${words.divide} `, name: names.divide, kind: "sign" },
     { label: "", insert: "", name: names.delete, kind: "delete" },
-    { label: "4", insert: "4", name: "4", kind: "digit" },
-    { label: "5", insert: "5", name: "5", kind: "digit" },
-    { label: "6", insert: "6", name: "6", kind: "digit" },
+    digit("4"),
+    digit("5"),
+    digit("6"),
     { label: words.times, insert: ` ${words.times} `, name: names.times, kind: "sign" },
     { label: "(", insert: "(", name: names.open, kind: "bracket" },
-    { label: "1", insert: "1", name: "1", kind: "digit" },
-    { label: "2", insert: "2", name: "2", kind: "digit" },
-    { label: "3", insert: "3", name: "3", kind: "digit" },
+    digit("1"),
+    digit("2"),
+    digit("3"),
     { label: "−", insert: " − ", name: names.minus, kind: "sign" },
     { label: ")", insert: ")", name: names.close, kind: "bracket" },
-    { label: "0", insert: "0", name: "0", kind: "digit" },
-    { label: lang === "fi" ? "," : ".", insert: lang === "fi" ? "," : ".", name: names.point, kind: "digit" },
+    digit("0"),
+    { label: point, insert: point, name: names.point, kind: "digit" },
     { label: "x", insert: "x", name: names.x, kind: "x" },
     { label: "+", insert: " + ", name: names.plus, kind: "sign" },
     { label: "=", insert: " = ", name: names.equals, kind: "equals" },
   ];
+  // One number: four columns, the fraction key at the bottom.
+  const numberKeys: readonly PadKey[] = [
+    digit("7"),
+    digit("8"),
+    digit("9"),
+    { label: "", insert: "", name: names.delete, kind: "delete" },
+    digit("4"),
+    digit("5"),
+    digit("6"),
+    { label: "−", insert: "−", name: names.minus, kind: "sign" },
+    digit("1"),
+    digit("2"),
+    digit("3"),
+    { label: "", insert: "", name: pad.clear, kind: "clear" },
+    digit("0"),
+    { label: point, insert: point, name: names.point, kind: "digit" },
+  ];
+  const keys = numberMode ? numberKeys : lineKeys;
 
   // Keys are pressed without taking the focus from the line, so a phone's own keyboard does not slide up over them.
   const keepFocus = { onMouseDown: (event: { preventDefault: () => void }) => event.preventDefault() };
@@ -230,7 +258,7 @@ export function MathPad({ inputId, value, onChange, disabled = false, bar }: Mat
       {/* Always there, so the keys do not jump down the first time a key is pressed. */}
       <div className="pad-preview" aria-hidden="true">
         <span className="pad-preview-label">{pad.howItLooks}</span>
-        {value.trim() !== "" ? <MathLine text={shown.line} /> : <span className="pad-preview-empty">{pad.previewEmpty}</span>}
+        {value.trim() !== "" ? <MathLine text={`${prefix}${shown.line}`} /> : <span className="pad-preview-empty">{numberMode ? pad.previewEmptyNumber : pad.previewEmpty}</span>}
         {shown.note !== "" && <span className="pad-preview-note">{shown.note}</span>}
       </div>
 
@@ -272,11 +300,23 @@ export function MathPad({ inputId, value, onChange, disabled = false, bar }: Mat
       )}
 
       {!disabled && (
-        <div className="keypad" role="group" aria-label={t.word.keysLabel}>
+        <div className={`keypad${numberMode ? " keypad-number" : ""}`} role="group" aria-label={t.word.keysLabel}>
           {keys.map((key, index) =>
             key.kind === "delete" ? (
               <button type="button" className="key key-delete" key="delete" aria-label={key.name} onClick={backspace} {...keepFocus}>
                 <Delete size={20} aria-hidden="true" />
+              </button>
+            ) : key.kind === "clear" ? (
+              <button
+                type="button"
+                className="key key-clear"
+                key="clear"
+                aria-label={key.name}
+                disabled={value === "" && !building}
+                onClick={() => (building ? setBuilder(null) : clearLine())}
+                {...keepFocus}
+              >
+                <Eraser size={20} aria-hidden="true" />
               </button>
             ) : (
               <button
@@ -295,7 +335,7 @@ export function MathPad({ inputId, value, onChange, disabled = false, bar }: Mat
           <button
             type="button"
             className="key key-fraction"
-            style={{ gridColumn: bar ? "span 2" : "span 3" }}
+            style={{ gridColumn: numberMode || bar ? "span 2" : "span 3" }}
             aria-label={pad.fractionKey}
             aria-expanded={building}
             disabled={building}
@@ -314,17 +354,19 @@ export function MathPad({ inputId, value, onChange, disabled = false, bar }: Mat
               ||
             </button>
           )}
-          <button
-            type="button"
-            className="key key-clear"
-            style={{ gridColumn: bar ? "span 1" : "span 2" }}
-            aria-label={pad.clear}
-            disabled={value === "" && !building}
-            onClick={() => (building ? setBuilder(null) : clearLine())}
-            {...keepFocus}
-          >
-            <Eraser size={20} aria-hidden="true" />
-          </button>
+          {!numberMode && (
+            <button
+              type="button"
+              className="key key-clear"
+              style={{ gridColumn: bar ? "span 1" : "span 2" }}
+              aria-label={pad.clear}
+              disabled={value === "" && !building}
+              onClick={() => (building ? setBuilder(null) : clearLine())}
+              {...keepFocus}
+            >
+              <Eraser size={20} aria-hidden="true" />
+            </button>
+          )}
         </div>
       )}
     </div>

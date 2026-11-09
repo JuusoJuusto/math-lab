@@ -132,6 +132,21 @@ describe("SolverView: a level from introduction to completion", () => {
     expect(screen.queryByRole("navigation", { name: "Level steps" })).toBeNull();
   });
 
+  it("ends a round with how it went and the idea to take away", async () => {
+    vi.spyOn(Math, "random").mockImplementation(createRng(42));
+    const { user } = setup();
+    await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
+    await playRound(user);
+
+    const stats = screen.getByRole("list", { name: "How the round went" });
+    expect(stats.textContent).toMatch(/\d of 5 solved with no help/);
+    // The hints that were used are counted, and only when there were some.
+    expect(stats.textContent).toMatch(/\d+ hints? used/);
+    const idea = document.querySelector(".complete-remember")!;
+    expect(idea.textContent).toContain("Remember");
+    expect(idea.textContent).toContain("To get x alone, undo the one operation attached to it");
+  });
+
   it("offers a fresh set of equations when practising again", async () => {
     vi.spyOn(Math, "random").mockImplementation(createRng(7));
     const { user, onComplete } = setup();

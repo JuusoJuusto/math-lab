@@ -15,6 +15,7 @@ import {
   readWritten,
   getHints,
   isWrittenSimply,
+  needsWorkingOut,
   judgeLine,
   readNote,
   solveEquation,
@@ -28,6 +29,7 @@ import {
 import { MathLine } from "@/components/ui/MathLine";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
+import { FinalAnswer } from "./FinalAnswer";
 import { MathPad } from "./MathPad";
 import { SubstitutionCheck } from "./SubstitutionCheck";
 import type { WorkspaceOutcome } from "./SolverWorkspace";
@@ -62,13 +64,16 @@ interface HandWorkspaceProps {
  * line of the solution, and the engine checks each one against the line above.
  * It is the notebook way of working, with the check done for them.
  */
-export function HandWorkspace({ source, equation, continueLabel, plan, onContinue }: HandWorkspaceProps) {
+export function HandWorkspace({ source, equation, continueLabel, plan: planned, onContinue }: HandWorkspaceProps) {
   const { lang, t } = useI18n();
   const words = t.solver.hand;
   const written = engineText(lang);
   const id = useId();
 
   const [value, setValue] = useState("");
+  // A task that gives some lines, or asks for one step, can be set aside to work out the whole equation alone.
+  const [wholeAlone, setWholeAlone] = useState(false);
+  const plan = wholeAlone ? undefined : planned;
   // What is shown as "the equation": for one step to write, the equation just before that step.
   const startText = plan?.source ?? source;
   const variant = plan?.variant ?? "full";
@@ -81,6 +86,8 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
   const [hintLevel, setHintLevel] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [checked, setChecked] = useState(false);
+  // Wrong tries at the final answer; `null` until the number has been worked out.
+  const [answerMisses, setAnswerMisses] = useState<number | null>(null);
 
   // The equation the learner starts from: for one step to write, the equation just before that step.
   const start = plan?.equation ?? equation;
@@ -93,6 +100,10 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
   const finished = variant === "write" ? typedLines.length > 0 : ended !== null;
   const solved = ended === "solved" && variant !== "write" ? solveEquation(original) : null;
   const answer = solved?.kind === "one" ? solved.value : null;
+  // `x = 12 : 2` has x alone, but the number is not counted yet: it has to be worked out before the answer is one.
+  const lastText = lines.length > 0 ? lines[lines.length - 1].text : "";
+  const needsAnswer = answer !== null && needsWorkingOut(lastText);
+  const answered = !needsAnswer || answerMisses !== null;
 
   function add(event?: FormEvent) {
     event?.preventDefault();
@@ -144,7 +155,7 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
     setNotice(
       end !== null && end !== "solved"
         ? terminalNotice(end, verdict.equation, lang)
-        : { tone: "success", title: t.solver.hand.stepLabel(lines.length + 1, praise), body: end === "solved" ? [words.done] : [] },
+        : { tone: "success", title: t.solver.hand.stepLabel(lines.length + 1, praise), body: end === "solved" ? [needsWorkingOut(typed) ? words.countNumber : words.done] : [] },
     );
   }
 
@@ -153,6 +164,15 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
     setLines(lines.slice(0, -1));
     setNotice(null);
     setChecked(false);
+    setAnswerMisses(null);
+    setHintLevel(0);
+  }
+
+  function doWholeAlone() {
+    setWholeAlone(true);
+    setLines([]);
+    setValue("");
+    setNotice(null);
     setHintLevel(0);
   }
 
@@ -169,7 +189,7 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
   const hintCount = hints ? hints.length : 0;
   const shown = hints ? hints.slice(0, hintLevel) : [];
   function finish() {
-    onContinue({ steps: typedLines.filter((line) => line.operation !== null).length, mistakes, hints: hintsUsed });
+    onContinue({ steps: typedLines.filter((line) => line.operation !== null).length, mistakes: mistakes + (answerMisses ?? 0), hints: hintsUsed });
   }
 
   return (
@@ -181,6 +201,11 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
           </h3>
           <p className="build-text">{variant === "continue" ? words.continueIntro : variant === "write" ? words.writeIntro : words.intro}</p>
           {variant === "write" && plan?.step && <p className="hand-task">{words.writePrompt(describeOperation(plan.step, lang))}</p>}
+          {planned && planned.variant !== "full" && !wholeAlone && typedLines.length === 0 && (
+            <button type="button" className="text-link hand-whole" onClick={doWholeAlone}>
+              {words.wholeAlone}
+            </button>
+          )}
         </section>
 
         <section className="eq eq-written" aria-label={words.start} data-source={startText} data-variant={variant} data-given={plan?.given.length ?? 0}>
@@ -223,14 +248,16 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
           </section>
         )}
 
-        {lines.length > 0 && <EquationDisplay equation={current} solved={finished} />}
+        {/* x = 1 · 2 is shown as the learner wrote it, in the lines above: the picture would count it for them. */}
+        {lines.length > 0 && answered && <EquationDisplay equation={current} solved={finished} />}
 
         <FeedbackPanel notice={notice} hints={shown} emptyText={lines.length === 0 ? words.none : words.yourMove} />
 
         {finished ? (
           <>
-            {answer && <SubstitutionCheck original={original} value={answer} checked={checked} onCheck={() => setChecked(true)} />}
-            {(checked || !answer) && (
+            {answer && <FinalAnswer value={answer} lastLine={lastText} needsWork={needsAnswer} onAnswered={setAnswerMisses} />}
+            {answer && answered && <SubstitutionCheck original={original} value={answer} checked={checked} onCheck={() => setChecked(true)} />}
+            {answered && (checked || !answer) && (
               <div className="action-buttons action-finish">
                 <button type="button" className="button-primary" onClick={finish}>
                   {continueLabel} <ArrowRight size={17} aria-hidden="true" />

@@ -10,6 +10,7 @@ import { keepMathTogether } from "@/lib/mathText";
 import { finishedTopics } from "@/lib/progress";
 import { startSession } from "@/components/practice/start";
 import { TopicIcon } from "@/components/ui/icons";
+import { LessonExample } from "./LessonExample";
 import { AppLink } from "@/components/ui/AppLink";
 
 export function LessonScreen({ topicId }: { topicId: string }) {
@@ -17,7 +18,8 @@ export function LessonScreen({ topicId }: { topicId: string }) {
   const progress = useProgress();
   const topic = getTopic(topicId, lang);
   if (!topic) return null;
-  const hasSolver = Boolean(getLevel(topic.id));
+  const level = getLevel(topic.id);
+  const hasSolver = Boolean(level);
   const place = chapterOf(topic.id, lang);
   const following = nextLesson(topic.id);
   const finished = finishedTopics(progress).includes(topic.id);
@@ -65,6 +67,8 @@ export function LessonScreen({ topicId }: { topicId: string }) {
           ))}
         </ol>
       </section>
+
+      {level && level.kind !== "stories" && <LessonExample level={level} />}
 
       <div className="lesson-notes">
         <section className="note note-remember" aria-labelledby="remember-title">

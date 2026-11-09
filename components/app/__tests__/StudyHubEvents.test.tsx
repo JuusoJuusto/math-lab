@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { solveByHand, solveCleanly } from "@/components/solver/__tests__/helpers";
 import { buildSession, generateTask, type Task } from "@/lib/tasks";
-import { STORAGE_KEY, XP_PER_LEVEL, addXp, type Progress } from "@/lib/progress";
+import { STORAGE_KEY, XP_PER_LEVEL, addXp, recordSolverLevel, type Progress } from "@/lib/progress";
 import { parseHash, toPath } from "@/lib/routes";
 import { resetProgress, updateProgress } from "@/hooks/useProgress";
 import { reportProgress } from "@/src/studyHubProgress";
@@ -37,6 +37,8 @@ function answer(task: Task) {
 
 beforeEach(() => {
   report.mockClear();
+  window.sessionStorage.clear();
+  window.localStorage.clear();
 });
 
 afterEach(() => {
@@ -57,7 +59,8 @@ describe("what a lesson reports", () => {
       await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
     }
 
-    const progress = reported().filter(([kind]) => kind === "progress");
+    // The lesson's own quarters, not the overall progress that finishing the lesson also moves.
+    const progress = reported().filter(([kind, details]) => kind === "progress" && details?.ref === "lesson-one-step");
     expect(progress.map(([, details]) => details?.value)).toEqual([25, 50, 75]);
     for (const [, details] of progress) expect(details).toMatchObject({ label: "One-step equations", ref: "lesson-one-step" });
 
@@ -167,6 +170,64 @@ describe("what a practice session reports", () => {
     }
     expect(JSON.stringify(reported())).not.toMatch(/x\s*=|[0-9]\s*[+−-]\s*x/);
     expect(kinds()).toContain("score");
+  });
+});
+
+describe("what finishing a topic reports, however it was finished", () => {
+  it("reports a topic that is finished by practising it, not only by a lesson round", async () => {
+    const tasks = buildSession({ mode: "quiz", topic: "one-step", count: 5, seed: 7, missed: [] }).map((spec) => generateTask(spec));
+    const user = open("#/practice/quiz?topic=one-step&n=5&seed=7");
+    for (const [index, task] of tasks.entries()) {
+      await screen.findByText(`Task ${index + 1} / 5`);
+      answer(task);
+      await user.click(screen.getByRole("button", { name: /^(Next|See results)/ }));
+    }
+    const completed = reported()
+      .filter(([kind]) => kind === "completed")
+      .map(([, details]) => details?.ref);
+    expect(completed).toEqual(["lesson-one-step", "chapter-solving"]);
+    // ...and how far along the student is now.
+    expect(reported().find(([, details]) => details?.ref === "overall")?.[1]).toMatchObject({ label: "Overall progress", value: 9 });
+  });
+
+  it("gives the overall progress when a lesson is finished, and the level when the XP goes up", () => {
+    act(() => updateProgress((old) => addXp(recordSolverLevel(old, "one-step"), XP_PER_LEVEL)));
+    expect(reported().map(([kind, details]) => `${kind}:${details?.ref}`)).toEqual([
+      "completed:lesson-one-step",
+      "completed:chapter-solving",
+      "progress:overall",
+      "level:xp-level",
+    ]);
+  });
+
+  it("does not report anything about progress that was only loaded, not earned", () => {
+    open("#/learn", { solverLevels: ["one-step", "two-step"], xp: 450 });
+    expect(report).not.toHaveBeenCalled();
+  });
+});
+
+describe("what a student who comes from Study Hub already has", () => {
+  it("is reported when the app opens, once for the visit", () => {
+    window.sessionStorage.setItem("studyhub_token", "TKN");
+    open("#/learn", { solverLevels: ["one-step"], xp: 250 });
+    expect(reported().map(([kind, details]) => `${kind}:${details?.ref}`)).toEqual([
+      "completed:lesson-one-step",
+      "completed:chapter-solving",
+      "progress:overall",
+      "level:xp-level",
+    ]);
+
+    // A second page of the same visit is not a second report.
+    report.mockClear();
+    document.body.innerHTML = "";
+    open("#/learn", { solverLevels: ["one-step"], xp: 250 });
+    expect(report).not.toHaveBeenCalled();
+  });
+
+  it("is not reported for anyone who did not come from Study Hub", () => {
+    window.sessionStorage.removeItem("studyhub_token");
+    open("#/learn", { solverLevels: ["one-step"], xp: 250 });
+    expect(report).not.toHaveBeenCalled();
   });
 });
 
