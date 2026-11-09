@@ -22,9 +22,21 @@ export interface BuiltResult {
   readonly hints: number;
 }
 
+/** What the story itself says, to help with writing its equation and to explain it afterwards. */
+export interface StoryHelp {
+  /** What x stands for: "Let x be the number of kilometres." */
+  readonly letX: string;
+  /** How the equation is built, in the story's words, with the equation: shown when the equation is right. */
+  readonly build: string;
+  /** The same without the equation, for the second hint; `null` when the story has no way to say it without. */
+  readonly explain: string | null;
+}
+
 interface EquationWriterProps {
   /** The equation the story gives. What the learner writes is judged against it. */
   intended: Equation;
+  /** The story's own help. Without it the hints are general ones. */
+  help?: StoryHelp;
   onBuilt: (result: BuiltResult) => void;
 }
 
@@ -37,7 +49,7 @@ interface EquationWriterProps {
  * (x = 6) is not enough. The keypad is only for phones, where x, brackets and
  * the equals sign hide behind keyboard layers.
  */
-export function EquationWriter({ intended, onBuilt }: EquationWriterProps) {
+export function EquationWriter({ intended, help, onBuilt }: EquationWriterProps) {
   const { lang, t } = useI18n();
   const words = engineText(lang);
   const id = useId();
@@ -72,7 +84,8 @@ export function EquationWriter({ intended, onBuilt }: EquationWriterProps) {
     const verdict = judgeBuiltEquation(written.equation, intended);
     if (verdict.kind === "exact" || verdict.kind === "equivalent") {
       const text = verdict.kind === "exact" ? words.build.exact : words.build.equivalent;
-      setNotice({ tone: "success", title: text.title, body: [text.body] });
+      // A right equation is explained in the story's words: why it is this equation and not another.
+      setNotice({ tone: "success", title: text.title, body: [text.body, ...(help ? [`${t.word.why}: ${help.build}`] : [])] });
       setAccepted({ equation: written.equation, verdict, mistakes, hints: hintsUsed });
       return;
     }
@@ -89,7 +102,10 @@ export function EquationWriter({ intended, onBuilt }: EquationWriterProps) {
     setHintsUsed((n) => n + 1);
   }
 
-  const hints = t.word.hints.map((line, index) => (index === 2 ? `${line} ${formatEquation(intended)}` : line));
+  // The ladder: what x is, then how the equation is built (without saying it), then the equation. With a story
+  // the first two are the story's own words; without one they are general.
+  const general = t.word.hints;
+  const hints = [help ? t.word.helpFirst(help.letX) : general[0], help?.explain ?? general[1], `${general[2]} ${formatEquation(intended)}`];
   const hintLabel = hintLevel === 0 ? t.word.hint : hintLevel < 3 ? t.word.moreHelp(hintLevel) : t.word.allHints;
   return (
     <form className="build" onSubmit={check} aria-labelledby={`${id}-title`} noValidate>
@@ -103,7 +119,8 @@ export function EquationWriter({ intended, onBuilt }: EquationWriterProps) {
       </label>
       <MathPad inputId={`${id}-field`} value={value} onChange={change} disabled={locked} />
 
-      <p className="build-preview" aria-live="polite">
+      {/* Said to screen readers always; drawn only when there is something to read back, so there is no empty bar. */}
+      <p className={reading ? "build-preview" : "sr-only"} aria-live="polite">
         {reading ? (
           <>
             <span>{t.word.reads}:</span> <strong>{reading}</strong>

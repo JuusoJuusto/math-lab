@@ -64,7 +64,10 @@ describe("EquationWriter: writing the equation from a blank field", () => {
     write("3(x+2)=24");
     expect(document.querySelector(".build-preview")?.textContent).toBe("Reads as: 3x + 6 = 24");
     write("x/2 +");
-    expect(document.querySelector(".build-preview")?.textContent).not.toContain("Reads as");
+    // Nothing readable, so nothing is drawn (no empty bar); screen readers still hear what to do.
+    expect(document.querySelector(".build-preview")).toBeNull();
+    // (The same words are also in the feedback box, so look for the one that is only for screen readers.)
+    expect(screen.getAllByText(/When you have written the equation, press/).some((node) => node.classList.contains("sr-only"))).toBe(true);
   });
 
   it("accepts an equivalent equation and says so", async () => {

@@ -18,15 +18,16 @@ import {
   type ExerciseResult,
   type LevelDefinition,
 } from "@/lib/equations";
-import { EXAMPLE_STORIES, pickStoryRound, type Story } from "@/lib/tasks";
+import { EXAMPLE_STORIES, explainBuild, pickStoryRound, type Story } from "@/lib/tasks";
 import { crossedMilestones, percentDone } from "@/src/studyHubMilestones";
 import { reportProgress } from "@/src/studyHubProgress";
+import { AnswerSentence } from "./AnswerSentence";
 import { EquationWriter, type BuiltResult } from "./EquationWriter";
 import type { RoundReport } from "./PracticeRound";
 import { HandWorkspace } from "./HandWorkspace";
 import { StoryCard } from "./StoryCard";
+import { StoryWalkthrough } from "./StoryWalkthrough";
 import { SolverWorkspace, type WorkspaceOutcome } from "./SolverWorkspace";
-import { WorkedExample } from "./WorkedExample";
 import type { MoveMode } from "./MoveTabs";
 
 type Stage = "build" | "solve" | "answer";
@@ -36,7 +37,7 @@ type Stage = "build" | "solve" | "answer";
  * two prices, the longest side). Solving the equation is not the end: the
  * learner has to go back to the question, as the textbook procedure says.
  */
-function FinalAnswer({ story, onCorrect, onSlip }: { story: Story; onCorrect: () => void; onSlip: () => void }) {
+function QuestionAnswer({ story, onCorrect, onSlip }: { story: Story; onCorrect: () => void; onSlip: () => void }) {
   const { lang, t } = useI18n();
   const id = useId();
   const words = story.i18n[lang];
@@ -114,7 +115,8 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, handVar
   const [stage, setStage] = useState<Stage>("build");
   const [built, setBuilt] = useState<BuiltResult | null>(null);
   const [solved, setSolved] = useState<WorkspaceOutcome | null>(null);
-  const [finalDone, setFinalDone] = useState(story.final === undefined);
+  // Every story ends with the learner answering the question: a number for what is asked, then the sentence.
+  const [finalDone, setFinalDone] = useState(false);
   const [slips, setSlips] = useState(0);
 
   const words = story.i18n[lang];
@@ -140,6 +142,7 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, handVar
           // A change of language starts the story again, so every message is in one language.
           key={lang}
           intended={intended}
+          help={{ letX: words.letX, build: words.build, explain: explainBuild(words.build, story.equations[0]) }}
           onBuilt={(result) => {
             setBuilt(result);
             setStage("solve");
@@ -176,7 +179,11 @@ function WordProblem({ story, moveMode, onMoveModeChange, continueLabel, handVar
       )}
 
       {stage === "answer" && built && solved && !finalDone && (
-        <FinalAnswer story={story} onCorrect={() => setFinalDone(true)} onSlip={() => setSlips((count) => count + 1)} />
+        story.final !== undefined ? (
+          <QuestionAnswer story={story} onCorrect={() => setFinalDone(true)} onSlip={() => setSlips((count) => count + 1)} />
+        ) : (
+          <AnswerSentence story={story} value={story.solution} onCorrect={() => setFinalDone(true)} onSlip={() => setSlips((count) => count + 1)} />
+        )
       )}
 
       {stage === "answer" && built && solved && finalDone && (
@@ -286,28 +293,8 @@ export function WordRound({ level, onComplete, onEquationSolved, onExit }: WordR
   );
 }
 
-/** The worked example of the word-problem level: the story, how it becomes an equation, then the solution. */
+/** The worked example of the word-problem level: a story, turned into an equation in six steps, and solved. */
 export function WordExample({ level, onPractise }: { level: LevelDefinition; onPractise: () => void }) {
-  const { lang, t } = useI18n();
   const story = EXAMPLE_STORIES[level.id === "hard-word" ? "hard-word" : "word"];
-  const words = story.i18n[lang];
-  const equation = mustParseEquation(story.equations[0]);
-
-  return (
-    <div className="word-example">
-      <StoryCard story={story} />
-      <section className="build" aria-labelledby="example-build">
-        <h3 className="build-title" id="example-build">
-          {t.word.step1}
-        </h3>
-        <p className="build-text">{words.build}</p>
-        <p className="build-preview">
-          <span>{t.word.reads}:</span> <strong>{formatEquation(equation)}</strong>
-        </p>
-      </section>
-      <h3 className="build-title word-example-solve">{t.word.step2}</h3>
-      <WorkedExample level={level} onPractise={onPractise} />
-      <p className="answer-sentence">{words.answer}</p>
-    </div>
-  );
+  return <StoryWalkthrough level={level} story={story} onPractise={onPractise} />;
 }

@@ -132,7 +132,16 @@ A topic and its level share the same id. Levels are defined in `lib/equations/le
 
 In the two word-problem levels the learner reads a story, **writes the whole equation in a blank field**, and only then solves it. Nothing is filled in: no boxes, no template, no starting text. The same key pad as in solving by hand (digits, x, signs, brackets, a decimal sign and the fraction key; see above) is there for phones. What was typed is read by `readWritten`, which accepts what people write (`2x+3=15`, `0,75x`, `x : 2`, `3(x + 1)`, a capital `X`) and says in the learner's language what cannot be read (no equals sign, a different letter, x times x).
 
-`judgeBuiltEquation` compares it with the story's own equation:
+### Learning to write the equation
+
+The story is not only the question; it is the teacher. Every story carries `letX` (what x stands for), `build` (how its equation is built, in its own words) and `answer` (the finished sentence), in both languages, and the screens use them:
+
+- **The hints are the story's own.** The first says what x is and what to look for ("Start with x. Let x be the number of slices in the pizza. Then find the two things the story says are equal."). The second is `build` without the equation (`explainBuild` in `lib/tasks/story-text.ts` takes the words in front of the equation). The third is the equation. A story whose `build` already says both sides (`ages`, `ella-age`, `plans`, `race`) has no second hint of its own, and the general one is used; a test checks that no hint ever gives both sides away.
+- **A right equation is explained.** The notice says why: "Why this equation: The start fee €3 is added once, and €2 is paid for each of the x kilometres: 2x + 3 = 15."
+- **The answer is said by the learner.** After the equation is solved, the story's answer sentence is shown with a gap where the number goes (`answerFrame`), and the learner fills it in (`AnswerSentence`). A wrong number is sent back to the story ("Put your number into the story and read it again"). A story whose question asks for something worked out from x (the dearer of two prices) first asks for that number, as before.
+- **The lesson shows the way in six steps.** The worked example of both word lessons is `StoryWalkthrough`: read the story, say what x is, find what is equal to what, write the equation, solve it with the tutor, answer in a sentence. Each step stays on the screen when the next one arrives, and the focus moves to it. The lesson page shows the same road as a notebook (`LessonExample`): the story, what x is, the equation and the story's reason for it, the solving lines, the answer, the answer sentence and the check.
+
+`judgeBuiltEquation` compares what the learner wrote with the story's own equation:
 
 | Verdict | Meaning |
 | --- | --- |

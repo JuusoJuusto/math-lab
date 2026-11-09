@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Flag } from "lucide-react";
+import { BookOpen, Check, CircleHelp, Flag } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   checkSolution,
@@ -17,6 +17,7 @@ import {
   solveWithTutor,
   type LevelDefinition,
 } from "@/lib/equations";
+import { EXAMPLE_STORIES } from "@/lib/tasks";
 
 interface LessonExampleProps {
   level: LevelDefinition;
@@ -32,6 +33,9 @@ export function LessonExample({ level }: LessonExampleProps) {
   const { lang, t } = useI18n();
   const words = t.lesson;
   const clean = preludeWords(lang);
+  // A word problem starts earlier: with the story, what x is, and how the story gives the equation.
+  const story = level.id === "word" || level.id === "hard-word" ? EXAMPLE_STORIES[level.id] : null;
+  const storyWords = story?.i18n[lang];
   const source = level.example.equation;
   const equation = mustParseEquation(source);
   const prelude = makePrelude(source);
@@ -50,18 +54,53 @@ export function LessonExample({ level }: LessonExampleProps) {
   return (
     <section className="lesson-example" aria-labelledby="example-title">
       <h2 id="example-title">{words.exampleTitle}</h2>
-      <p className="lesson-example-lead">{words.exampleLead(start)}</p>
+      <p className="lesson-example-lead">{story ? words.exampleStoryLead : words.exampleLead(start)}</p>
 
       <ol className="example-lines">
-        <li className="example-line example-line-start">
-          <span className="example-badge" aria-hidden="true">
-            <Flag size={14} />
-          </span>
-          <div>
-            <span className="example-label">{words.exampleStart}</span>
-            <p className="example-math">{localiseDecimals(start, lang)}</p>
-          </div>
-        </li>
+        {story && storyWords ? (
+          <>
+            <li className="example-line example-line-start">
+              <span className="example-badge" aria-hidden="true">
+                <BookOpen size={14} />
+              </span>
+              <div>
+                <span className="example-label">{words.exampleStory}</span>
+                <p className="example-prose">
+                  {storyWords.situation} {storyWords.question}
+                </p>
+              </div>
+            </li>
+            <li className="example-line example-line-start">
+              <span className="example-badge" aria-hidden="true">
+                <CircleHelp size={14} />
+              </span>
+              <div>
+                <span className="example-label">{words.exampleX}</span>
+                <p className="example-prose">{storyWords.letX}</p>
+              </div>
+            </li>
+            <li className="example-line example-line-start">
+              <span className="example-badge" aria-hidden="true">
+                <Flag size={14} />
+              </span>
+              <div>
+                <span className="example-label">{words.exampleEquation}</span>
+                <p className="example-math">{localiseDecimals(start, lang)}</p>
+                <p className="example-prose">{storyWords.build}</p>
+              </div>
+            </li>
+          </>
+        ) : (
+          <li className="example-line example-line-start">
+            <span className="example-badge" aria-hidden="true">
+              <Flag size={14} />
+            </span>
+            <div>
+              <span className="example-label">{words.exampleStart}</span>
+              <p className="example-math">{localiseDecimals(start, lang)}</p>
+            </div>
+          </li>
+        )}
 
         {rows.map((row, index) => (
           <li className="example-line" key={row.key} style={{ animationDelay: `${(index + 1) * 90}ms` }}>
@@ -94,6 +133,7 @@ export function LessonExample({ level }: LessonExampleProps) {
           <p className="example-answer">
             <Check size={18} aria-hidden="true" /> <span>{words.exampleAnswer}:</span> <strong>x = {formatFraction(solution.value)}</strong>
           </p>
+          {storyWords && <p className="example-sentence">{storyWords.answer}</p>}
           <ol className="example-check" aria-label={words.exampleCheck}>
             {check.lines.slice(1).map((entry) => (
               <li key={entry.label}>

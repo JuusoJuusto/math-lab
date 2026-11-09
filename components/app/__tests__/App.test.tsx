@@ -313,11 +313,41 @@ describe("learning", () => {
     });
 
     it("has no example where there is no equation to solve", () => {
-      for (const topic of ["basics", "proportion", "word"]) {
+      for (const topic of ["basics", "proportion"]) {
         document.body.innerHTML = "";
         open(`#/learn/${topic}`);
         expect(document.querySelector(".lesson-example"), topic).toBeNull();
       }
+    });
+
+    it("shows how a story becomes an equation, for the word-problem lessons", () => {
+      open("#/learn/word");
+      const example = document.querySelector(".lesson-example")!;
+      expect(example.querySelector(".lesson-example-lead")?.textContent).toContain("A story becomes an equation");
+      const lines = Array.from(example.querySelectorAll(".example-line")).map((line) => line.textContent!.replace(/\u00a0/g, " "));
+      // The story, what x is, and the equation with the story's reason for it: before any solving.
+      expect(lines[0]).toContain("The story");
+      expect(lines[0]).toContain("A taxi charges €3 to start and €2 for every kilometre");
+      expect(lines[1]).toContain("What x is");
+      expect(lines[1]).toContain("Let x be the number of kilometres.");
+      expect(lines[2]).toContain("The equation");
+      expect(lines[2]).toContain("2x + 3 = 15");
+      expect(lines[2]).toContain("The start fee €3 is added once");
+      // Then it is solved, and the answer is said in the story's words.
+      expect(lines[3]).toContain("Subtract 3 from both sides");
+      expect(example.querySelector(".example-answer")!.textContent).toContain("x = 6");
+      expect(example.querySelector(".example-sentence")!.textContent).toBe("The ride was 6 km long.");
+    });
+
+    it("does the same for the hard word problems, whose equation is simplified first", () => {
+      open("#/learn/hard-word");
+      const lines = Array.from(document.querySelectorAll(".lesson-example .example-line")).map((line) => line.textContent!.replace(/\u00a0/g, " "));
+      expect(lines[0]).toContain("three consecutive whole numbers");
+      expect(lines[2]).toContain("x + (x + 1) + (x + 2) = 48");
+      // The three numbers are added up first (x + x + x), and then it is solved as usual.
+      expect(lines[3]).toContain("Simplify");
+      expect(lines[3]).toContain("3x + 3 = 48");
+      expect(document.querySelector(".example-sentence")!.textContent).toBe("The smallest number is 15.");
     });
 
     it("is written in Finnish too, with the Finnish step names", () => {

@@ -115,4 +115,8 @@ Stories are in `lib/tasks/stories.ts`. A story is a small function from numbers 
 - Give it a tier (`difficulty`): 1 one step, 2 two steps, 3 x on both sides or brackets, 4 consecutive numbers, percentages and triangles, 5 brackets with two moving things, 6 fractions, ages and work.
 - The answer is a whole number. `sampleStory` re-solves the right equation and every wrong one, and a story whose wrong equation has the right solution is never shown.
 - Say the same numbers in both languages (a test compares them). Write decimals with a comma in Finnish (`0,75x`) and a point in English.
+- The three sentences of a story are used apart, so write them with that in mind (`lib/tasks/__tests__/story-text.test.ts` samples every story in both languages):
+  - `letX` is a sentence of its own ("Let x be the number of kilometres."), shown as the first hint and as the second step of the walkthrough.
+  - `build` says how the equation is built and ends with the equation, after a colon or after "so" / "when" (`joten`, `kun`): "The start fee is added once, and €2 is paid for each kilometre: 2x + 3 = 15." Everything before the equation is shown as the second hint, so it should explain without saying both sides. If it has to say both sides, the general hint is used instead, which is fine.
+  - `answer` contains the number that answers the question (the solution, or `final` when the question asks for something else) once, on its own, and not as part of another number: "The ride was 6 km long." The learner fills the number in.
 - Add the story to `TEMPLATES` with the ranges its numbers are drawn from, and to the `StoryId` list.

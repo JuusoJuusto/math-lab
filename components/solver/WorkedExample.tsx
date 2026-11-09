@@ -29,13 +29,17 @@ import { SubstitutionCheck } from "./SubstitutionCheck";
 interface WorkedExampleProps {
   level: LevelDefinition;
   onPractise: () => void;
+  /** What the button that ends the example says. It is "Try it yourself" unless the example is part of something longer. */
+  continueLabel?: string;
+  /** Whether to offer to skip to practice. A walkthrough that has its own way out turns it off. */
+  showSkip?: boolean;
 }
 
 /**
  * A guided demonstration. It runs on the same engine as the exercises, but
  * the tutor, not the learner, chooses the moves, one click at a time, and explains each one.
  */
-export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
+export function WorkedExample({ level, onPractise, continueLabel, showSkip = true }: WorkedExampleProps) {
   const { lang, t } = useI18n();
   const equation = useMemo(() => mustParseEquation(level.example.equation), [level.example.equation]);
   const prelude = useMemo(() => makePrelude(level.example.equation), [level.example.equation]);
@@ -97,7 +101,7 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
             )}
             <div className="action-buttons action-finish">
               <button type="button" className="button-primary" onClick={onPractise}>
-                {t.solver.example.tryIt} <ArrowRight size={17} aria-hidden="true" />
+                {continueLabel ?? t.solver.example.tryIt} <ArrowRight size={17} aria-hidden="true" />
               </button>
               <button type="button" className="button-secondary" onClick={() => dispatch({ type: "restart" })}>
                 <RotateCcw size={16} aria-hidden="true" /> {t.solver.example.again}
@@ -109,9 +113,11 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
             <button type="button" className="button-primary" onClick={advance}>
               <Play size={16} aria-hidden="true" /> {state.pending ? t.solver.simplify : started ? t.solver.example.next : t.solver.example.first}
             </button>
-            <button type="button" className="text-link" onClick={onPractise}>
-              {t.solver.example.skip}
-            </button>
+            {showSkip && (
+              <button type="button" className="text-link" onClick={onPractise}>
+                {t.solver.example.skip}
+              </button>
+            )}
           </div>
         )}
       </div>

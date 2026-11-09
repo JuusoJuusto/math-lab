@@ -68,7 +68,7 @@ export function LessonScreen({ topicId }: { topicId: string }) {
         </ol>
       </section>
 
-      {level && level.kind !== "stories" && <LessonExample level={level} />}
+      {level && <LessonExample level={level} />}
 
       <div className="lesson-notes">
         <section className="note note-remember" aria-labelledby="remember-title">
