@@ -28,6 +28,8 @@ The topics are defined in `content/topics.ts`. Topic ids are stored in learners'
 
 Every text is written **in both languages** (Finnish and English), next to each other: topics and lessons here, questions in `content/questions.ts`, level introductions in `lib/equations/levels.ts`, stories in `lib/tasks/stories.ts`. The compiler rejects a missing translation, and the tests reject English left in Finnish text. See [languages and addresses](LANGUAGES_AND_ROUTING.md).
 
+Every topic also has two short notes at the end of its lesson page, written for that lesson (never a sentence shared between lessons): **`remember`**, the one thing to hold on to, and **`watchOut`**, the mistake that is most often made, with a small example (`x + 5 = 12 means subtract 5, not add 5`). Each is one or two sentences, at most about 250 characters, and says something the key ideas above it do not already say word for word; the tests check the length, that both languages have them, and that Finnish has no English in it. Write the maths with ordinary spaces (`2x + 5 = 17`): the lesson page keeps an expression in one piece when a line wraps (`lib/mathText.ts`).
+
 Each topic has a module colour, a **Lucide icon name** and a short formula with one highlighted part, which is what the coloured card shows. Keep the formula to about twelve characters; it shrinks to fit, but a short one reads better on a phone. Never use an emoji as an icon; add the Lucide icon to `components/ui/icons.tsx` instead.
 
 The generated practice tasks (typed answers, true or false, which step, find the mistake, write the equation) are described in [practice](PRACTICE.md). They need no authoring: they come from templates in `lib/tasks`.

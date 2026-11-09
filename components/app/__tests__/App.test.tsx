@@ -204,6 +204,67 @@ describe("learning", () => {
     expect(await screen.findByText("Task 1 / 10")).toBeTruthy();
   });
 
+  describe("a lesson page", () => {
+    it("ends each lesson with its own thing to remember and its own mistake to watch out for", () => {
+      open("#/learn/two-step");
+      const remember = document.querySelector(".note-remember")!;
+      const watch = document.querySelector(".note-watch")!;
+      expect(within(remember as HTMLElement).getByRole("heading", { name: "Remember" })).toBeTruthy();
+      expect(remember.textContent).toContain("The last thing done to x is the first thing to undo");
+      expect(within(watch as HTMLElement).getByRole("heading", { name: "Watch out" })).toBeTruthy();
+      expect(watch.textContent).toContain("divide every term");
+
+      // Another lesson says something else, not the same sentence under every lesson.
+      document.body.innerHTML = "";
+      open("#/learn/brackets");
+      const bracketsNote = document.querySelector(".note-remember")!.textContent!.replace(/\u00a0/g, " ");
+      expect(bracketsNote).toContain("3(x + 2) = 3x + 6");
+      expect(bracketsNote).not.toContain("The last thing done to x");
+    });
+
+    it("shows the way through a lesson in three steps, with the next one marked", () => {
+      open("#/learn/two-step");
+      const path = Array.from(document.querySelectorAll(".path-step"));
+      expect(path).toHaveLength(3);
+      expect(path.map((step) => step.querySelector("h3")!.textContent)).toEqual(["Read the key ideas", "Watch and solve", "Try it on your own"]);
+      expect(path[0].classList.contains("path-step-done")).toBe(true);
+      expect(path[1].classList.contains("path-step-next")).toBe(true);
+      expect(within(path[1] as HTMLElement).getByRole("link", { name: /Solve step by step/ })).toBeTruthy();
+      expect(within(path[2] as HTMLElement).getByRole("button", { name: /Practise this topic/ })).toBeTruthy();
+      expect(screen.queryByText("Finished")).toBeNull();
+    });
+
+    it("marks a lesson that is finished, and the step that finished it", () => {
+      open("#/learn/two-step", { solverLevels: ["two-step"] });
+      expect(screen.getByText("Finished")).toBeTruthy();
+      const path = Array.from(document.querySelectorAll(".path-step"));
+      expect(path[1].classList.contains("path-step-done")).toBe(true);
+      expect(path[1].classList.contains("path-step-next")).toBe(false);
+    });
+
+    it("has two steps where there is no solver, and then practising is the main thing to do", () => {
+      open("#/learn/proportion");
+      const path = Array.from(document.querySelectorAll(".path-step"));
+      expect(path.map((step) => step.querySelector("h3")!.textContent)).toEqual(["Read the key ideas", "Try it on your own"]);
+      expect(path[1].classList.contains("path-step-next")).toBe(true);
+    });
+
+    it("starts a five-question quiz from the lesson", async () => {
+      const { user } = open("#/learn/both");
+      await user.click(screen.getByRole("button", { name: "Take a 5-question quiz" }));
+      expect(`${window.location.pathname}${window.location.search}`).toMatch(/^\/en\/practice\/quiz\/\?topic=both&n=5&seed=\d+$/);
+      expect(await screen.findByText("Task 1 / 5")).toBeTruthy();
+    });
+
+    it("does not let an expression break across two lines", () => {
+      open("#/learn/two-step");
+      const idea = document.querySelector(".lesson-list p")!.textContent!;
+      expect(idea).toContain("2x\u00a0+\u00a05");
+      // Screen readers and copy-and-paste still get ordinary words.
+      expect(idea.replace(/\u00a0/g, " ")).toBe("In 2x + 5, x is multiplied by 2 first, then 5 is added.");
+    });
+  });
+
   it("runs the equation solver inside the app and awards XP for finished equations and levels", async () => {
     const { user } = open("#/solve/one-step");
     expect(screen.getByRole("heading", { level: 1, name: "One-step equations" })).toBeTruthy();

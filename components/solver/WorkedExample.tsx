@@ -43,6 +43,8 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
 
   const suggestion = suggestNextMove(state.current);
   const solution = solutionOf(state);
+  // The example ends when x is alone, or when x has gone and a plain statement such as 3 = 7 is left.
+  const finished = state.outcome !== "solving";
   const started = state.steps.length > 0 || state.pending !== null || state.preludeIndex > 0;
 
   const preludeStep = currentPreludeStep(state);
@@ -84,15 +86,15 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
 
         <FeedbackPanel notice={notice} hints={[]} emptyText={levelText(level, lang).exampleLead} />
 
-        {solution ? (
+        {finished ? (
           <>
-            <SubstitutionCheck
-              original={state.start}
-              value={solution}
-              checked={state.checked}
-              onCheck={() => dispatch({ type: "check" })}
-            />
-            <OtherWay equation={equation} />
+            {/* An equation with one solution is checked by substituting it. "No solution" and "every number" have no value to put in. */}
+            {solution && (
+              <>
+                <SubstitutionCheck original={state.start} value={solution} checked={state.checked} onCheck={() => dispatch({ type: "check" })} />
+                <OtherWay equation={equation} />
+              </>
+            )}
             <div className="action-buttons action-finish">
               <button type="button" className="button-primary" onClick={onPractise}>
                 {t.solver.example.tryIt} <ArrowRight size={17} aria-hidden="true" />

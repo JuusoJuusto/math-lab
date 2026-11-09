@@ -156,6 +156,24 @@ describe("solving by hand", () => {
     expect((field() as HTMLInputElement).value).toContain("||");
   });
 
+  it("lets the learner write x over 2 by pressing the numbers, and the engine reads the line", async () => {
+    const { user } = setup("x/2 + 9 = 10");
+    await user.click(screen.getByRole("button", { name: /^Fraction: / }));
+    await user.click(screen.getByRole("button", { name: "x" }));
+    await user.click(screen.getByRole("button", { name: /^Bottom of the fraction/ }));
+    await user.click(screen.getByRole("button", { name: "2" }));
+    await user.click(screen.getByRole("button", { name: "Put in the line" }));
+    for (const name of ["equals", "1", "0", "minus", "9"]) await user.click(screen.getByRole("button", { name }));
+    expect((field() as HTMLInputElement).value).toBe("x/2 = 10 − 9");
+
+    // The line is drawn as the fraction it is, before it is added.
+    expect(document.querySelector(".pad-preview .eq-frac")).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: "Add line" }));
+    expect(within(sheet()!).getByText("x/2 = 10 − 9")).toBeTruthy();
+    expect(document.querySelector(".notice-success")).toBeTruthy();
+  });
+
   it("speaks Finnish, with the Finnish signs", async () => {
     const { user } = setup("2x + 5 = 17", "fi");
     expect(screen.getByRole("region", { name: "Yhtälö" })).toBeTruthy();

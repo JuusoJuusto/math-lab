@@ -208,7 +208,7 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
 
       {route.topic !== "all" && (
         <p className="topic-banner" data-testid="topic-banner">
-          <Target size={16} aria-hidden="true" /> {t.session.onlyTopic(getTopic(route.topic, lang)?.title ?? route.topic)}
+          <Target size={16} aria-hidden="true" /> {route.topic.includes(",") ? t.session.onlyTopics(route.topic.split(",").map((id) => getTopic(id, lang)?.title ?? id).join(", ")) : t.session.onlyTopic(getTopic(route.topic, lang)?.title ?? route.topic)}
         </p>
       )}
 
