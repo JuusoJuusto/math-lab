@@ -62,6 +62,7 @@ export const SubstitutionCheck = forwardRef<HTMLButtonElement, SubstitutionCheck
           </li>
         ))}
       </ol>
+      <p className="verify-verdict">{result.holds ? t.solver.verify.verdictTrue : t.solver.verify.verdictFalse}</p>
       <p className="verify-text">
         {result.holds
           ? t.solver.verify.passText(formatFraction(result.leftValue), formatFraction(result.rightValue))

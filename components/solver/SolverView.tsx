@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
-import { levelText, type LevelDefinition } from "@/lib/equations";
+import { levelText, summariseRound, thinksYouKnow, type LevelDefinition } from "@/lib/equations";
+import { reportProgress } from "@/src/studyHubProgress";
 import type { Topic } from "@/content/topics";
 import { TopicIcon } from "@/components/ui/icons";
+import { KnowledgePopup } from "@/components/ui/KnowledgePopup";
 import { LevelComplete } from "./LevelComplete";
 import { LevelIntro } from "./LevelIntro";
 import { PracticeRound, type RoundReport } from "./PracticeRound";
@@ -39,6 +41,8 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
   const [roundId, setRoundId] = useState(0);
   const [previousIds, setPreviousIds] = useState<readonly string[]>([]);
   const [report, setReport] = useState<RoundReport | null>(null);
+  // The popup is shown once per finished round; closing it keeps it closed until the next round.
+  const [dismissedRound, setDismissedRound] = useState<number | null>(null);
   const root = useRef<HTMLElement>(null);
   const firstRender = useRef(true);
 
@@ -61,9 +65,12 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
   function startPractice() {
     setRoundId((id) => id + 1);
     setStage("practice");
+    reportProgress("started", { label: text.title, ref: `lesson-${level.id}` });
   }
 
   function finishRound(finished: RoundReport) {
+    // The score of a round is how many equations were solved without a hint or a wrong move.
+    reportProgress("score", { label: text.title, ref: `lesson-${level.id}`, value: summariseRound(finished.results).cleanSolves, max: finished.exercises.length });
     setReport(finished);
     setPreviousIds(finished.exercises.map((exercise) => exercise.id));
     setStage("complete");
@@ -123,6 +130,10 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
         ) : (
           <PracticeRound key={roundId} level={level} avoid={previousIds} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
         ))}
+      {stage === "complete" && report && thinksYouKnow(summariseRound(report.results), level.roundSize) && dismissedRound !== roundId && (
+        <KnowledgePopup topicTitle={topic.title} onQuiz={() => onQuiz(topic.id)} onClose={() => setDismissedRound(roundId)} />
+      )}
+
       {stage === "complete" && report && (
         <LevelComplete
           level={level}

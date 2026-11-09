@@ -56,9 +56,9 @@ describe("flipping a term across the equals sign", () => {
     expect(document.querySelector(".eq-caption")?.textContent).toContain("flipped across the equals sign");
     // While the flip is waiting to be worked out, nothing else can be started.
     expect(screen.queryByRole("radio")).toBeNull();
-    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Simplify both sides" }));
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Work out both sides" }));
 
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(spokenEquation()).toBe("Current equation: 3x equals 11");
   });
 
@@ -66,14 +66,16 @@ describe("flipping a term across the equals sign", () => {
     const { user } = setup("3x - 5 = 6");
     await openFlipMode(user);
     await user.click(screen.getByRole("button", { name: /^Flip − 5/ }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
-    const step = historyItems()[1];
+    const step = historyItems()[0];
     expect(step.querySelector(".history-label")?.textContent).toBe("Step 1 · Flip − 5 across the = sign");
     expect(step.querySelector(".history-notebook")?.textContent).toContain("3x − 5 = 6");
-    expect(step.querySelector(".history-bar")?.textContent).toBe("| + 5");
+    expect(step.querySelector(".history-bar")?.textContent).toBe("|| + 5");
     expect(step.querySelector(".history-applied")?.textContent).toBe("3x = 6 + 5");
-    expect(step.querySelector(".history-equation")?.textContent).toBe("3x = 11");
+    // The result is not written twice: it is the current equation, directly below the finished steps.
+    expect(step.querySelector(".history-equation")).toBeNull();
+    expect(spokenEquation()).toBe("Current equation: 3x equals 11");
   });
 
   it("writes a balance step in the notebook the same way", async () => {
@@ -83,24 +85,24 @@ describe("flipping a term across the equals sign", () => {
     await user.click(screen.getByRole("button", { name: "Apply to both sides" }));
 
     // The operation is also written beside the equation while it is applied.
-    expect(document.querySelector(".eq-bar")?.textContent).toBe("| − 5");
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
-    expect(historyItems()[1].querySelector(".history-bar")?.textContent).toBe("| − 5");
-    expect(historyItems()[1].querySelector(".history-label")?.textContent).toBe("Step 1 · Subtract 5 from both sides");
+    expect(document.querySelector(".eq-bar")?.textContent).toBe("|| − 5");
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
+    expect(historyItems()[0].querySelector(".history-bar")?.textContent).toBe("|| − 5");
+    expect(historyItems()[0].querySelector(".history-label")?.textContent).toBe("Step 1 · Subtract 5 from both sides");
   });
 
   it("solves a whole equation by flipping: 3x − 5 = 7 → 3x = 12 → x = 4", async () => {
     const { user, onContinue } = setup("3x - 5 = 7");
     await openFlipMode(user);
     await user.click(screen.getByRole("button", { name: /^Flip − 5/ }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
     // The mode stays on flip, and focus lands on the first flippable term.
     expect(document.activeElement?.className).toContain("eq-flip");
     await user.click(screen.getByRole("button", { name: /^Flip 3x\. It moves to the other side as ÷ 3/ }));
     expect(spokenEquation()).toBe("Current equation: x equals 12 divided by 3");
     expect(feedback().textContent).toContain("both sides are divided by 3");
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
     expect(spokenEquation()).toBe("Current equation: x equals 4");
     await user.click(screen.getByRole("button", { name: "Check by substituting" }));
@@ -114,7 +116,7 @@ describe("flipping a term across the equals sign", () => {
     await openFlipMode(user);
     await user.click(screen.getByRole("button", { name: /^Flip 3x/ }));
     expect(spokenEquation()).toBe("Current equation: 5x minus 3x plus 2 equals 12");
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(spokenEquation()).toBe("Current equation: 2x plus 2 equals 12");
   });
 
@@ -126,7 +128,7 @@ describe("flipping a term across the equals sign", () => {
     expect(spokenEquation()).toBe("Current equation: 3x minus 5 equals 6");
     expect(within(feedback()).getByText("Flipping that does not help yet")).toBeTruthy();
     expect(feedback().textContent).not.toMatch(/to both sides/);
-    expect(screen.queryByRole("button", { name: "Simplify both sides" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Work out both sides" })).toBeNull();
     expect(onContinue).not.toHaveBeenCalled();
   });
 
@@ -150,7 +152,7 @@ describe("flipping a term across the equals sign", () => {
     const { user } = setup("x - 2 = 3");
     await openFlipMode(user);
     await user.click(screen.getByRole("button", { name: /^Flip − 2/ }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(spokenEquation()).toBe("Current equation: x equals 5");
     expect(document.querySelector(".eq-flip")).toBeNull();
   });

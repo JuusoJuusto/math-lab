@@ -23,7 +23,7 @@ describe("flipping a term across the equals sign", () => {
     const target: FlipTarget = { kind: "constant", side: "left" };
     expect(formatFlipPreview(equation, target)).toBe("3x = 6 + 5");
     const op = flipOperation(equation, target)!;
-    expect(formatBar(op)).toBe("| + 5");
+    expect(formatBar(op)).toBe("|| + 5");
     const result = applyOperation(equation, op);
     expect(result.ok && formatEquation(result.step.after)).toBe("3x = 11");
   });
@@ -55,7 +55,7 @@ describe("flipping a term across the equals sign", () => {
   it("uses Finnish symbols when asked", () => {
     expect(formatFlipPreview(eq("3x = 21"), { kind: "factor" }, "fi")).toBe("x = 21 : 3");
     expect(formatFlipPreview(eq("x/4 = 6"), { kind: "factor" }, "fi")).toBe("x = 6 · 4");
-    expect(formatBar(flipOperation(eq("3x = 21"), { kind: "factor" })!, "fi")).toBe("| : 3");
+    expect(formatBar(flipOperation(eq("3x = 21"), { kind: "factor" })!, "fi")).toBe("|| : 3");
   });
 
   it("draws a term that cannot move, but gives it no target", () => {
@@ -150,7 +150,7 @@ describe("judging a flip", () => {
     expect(outcome.verdict).toBe("helpful");
     if (outcome.verdict !== "helpful") return;
     expect(outcome.explanation.why).toContain("crosses the equals sign and its sign flips");
-    expect(outcome.explanation.why).toContain("| + 5");
+    expect(outcome.explanation.why).toContain("|| + 5");
   });
 
   it("explains a flip that does not help in flip words, not in 'add to both sides' words", () => {
@@ -167,7 +167,7 @@ describe("judging a flip", () => {
     expect(outcome.verdict).toBe("helpful");
     if (outcome.verdict !== "helpful") return;
     expect(outcome.explanation.why).toContain("yhtäsuuruusmerkin");
-    expect(outcome.explanation.why).toContain("| + 5");
+    expect(outcome.explanation.why).toContain("|| + 5");
   });
 
   it("is available in the session as its own action: flip, simplify, flip, simplify", () => {

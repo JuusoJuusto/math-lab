@@ -81,6 +81,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
         lesson: [
           "An equation says that its left-hand side and right-hand side have the same value.",
           "A letter such as x represents an unknown number.",
+          "An expression such as 3x + 2 has no equals sign. An equation such as 3x + 2 = 11 has one, with an expression on each side.",
+          "The solution is the value of x that makes both sides equal. To test a value, put it in place of x in the original equation: if both sides come out the same, the equation is true, otherwise it is false.",
           "An equation stays balanced when you perform the same operation on both sides.",
           "The goal is to isolate x on one side of the equation.",
         ],
@@ -93,6 +95,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
         lesson: [
           "Yhtälö kertoo, että sen vasemmalla ja oikealla puolella on sama arvo.",
           "Kirjain, kuten x, tarkoittaa tuntematonta lukua.",
+          "Lausekkeessa, kuten 3x + 2, ei ole yhtäsuuruusmerkkiä. Yhtälössä, kuten 3x + 2 = 11, on yhtäsuuruusmerkki ja lauseke kummallakin puolella.",
+          "Ratkaisu on se x:n arvo, jolla vasen ja oikea puoli ovat yhtä suuret. Arvoa voi testata sijoittamalla sen alkuperäiseen yhtälöön x:n paikalle: jos puolet ovat yhtä suuret, yhtälö on tosi, muuten epätosi.",
           "Yhtälö pysyy tasapainossa, kun molemmille puolille tehdään sama laskutoimitus.",
           "Tavoitteena on saada x yksin yhtälön toiselle puolelle.",
         ],
@@ -236,10 +240,10 @@ export const topicDefinitions: readonly TopicDefinition[] = [
     formula: { before: "", mark: "x/2", after: " + x/3 = 5" },
     text: {
       en: {
-        title: "Fractions and ratios",
+        title: "Fractions, decimals and ratios",
         subtitle: "Clear the denominators first",
         caption: "multiply by the common denominator",
-        description: "Solve equations with fractions by multiplying both sides by the common denominator.",
+        description: "Solve equations with fractions or decimals by multiplying both sides to remove them.",
         lesson: [
           "Find the smallest number that every denominator divides into: the common denominator.",
           "Multiply both sides, and every term, by it. Now there are no fractions left.",
@@ -248,10 +252,10 @@ export const topicDefinitions: readonly TopicDefinition[] = [
         ],
       },
       fi: {
-        title: "Murtolausekkeet ja verranto",
+        title: "Murtoluvut, desimaaliluvut ja verranto",
         subtitle: "Poista ensin nimittäjät",
         caption: "kerro yhteisellä nimittäjällä",
-        description: "Ratkaise murtolukuja sisältäviä yhtälöitä kertomalla molemmat puolet yhteisellä nimittäjällä.",
+        description: "Ratkaise murtolukuja tai desimaalilukuja sisältäviä yhtälöitä kertomalla molemmat puolet niin, että ne häviävät.",
         lesson: [
           "Etsi pienin luku, johon jokainen nimittäjä sopii: yhteinen nimittäjä.",
           "Kerro sillä molemmat puolet ja jokainen termi. Murtoluvut häviävät.",

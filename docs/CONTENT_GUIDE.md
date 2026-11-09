@@ -1,5 +1,9 @@
 # Learning content guide
 
+## Positive and negative numbers
+
+Every generator mixes signs (`lib/tasks/sample.ts`, tested in `lib/tasks/__tests__/signs.test.ts`): coefficients, constants and answers are positive or negative with similar chances, in one-step, two-step, both-sides, bracket and fraction equations. When you write an exercise by hand in `lib/equations/levels.ts`, give a level both kinds too. Word problems with a negative answer (a temperature below zero) are in the stories.
+
 ## Audience and scope
 
 The initial content is designed for introductory lower-secondary mathematics, with an emphasis on equations and proportional relationships. Content should be understandable without assuming that a learner has already mastered algebraic notation.

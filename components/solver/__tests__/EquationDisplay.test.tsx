@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { LangProvider } from "@/hooks/useLang";
 import { mustParseEquation, operation } from "@/lib/equations";
 import { EquationDisplay } from "../EquationDisplay";
 
@@ -54,7 +55,33 @@ describe("EquationDisplay", () => {
   it("passes the equation length to the stylesheet so long equations shrink to fit", () => {
     const { container } = render(<EquationDisplay equation={eq("-2x + 3 = 11")} applied={operation("subtract", 3)} />);
     const section = container.querySelector<HTMLElement>(".eq");
-    // The notebook bar ("| − 3") sits in the same row, so it counts towards the length too.
-    expect(section?.style.getPropertyValue("--eq-chars")).toBe(String("−2x + 3 − 3 = 11 − 3".length + "| − 3".length + 2));
+    // The notebook bar ("|| − 3") sits in the same row, so it counts towards the length too.
+    expect(section?.style.getPropertyValue("--eq-chars")).toBe(String("−2x + 3 − 3 = 11 − 3".length + "|| − 3".length + 2));
+  });
+});
+
+describe("EquationDisplay when x has dropped out", () => {
+  it("says true for a statement that always holds, and false for one that never does", () => {
+    const always = render(<EquationDisplay equation={eq("4 = 4")} />);
+    expect(always.container.querySelector("[data-verdict]")?.getAttribute("data-verdict")).toBe("true");
+    expect(always.container.querySelector("[data-verdict]")?.textContent).toBe("true");
+    always.unmount();
+
+    const never = render(<EquationDisplay equation={eq("2x + 3 = 2x + 7")} />);
+    // Nothing has been done yet, so x is still on both sides and no verdict is shown.
+    expect(never.container.querySelector("[data-verdict]")).toBeNull();
+    never.unmount();
+
+    const statement = render(<EquationDisplay equation={eq("3 = 7")} />);
+    expect(statement.container.querySelector("[data-verdict]")?.getAttribute("data-verdict")).toBe("false");
+  });
+
+  it("uses the Finnish words tosi and epätosi", () => {
+    const { container } = render(
+      <LangProvider lang="fi">
+        <EquationDisplay equation={eq("3 = 7")} />
+      </LangProvider>,
+    );
+    expect(container.querySelector("[data-verdict]")?.textContent).toBe("epätosi");
   });
 });

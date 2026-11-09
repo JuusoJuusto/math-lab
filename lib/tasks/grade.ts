@@ -34,6 +34,29 @@ export function gradeChoice(task: Task, index: number): Grade {
   return { correct: index === task.input.correct, given: task.input.options[index] ?? "", feedback: [] };
 }
 
+/** What happened while a learner solved a task by hand. */
+export interface HandOutcome {
+  readonly lines: number;
+  readonly mistakes: number;
+  readonly hints: number;
+}
+
+/**
+ * Grades a task solved by hand. The equation was solved, since the workspace only
+ * finishes on x = a number, so the question is how cleanly: at most one wrong
+ * line and no hints counts as right.
+ */
+export function gradeHand(task: Task, outcome: HandOutcome, lang: Lang = "en"): Grade {
+  if (task.input.type !== "hand") throw new Error("This task is not solved by hand");
+  const correct = outcome.mistakes <= 1 && outcome.hints === 0;
+  const words = taskText(lang);
+  return {
+    correct,
+    given: task.answerText,
+    feedback: correct ? [] : [words.handWorked(outcome.lines, outcome.mistakes), words.handNeedsMore],
+  };
+}
+
 /** Grades a typed answer, or says why it cannot be read yet. */
 export function gradeNumber(task: Task, text: string, lang: Lang = "en"): Grade | { readonly invalid: string } {
   if (task.input.type !== "number" || !task.answerValue) throw new Error("This task is answered by choosing");

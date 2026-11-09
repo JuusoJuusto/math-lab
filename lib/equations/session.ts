@@ -22,6 +22,7 @@ import { operationKey, type AppliedStep, type Operation } from "./operations";
 import type { Prelude, PreludeStep } from "./prelude";
 import { isSolution, solvedValue, terminalState, type TerminalState } from "./solve";
 import { engineText } from "./text";
+import { preludeWords } from "./prelude-words";
 import {
   describeNextStep,
   evaluateMove,
@@ -141,7 +142,8 @@ export function canGetHint(state: SessionState): boolean {
   return state.outcome === "solving" && state.pending === null && currentPreludeStep(state) === null && state.hintLevel < 3;
 }
 
-function terminalNotice(outcome: TerminalState, equation: Equation, lang: Lang): Notice {
+/** What the tutor says when an equation has come to an end: x alone, or x gone. */
+export function terminalNotice(outcome: TerminalState, equation: Equation, lang: Lang): Notice {
   const text = engineText(lang).session;
   if (outcome === "solved") {
     return { tone: "success", title: text.alone, body: [describeNextStep(equation, lang)] };
@@ -235,7 +237,6 @@ function answerPrelude(state: SessionState, choice: number): SessionState {
     };
   }
 
-  const explain = step.kind === "expand" ? text.prelude.expandRight : text.prelude.simplifyRight;
   const index = state.preludeIndex + 1;
   const last = index >= (state.prelude?.steps.length ?? 0);
   return {
@@ -245,7 +246,7 @@ function answerPrelude(state: SessionState, choice: number): SessionState {
     notice: {
       tone: "success",
       title: text.tutor.praise[(index - 1) % text.tutor.praise.length],
-      body: [explain(step.part, step.result), ...(last ? [text.prelude.done] : [])],
+      body: [preludeWords(state.lang).right(step), ...(last ? [text.prelude.done] : [])],
     },
   };
 }

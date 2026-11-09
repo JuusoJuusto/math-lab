@@ -17,6 +17,8 @@ import {
   type FlipTarget,
   type FlipTerm,
   type Operation,
+  hasNoVariable,
+  solveEquation,
 } from "@/lib/equations";
 
 interface EquationDisplayProps {
@@ -76,7 +78,7 @@ function FlipSide({ terms, side, onFlip }: { terms: readonly FlipTerm[]; side: "
  *
  * In flip mode the terms are buttons. A flipped term is highlighted where it
  * landed, and the operation it stands for is written beside the equation the
- * way it is in a notebook: `| + 5`.
+ * way it is in a notebook: `|| + 5`.
  */
 export function EquationDisplay({ equation, applied = null, flipped = null, onFlip, label, solved = false }: EquationDisplayProps) {
   const { lang, t } = useI18n();
@@ -91,11 +93,14 @@ export function EquationDisplay({ equation, applied = null, flipped = null, onFl
   const interactive = Boolean(onFlip) && !applied && !preview;
   const terms = interactive ? flipTerms(equation, lang) : null;
   const caption = preview ? t.solver.display.flipped : applied ? t.solver.display.sameOperation : name;
+  // When x has dropped out, what is left is a plain statement such as 3 = 7. Say whether it is true, as a textbook does.
+  const statement = !applied && !preview && hasNoVariable(equation) ? (solveEquation(equation).kind === "infinite" ? "true" : "false") : null;
 
   return (
     <section
       className={`eq ${solved ? "eq-solved" : ""} ${applied || preview ? "eq-applying" : ""} ${interactive ? "eq-flippable" : ""}`}
       aria-label={name}
+      data-equation={formatEquation(equation)}
       // The stylesheet turns this into a font size that fits the card's own width, so long
       // equations shrink instead of wrapping, wherever the card is placed.
       style={{ "--eq-chars": text.length + (bar ? bar.length + 2 : 0) } as CSSProperties}
@@ -105,6 +110,11 @@ export function EquationDisplay({ equation, applied = null, flipped = null, onFl
         {solved && (
           <span className="eq-badge">
             <Check size={14} /> {t.solver.display.solved}
+          </span>
+        )}
+        {statement && (
+          <span className={`eq-badge eq-verdict eq-verdict-${statement}`} data-verdict={statement}>
+            {statement === "true" ? t.solver.verify.verdictTrue : t.solver.verify.verdictFalse}
           </span>
         )}
       </div>

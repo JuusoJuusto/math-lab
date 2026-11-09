@@ -23,7 +23,7 @@ export default defineConfig({
         test: {
           name: "ui",
           environment: "jsdom",
-          include: ["components/**/*.test.tsx", "hooks/**/*.test.tsx", "app/**/*.test.tsx"],
+          include: ["components/**/*.test.tsx", "hooks/**/*.test.tsx", "app/**/*.test.tsx", "src/**/*.test.ts"],
           setupFiles: ["./vitest.setup.ts"],
         },
       },

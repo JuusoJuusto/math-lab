@@ -16,8 +16,7 @@
 
 import type { Lang, Localised } from "../lang";
 import type { Equation } from "./expression";
-import { mustParseEquation } from "./parse";
-import { makePrelude, type Prelude } from "./prelude";
+import { makePrelude, startEquation, type Prelude } from "./prelude";
 
 export type LevelId =
   | "one-step"
@@ -89,7 +88,7 @@ const fra = (n: number, equation: string): ExerciseDefinition => ({ id: `fractio
 const spc = (n: number, equation: string): ExerciseDefinition => ({ id: `special-${String(n).padStart(2, "0")}`, equation });
 const chl = (n: number, equation: string): ExerciseDefinition => ({ id: `challenge-${String(n).padStart(2, "0")}`, equation });
 
-export const LEVELS: readonly LevelDefinition[] = [
+const AUTHORED: readonly LevelDefinition[] = [
   {
     id: "one-step",
     number: 1,
@@ -140,6 +139,18 @@ export const LEVELS: readonly LevelDefinition[] = [
       one(10, "4x = 36"),
       one(11, "x/5 = 4"),
       one(12, "x + 8 = 17"),
+      one(13, "x + 8 = 3"),
+      one(14, "x - 4 = -9"),
+      one(15, "-x = 7"),
+      one(16, "-3x = 18"),
+      one(17, "x + 15 = 6"),
+      one(18, "7x = -35"),
+      one(19, "x - 10 = -3"),
+      one(20, "x/4 = -3"),
+      one(21, "-5x = -30"),
+      one(22, "x - 8 = -2"),
+      one(23, "-x/2 = 4"),
+      one(24, "x + 11 = -2"),
     ],
   },
   {
@@ -192,6 +203,18 @@ export const LEVELS: readonly LevelDefinition[] = [
       two(10, "7x + 1 = 50"),
       two(11, "x/5 - 2 = 3"),
       two(12, "4x - 10 = 22"),
+      two(13, "2x + 5 = -7"),
+      two(14, "-3x + 4 = 19"),
+      two(15, "5x - 8 = -23"),
+      two(16, "x/2 - 6 = -9"),
+      two(17, "-2x - 7 = 5"),
+      two(18, "4x + 9 = -3"),
+      two(19, "-x + 12 = 20"),
+      two(20, "3x - 14 = -2"),
+      two(21, "x/3 + 5 = 1"),
+      two(22, "-4x + 3 = -21"),
+      two(23, "-2x + 6 = 18"),
+      two(24, "-x/5 + 2 = 6"),
     ],
   },
   {
@@ -244,11 +267,23 @@ export const LEVELS: readonly LevelDefinition[] = [
       both(10, "-x + 4 = 2x - 8"),
       both(11, "-2x + 7 = 1"),
       both(12, "-2x + 3 = 11"),
+      both(13, "-3x + 7 = -4x + 1"),
+      both(14, "5x - 9 = 2x + 6"),
+      both(15, "2x + 14 = 5x - 4"),
+      both(16, "-2x + 3 = x - 12"),
+      both(17, "7x + 5 = 9x - 7"),
+      both(18, "4x - 11 = 6x + 3"),
+      both(19, "-5x - 8 = -2x + 7"),
+      both(20, "3x + 12 = -x - 4"),
+      both(21, "-x + 8 = 3x - 12"),
+      both(22, "-4x + 9 = -7x - 6"),
+      both(23, "6x - 2 = 3x - 20"),
+      both(24, "-x - 5 = 4x + 10"),
     ],
   },
   {
     id: "brackets",
-    number: 4,
+    number: 5,
     kind: "equations",
     expects: "one",
     text: {
@@ -300,37 +335,47 @@ export const LEVELS: readonly LevelDefinition[] = [
       brk(14, "6(x - 2) = 4(x + 1) + 2"),
       brk(15, "10 - 2(x + 1) = 4"),
       brk(16, "5(2x - 1) = 3(3x + 2)"),
+      brk(17, "-4(x - 2) = 12"),
+      brk(18, "-3(2x + 1) = 9"),
+      brk(19, "4(x - 2) = -3(x + 5) + 28"),
+      brk(20, "5 - 2(x + 4) = x - 9"),
+      brk(21, "-2(x - 6) = 3(x + 2) + 11"),
+      brk(22, "3(x + 4) - 2(x - 1) = -5"),
+      brk(23, "-4(x + 2) + 3 = 2(x - 5) - 7"),
+      brk(24, "7 - 3(2x - 1) = 4x - 20"),
+      brk(25, "2(3x - 4) - 5(x + 1) = -9"),
+      brk(26, "-2(x + 1) - 3(x - 5) = 2x + 27"),
     ],
   },
   {
     id: "fractions",
-    number: 5,
+    number: 6,
     kind: "equations",
     expects: "one",
     text: {
       en: {
-        title: "Fractions and ratios",
-        tagline: "Clear the denominators, then solve",
+        title: "Fractions, decimals and ratios",
+        tagline: "Clear the denominators and decimals, then solve",
         intro: {
           lead: "When an equation has fractions, the easiest way is to get rid of them. Multiply both sides by a number that every denominator divides into. Then you are back to whole numbers.",
           points: [
             "Find the common denominator: the smallest number every denominator divides into.",
             "Multiply both sides, and so every term, by it. The fractions disappear.",
-            "A ratio such as x/6 = 4/3 is solved the same way: multiply both sides by 6.",
+            "A ratio such as x/6 = 4/3 is solved the same way. Decimals vanish when you multiply by 10 or 100.",
           ],
           keyIdea: "Fractions are in the way. Multiply them out of the equation first.",
         },
         exampleLead: "The denominators are 2 and 3, so we first combine the x terms, then multiply both sides by 6.",
       },
       fi: {
-        title: "Murtolausekkeet ja verranto",
-        tagline: "Poista nimittäjät ja ratkaise sitten",
+        title: "Murtoluvut, desimaaliluvut ja verranto",
+        tagline: "Poista nimittäjät ja desimaalit, ratkaise sitten",
         intro: {
           lead: "Kun yhtälössä on murtolukuja, helpointa on päästä niistä eroon. Kerro molemmat puolet luvulla, johon jokainen nimittäjä sopii. Sitten ollaan taas kokonaislukujen parissa.",
           points: [
             "Etsi yhteinen nimittäjä: pienin luku, johon jokainen nimittäjä sopii.",
             "Kerro sillä molemmat puolet ja siis jokainen termi. Murtoluvut häviävät.",
-            "Verranto, kuten x/6 = 4/3, ratkeaa samalla tavalla: kerro molemmat puolet luvulla 6.",
+            "Verranto, kuten x/6 = 4/3, ratkeaa samoin. Desimaalit häviävät, kun kerrot luvulla 10 tai 100.",
           ],
           keyIdea: "Murtoluvut ovat tiellä. Kerro ne ensin pois yhtälöstä.",
         },
@@ -346,6 +391,19 @@ export const LEVELS: readonly LevelDefinition[] = [
       fra(4, "(x - 3)/4 = 2"),
       fra(5, "2x/3 + 1 = 5"),
       fra(6, "3x/4 - 2 = 7"),
+      // Decimals come in the middle: easier than the long mixed equations that follow.
+      fra(17, "0.5x + 1.2 = 3.7"),
+      fra(19, "0.25x + 1 = 2.5"),
+      fra(20, "2.4 - 0.3x = 0.9"),
+      fra(21, "-x/3 + 2 = 5"),
+      fra(22, "(x - 5)/2 = -4"),
+      fra(23, "2x/3 - 1 = -9"),
+      fra(24, "x/2 + x/4 = -6"),
+      fra(25, "(x + 4)/3 = (x - 2)/4 - 1"),
+      fra(26, "-3x/4 + 2 = 11"),
+      fra(27, "x/5 - x/2 = 3"),
+      fra(28, "(2x - 3)/5 = -3"),
+      fra(18, "1.5x - 2 = 0.5x + 3"),
       fra(7, "x/6 = 4/3"),
       fra(8, "(x + 4)/5 = 6/2"),
       fra(9, "(2x + 1)/3 = 5"),
@@ -360,7 +418,7 @@ export const LEVELS: readonly LevelDefinition[] = [
   },
   {
     id: "word",
-    number: 6,
+    number: 4,
     kind: "stories",
     expects: "one",
     tiers: [1, 2, 3],
@@ -371,9 +429,9 @@ export const LEVELS: readonly LevelDefinition[] = [
         intro: {
           lead: "In a word problem the equation is hidden inside a story. First you write the equation yourself, then you solve it with the moves you already know.",
           points: [
-            "Decide what x stands for. The story tells you.",
-            "Find the number that repeats (for each kilometre, each week) and the number that happens once.",
-            "Work out what the total is, and put it after the equals sign.",
+            "Read the story. Call one thing you are asked about x and write the others with x (“3 more than x” is x + 3).",
+            "Write the equation from the facts of the story, then solve it.",
+            "Check that it fits the story, then answer in words with the unit. The answer is not always x.",
           ],
           keyIdea: "Turn the story into maths first. Solve only after the equation says what the story says.",
         },
@@ -385,9 +443,9 @@ export const LEVELS: readonly LevelDefinition[] = [
         intro: {
           lead: "Sanallisessa tehtävässä yhtälö on piilotettu tarinaan. Kirjoita ensin yhtälö itse ja ratkaise se sitten tutuilla siirroilla.",
           points: [
-            "Päätä, mitä x tarkoittaa. Tarina kertoo sen.",
-            "Etsi luku, joka toistuu (jokaista kilometriä tai viikkoa kohden), ja luku, joka tapahtuu vain kerran.",
-            "Päätä, mikä on yhteensä, ja kirjoita se yhtäsuuruusmerkin jälkeen.",
+            "Lue tarina. Merkitse yhtä kysyttyä asiaa x:llä ja kirjoita muut x:n avulla (”3 enemmän kuin x” on x + 3).",
+            "Kirjoita yhtälö tarinan tiedoista ja ratkaise se.",
+            "Tarkista, että vastaus sopii tarinaan, ja vastaa sanallisesti yksikön kanssa. Vastaus ei aina ole x.",
           ],
           keyIdea: "Muuta tarina ensin matematiikaksi. Ratkaise vasta, kun yhtälö kertoo saman kuin tarina.",
         },
@@ -400,7 +458,7 @@ export const LEVELS: readonly LevelDefinition[] = [
   },
   {
     id: "special",
-    number: 7,
+    number: 8,
     kind: "equations",
     expects: "special",
     text: {
@@ -452,7 +510,7 @@ export const LEVELS: readonly LevelDefinition[] = [
   },
   {
     id: "hard-word",
-    number: 8,
+    number: 7,
     kind: "stories",
     expects: "one",
     tiers: [4, 5, 6],
@@ -541,9 +599,33 @@ export const LEVELS: readonly LevelDefinition[] = [
       chl(11, "4(x + 2) - 3(x - 1) = 2(x + 5) - 4"),
       chl(12, "x/4 + (x - 2)/3 = 4"),
       chl(13, "(x + 3)/2 - (x - 1)/3 = 3"),
+      chl(14, "-2(3x - 4) + 5 = 4(x + 1) + 29"),
+      chl(15, "(x + 6)/2 - (2x - 1)/3 = -3"),
+      chl(16, "3(x - 4) - 2(2x + 1) = -2(x - 7) + 3x - 16"),
+      chl(17, "(3x - 5)/4 - (x + 3)/2 = -4"),
+      chl(18, "-5(x + 2) + 4(2x - 3) = 3(x - 1) + x - 24"),
+      chl(19, "x/3 - (x + 2)/4 + 1 = (x - 4)/6"),
+      chl(20, "(2x - 6)/3 + 5 = (x + 1)/2 - 2"),
+      chl(21, "-2(2x + 3) - 3(1 - x) = 4(x - 5) + 6"),
+      chl(22, "(5 - x)/2 + (x + 7)/3 = x - 1"),
+      chl(23, "4 - 3(2 - x) = 5(x - 1) - 3(x + 6)"),
+      chl(24, "x - (x - 3)/2 = (x + 9)/3 + 2"),
+      chl(25, "-3(2x - 5) - 2(4 - x) = 7(1 - x) - 6"),
+      chl(26, "(4x - 9)/5 - (3x + 3)/4 = (2x - 6)/3 + 5"),
+      chl(27, "2(2x - 3) - 4(x - 9) = (3x + 4)/2 + 7"),
+      chl(28, "x/2 - 2(2x - 6) = (5x - 2)/3 - 8"),
+      chl(29, "(5x - 4)/2 - (5x + 5)/5 = (4x + 9)/3 - 4"),
+      chl(30, "3(2x + 9) + (3x - 9)/4 = 4(2x + 4) - 5"),
+      chl(31, "4(3x - 6) - 5(x + 4) = (x - 8)/2 - 1"),
+      chl(34, "-3(x - 2) + 7 = (x + 4)/2 + 18"),
+      chl(32, "(x - 5)/2 - (5x - 3)/6 = (2x + 3)/3 - 6"),
+      chl(33, "x/2 - 3(2x + 7) = (5x - 2)/2 + 4"),
     ],
   },
 ];
+
+/** The levels in the order a learner meets them: the order of the chapters of the textbook. */
+export const LEVELS: readonly LevelDefinition[] = [...AUTHORED].sort((a, b) => a.number - b.number);
 
 export function getLevel(id: string): LevelDefinition | undefined {
   return LEVELS.find((level) => level.id === id);
@@ -574,7 +656,7 @@ export function toExercise(definition: ExerciseDefinition): Exercise {
   return {
     id: definition.id,
     source: definition.equation,
-    equation: mustParseEquation(definition.equation),
+    equation: startEquation(definition.equation),
     prelude: makePrelude(definition.equation),
   };
 }

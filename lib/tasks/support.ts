@@ -33,6 +33,7 @@ export const KIND_TOPICS: Record<TaskKind, readonly string[]> = {
   step: ["one-step", "two-step", "both", "fractions"],
   mistake: ["two-step", "both", "fractions"],
   equation: ["word", "hard-word"],
+  hand: ["basics", "one-step", "two-step", "both", "brackets", "fractions", "challenge"],
 };
 
 export function supports(kind: TaskKind, topic: string): boolean {

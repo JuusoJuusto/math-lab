@@ -51,7 +51,7 @@ export interface EngineText {
   /** "Add", "Subtract", ... exactly as they appear on the operation buttons. */
   readonly kindNames: Record<OperationKind, string>;
   /** The names of the two ways of moving: the same on both sides, or flipping a term across. */
-  readonly modeNames: { readonly balance: string; readonly flip: string; readonly chain: string };
+  readonly modeNames: { readonly balance: string; readonly flip: string; readonly chain: string; readonly guess: string };
   /** "add 5 to both sides", lower case, ready for a sentence. */
   readonly phrase: (kind: OperationKind, amount: string) => string;
   /** Rewrites maths text so that screen readers pronounce it sensibly. */
@@ -133,8 +133,11 @@ export interface EngineText {
     readonly simplifyQuestion: (part: string) => string;
     readonly expandRight: (part: string, result: string) => string;
     readonly simplifyRight: (part: string, result: string) => string;
+    readonly decimalsStage: string;
+    readonly decimalsQuestion: (part: string, factor: number) => string;
+    readonly decimalsRight: (part: string, result: string, factor: number) => string;
     readonly wrongTitle: string;
-    readonly wrong: Record<"forgot-term" | "sign" | "denominators" | "arithmetic", string>;
+    readonly wrong: Record<"forgot-term" | "sign" | "denominators" | "arithmetic" | "decimal-term" | "decimal-point", string>;
     readonly done: string;
   };
 

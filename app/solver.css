@@ -316,7 +316,7 @@
 .eq-flip:focus-visible { outline: 3px solid #0c5e9a; outline-offset: 3px; }
 .eq-static { display: inline-flex; align-items: center; gap: 0.2em; }
 
-/* The operation, written beside the equation as in a notebook: | + 5 */
+/* The operation, written beside the equation as in a notebook: || + 5 */
 .eq-bar {
   margin-left: 0.5em; padding: 0 0.32em; border-radius: 0.3em; background: var(--s-applied-bg); color: var(--s-applied-ink);
   font-size: 0.8em; font-weight: 600; white-space: nowrap; animation: solver-pop 0.22s ease-out;
@@ -464,3 +464,102 @@ line.graph-right { stroke: #f39a14; }
   .move-options { flex-wrap: wrap; }
   .chain-input { width: 72px; }
 }
+
+/* A second way to solve the same equation, shown after the worked example */
+.other-way { padding: 18px; border: 1px solid #c9dde4; border-radius: var(--radius); background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08); }
+.other-way-steps { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.other-way-steps li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 8px 10px; border-radius: 10px; background: #f3f8fa; }
+.verify-verdict { margin: 4px 0 0; font: 700 15px/1.2 var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+.verify-pass .verify-verdict { color: #14573b; }
+.verify-fail .verify-verdict { color: #7d2630; }
+
+/* The balance picture (vaaka) */
+.balance-scale { display: block; width: 100%; max-width: 340px; height: auto; margin: 0 auto; }
+.scale-pan { fill: #8fb3c1; }
+.scale-beam { fill: #3d6272; }
+.scale-stand { fill: #5b8294; }
+.scale-ball circle { fill: #f2994a; stroke: #c5731f; stroke-width: 1.5; }
+.scale-ball text { fill: #fff; font: italic 700 14px var(--font-display, serif); }
+.scale-weight rect { fill: #e8f1f5; stroke: #5b8294; stroke-width: 1.5; }
+.scale-weight text { fill: #164655; font: 700 15px var(--font-display, sans-serif); }
+.scale-times { fill: #164655; font: 700 13px var(--font-display, sans-serif); }
+
+/* The last step of a story whose question is not "what is x" */
+.final-row { display: flex; align-items: center; gap: 10px; }
+.final-input { max-width: 140px; }
+.final-unit { font-weight: 700; color: var(--s-ink, #164655); }
+.final-feedback { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: #fff7f7; border: 1px solid #f0bcbc; color: #7d2630; font-size: 14.5px; line-height: 1.5; }
+
+/* The arrows from a number to each term of the bracket it multiplies */
+.distribute { display: block; width: min(100%, 300px); height: auto; margin: 4px auto 10px; }
+.distribute-arc { fill: none; stroke: #e8832a; stroke-width: 2.4; stroke-linecap: round; }
+.distribute-head { fill: #e8832a; }
+.distribute-text { fill: var(--s-ink, #164655); font: 600 26px var(--font-display, sans-serif); }
+.distribute-factor { fill: #c5731f; }
+.eq-verdict { text-transform: uppercase; letter-spacing: 0.05em; }
+.eq-verdict-true { background: #e3f6ec; color: #14573b; }
+.eq-verdict-false { background: #fdeaea; color: #7d2630; }
+
+/* Guess and check */
+.guess { display: grid; gap: 12px; }
+.guess-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.guess-row .build-label { flex-basis: 100%; margin: 0; }
+.guess-input { max-width: 150px; }
+.guess-nudge { margin: 0; padding: 10px 12px; border-radius: 10px; background: #fff8e8; border: 1px solid #f0d9a0; color: #5d4210; font-size: 15px; line-height: 1.5; }
+.guess-table { width: 100%; border-collapse: collapse; font-size: 15px; background: #fff; border: 1px solid #c9dde4; border-radius: 10px; overflow: hidden; }
+.guess-table caption { text-align: left; padding: 6px 2px; font-weight: 700; color: #164655; }
+.guess-table th, .guess-table td { padding: 8px 12px; text-align: left; border-top: 1px solid #e3eef2; }
+.guess-table thead th { background: #f3f8fa; border-top: 0; font-size: 14px; color: #4a6b78; }
+.guess-right th, .guess-right td { background: #e3f6ec; font-weight: 700; }
+
+/* What "work out both sides" does, spelled out with the real numbers */
+.simplify-explain { display: grid; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.simplify-explain li { padding: 8px 12px; border-radius: 10px; background: #fff; border: 1px solid #c9dde4; font: 600 16px/1.4 var(--font-display, sans-serif); color: #164655; }
+
+/* "Only this topic" while practising one area */
+.topic-banner { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 6px 12px; border-radius: 999px; background: #e3f6ec; color: #14573b; font: 700 14px/1.2 var(--font-display, sans-serif); }
+/* The two bars of the notebook notation: heavier, so it reads as two lines */
+.eq-bar, .history-bar { font-weight: 800; letter-spacing: 0.04em; }
+
+/* The worksheet: finished steps stack downward, and the current equation is the last card. */
+.workspace-single { grid-template-columns: minmax(0, 1fr); }
+.history-sheet { padding: 16px 18px; border: 1px solid #c9dde4; border-radius: var(--radius); background: #fff; }
+.history-sheet .history-title { margin: 0 0 10px; font: 700 15px/1.2 var(--font-display, sans-serif); letter-spacing: 0.04em; text-transform: uppercase; color: #4a6b78; }
+.history-sheet .history-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.history-sheet .history-item { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; padding: 10px 12px; border-radius: 12px; background: #f3f8fa; animation: row-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.history-sheet .history-notebook { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 2px 0; font: 700 20px/1.3 var(--font-display, sans-serif); color: #164655; }
+.history-sheet .history-applied { margin: 0; font: 600 16px/1.4 var(--font-display, sans-serif); color: #5a7685; }
+/* An arrow between the worksheet and the current equation: the next line goes below. */
+.history-sheet::after { content: ""; display: block; width: 0; height: 0; margin: 12px auto 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 14px solid #8fb3c1; animation: nudge 1.6s ease-in-out infinite; }
+@keyframes row-in { from { opacity: 0; transform: translateY(-14px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+/* The current equation arrives with a small pop each time it changes. */
+.eq { animation: eq-pop 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes eq-pop { from { transform: scale(0.97); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .history-sheet .history-item, .history-sheet::after, .eq { animation: none; }
+}
+
+/* Solving by hand */
+.hand-banner { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 12px 16px; border-radius: 14px; background: #fff3d6; border: 2px solid #f0c75e; color: #5d4210; font: 700 16px/1.4 var(--font-display, sans-serif); }
+.hand-intro { padding: 14px 16px; border-radius: 14px; background: #eef5f8; }
+.hand-intro .build-title { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; }
+.hand-form { display: grid; gap: 12px; padding: 16px; border-radius: var(--radius); background: #fff; border: 2px solid #c9dde4; }
+.hand-form .write-input { font-size: 22px; }
+
+/* "You seem to know this" popup */
+.popup-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(12, 38, 48, 0.55); animation: fade-in 220ms ease-out both; }
+.popup { width: min(100%, 440px); padding: 28px 24px 24px; border-radius: 24px; background: #fff; text-align: center; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35); animation: pop-in 420ms cubic-bezier(0.2, 1.2, 0.3, 1) both; }
+.popup-icon { display: inline-grid; place-items: center; width: 70px; height: 70px; border-radius: 50%; background: #fff3d6; color: #c5731f; animation: wiggle 1.4s ease-in-out 450ms 2; }
+.popup h2 { margin: 12px 0 8px; font: 700 26px/1.2 var(--font-display, sans-serif); color: #12303b; }
+.popup p { margin: 0 0 20px; color: #355a69; font-size: 17px; line-height: 1.55; }
+.popup-actions { display: grid; gap: 10px; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(24px) scale(0.9); } to { opacity: 1; transform: none; } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg) scale(1.08); } 75% { transform: rotate(10deg) scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .popup-backdrop, .popup, .popup-icon { animation: none; } }
+
+/* Which way to solve it: a visible question and a plain-words description of the chosen way */
+.move-title { padding: 0; margin: 0 0 6px; font: 700 14px/1.2 var(--font-display, sans-serif); letter-spacing: 0.05em; text-transform: uppercase; color: #4a6b78; }
+.move-hint { margin: 8px 2px 0; color: #2f4d5a; font-size: 15px; line-height: 1.5; }
+.hand-task { margin: 10px 0 0; padding: 10px 14px; border-radius: 12px; background: #fff3d6; border: 2px solid #f0c75e; color: #5d4210; font: 700 18px/1.4 var(--font-display, sans-serif); }

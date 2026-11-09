@@ -1,14 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Timer } from "lucide-react";
+import { ArrowLeft, Target, Timer } from "lucide-react";
+import { getTopic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
 import { navigate } from "@/hooks/useRoute";
 import { useProgress, updateProgress } from "@/hooks/useProgress";
 import { localDate } from "@/hooks/useToday";
 import { XP, recordDailyDone, recordTask, recordTimeAttack } from "@/lib/progress";
 import { type Route } from "@/lib/routes";
-import { buildSession, generateTask, getMode, gradeChoice, gradeNumber, isInvalid, type Grade } from "@/lib/tasks";
+import { buildSession, generateTask, getMode, gradeChoice, gradeHand, gradeNumber, isInvalid, type Grade } from "@/lib/tasks";
+import type { WorkspaceOutcome } from "@/components/solver/SolverWorkspace";
+import { crossedMilestones, percentDone } from "@/src/studyHubMilestones";
+import { reportProgress } from "@/src/studyHubProgress";
 import { startSession } from "./start";
 import { SessionResults, type AnswerRecord } from "./SessionResults";
 import { TaskCard, type Phase } from "./TaskCard";
@@ -46,9 +50,20 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
   const progressRef = useRef(progress);
   const deadline = useRef(0);
 
+  // What Study Hub is told about this session: one name for the same kind of practice every time, and what it is called now.
+  const reportRef = useRef({ ref: `practice-${mode.id}`, label: modeText.title, total: specs.length, quick });
   useEffect(() => {
     progressRef.current = progress;
+    reportRef.current = { ref: `practice-${mode.id}`, label: modeText.title, total: specs.length, quick };
   });
+
+  // A session that has tasks has started.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (startedRef.current || specs.length === 0) return;
+    startedRef.current = true;
+    reportProgress("started", { label: reportRef.current.label, ref: reportRef.current.ref });
+  }, [specs.length]);
 
   // The words change with the language; the task itself (numbers, answers, option order) does not.
   const task = useMemo(() => (specs[index] ? generateTask(specs[index], lang) : null), [specs, index, lang]);
@@ -65,6 +80,9 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
       updateProgress((old) => recordDailyDone(old, today));
     }
     if (mode.id === "time") updateProgress((old) => recordTimeAttack(old, correct));
+    // The score of a session is how many tasks were right out of all of them; time attack has no fixed total.
+    const info = reportRef.current;
+    reportProgress("score", { label: info.label, ref: info.ref, value: correct, max: info.quick ? undefined : info.total });
     setFinished(true);
   }, [mode.id]);
 
@@ -107,8 +125,16 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
     const xp = quick ? XP.correctTimeAttack : XP.correctTask;
     updateProgress((old) => recordTask(old, { spec: task.spec, correct: result.correct, xp }));
     const entry: AnswerRecord = { spec: task.spec, correct: result.correct, given: result.given, xp: result.correct ? xp : 0 };
+    const answeredBefore = recordsRef.current.length;
     recordsRef.current = [...recordsRef.current, entry];
     setRecords(recordsRef.current);
+    // A few progress marks (a quarter, a half, three quarters), not one event per task. Time attack has no length to measure.
+    const info = reportRef.current;
+    if (!info.quick) {
+      for (const value of crossedMilestones(percentDone(answeredBefore, info.total), percentDone(answeredBefore + 1, info.total))) {
+        reportProgress("progress", { label: info.label, ref: info.ref, value });
+      }
+    }
     setGrade(result);
     setPhase("feedback");
   }
@@ -123,6 +149,11 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [task, phase],
   );
+
+  function submitHand(outcome: WorkspaceOutcome) {
+    if (!task || phase !== "answering") return;
+    record(gradeHand(task, { lines: outcome.steps, mistakes: outcome.mistakes, hints: outcome.hints }, lang));
+  }
 
   function submit(text: string): string | null {
     if (!task || phase !== "answering") return null;
@@ -175,6 +206,12 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
         <span className="session-xp">{t.xp.gain(answeredXp)}</span>
       </div>
 
+      {route.topic !== "all" && (
+        <p className="topic-banner" data-testid="topic-banner">
+          <Target size={16} aria-hidden="true" /> {t.session.onlyTopic(getTopic(route.topic, lang)?.title ?? route.topic)}
+        </p>
+      )}
+
       {quick ? (
         <div className="timer" role="timer" aria-label={t.session.timer(secondsLeft)}>
           <Timer size={18} aria-hidden="true" />
@@ -207,6 +244,7 @@ export function PracticeSession({ route }: { route: SessionRoute }) {
           picked={picked}
           onChoose={choose}
           onSubmit={submit}
+          onHand={submitHand}
           onNext={advance}
         />
       )}

@@ -21,12 +21,14 @@ import {
   isSolution,
   operation,
   parseEquation,
+  planHand,
   shuffle,
   solveWithTutor,
   solvedValue,
   terminalState,
   type AppliedStep,
   type Equation,
+  type HandVariant,
   type Lang,
   type Operation,
   type Rng,
@@ -128,10 +130,11 @@ function solveTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
       topic: spec.topic,
       prompt: `${storyPassage(story, lang)} ${words.question}`,
       input: { type: "number", unit: words.unit },
-      answerText: `${story.solution} ${words.unit}`.trim(),
-      answerValue: frac(story.solution),
+      answerText: `${story.final ?? story.solution} ${words.unit}`.trim(),
+      answerValue: frac(story.final ?? story.solution),
       checkEquation: story.equations[0],
-      explanation: [words.build, ...workingLines(sample, lang), text.so(`x = ${story.solution}`)],
+      // When the question asks for something worked out from x, say so: x = 7 is not yet the answer.
+      explanation: [words.build, ...workingLines(sample, lang), text.so(`x = ${story.solution}`), ...(story.final !== undefined ? [words.answer] : [])],
     };
   }
 
@@ -154,6 +157,31 @@ function parseEquationOrThrow(text: string): Equation {
   const parsed = parseEquation(text);
   if (!parsed.ok) throw new Error(`Cannot parse "${text}": ${parsed.message}`);
   return parsed.value;
+}
+
+/* ------------------------------- solve by hand ------------------------------- */
+
+/** An equation to solve completely, writing every line. It is graded by what happens in the workspace. */
+function handTask(spec: TaskSpec, rng: Rng, lang: Lang): Task {
+  const text = taskText(lang);
+  const sample = sampleFor(spec, rng);
+  // Mostly whole solutions, with some to finish and some single steps, so the tasks stay varied.
+  const roll = rng();
+  const wanted: HandVariant = roll < 0.55 ? "full" : roll < 0.8 ? "continue" : "write";
+  const pick = int(rng, 0, 9);
+  const plan = planHand(sample.text, wanted, pick);
+  return {
+    spec,
+    kind: "hand",
+    topic: spec.topic,
+    prompt: plan.variant === "continue" ? text.handContinue : plan.variant === "write" ? text.handWrite : text.handPrompt,
+    display: { type: "equation", text: displayEquation(sample) },
+    input: { type: "hand", source: sample.text, variant: plan.variant, pick },
+    answerText: xEquals(sample.solution),
+    answerValue: frac(sample.solution),
+    checkEquation: sample.text,
+    explanation: [...workingLines(sample, lang), text.so(xEquals(sample.solution))],
+  };
 }
 
 /* -------------------------------- true or false ------------------------------ */
@@ -358,6 +386,8 @@ export function generateTask(spec: TaskSpec, lang: Lang = "en"): Task {
       return mistakeTask(spec, rng, lang);
     case "equation":
       return equationTask(spec, rng, lang);
+    case "hand":
+      return handTask(spec, rng, lang);
   }
 }
 

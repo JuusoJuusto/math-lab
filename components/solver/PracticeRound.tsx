@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, PenLine } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
-import { pickRound, type Exercise, type ExerciseResult, type LevelDefinition } from "@/lib/equations";
+import { levelText, pickFrom, pickRound, planHand, roundVariant, type Exercise, type ExerciseResult, type LevelDefinition } from "@/lib/equations";
+import { crossedMilestones, percentDone } from "@/src/studyHubMilestones";
+import { reportProgress } from "@/src/studyHubProgress";
 import type { MoveMode } from "./MoveTabs";
+import { HandWorkspace } from "./HandWorkspace";
 import { SolverWorkspace, type WorkspaceOutcome } from "./SolverWorkspace";
 
 export interface RoundReport {
@@ -45,9 +48,14 @@ export function PracticeRound({ level, avoid, onComplete, onEquationSolved, onEx
 
   const exercise = exercises[index];
   const isLast = index + 1 === exercises.length;
+  // Four in five exercises are written by hand, in varied formats; the first uses the buttons.
+  const handVariant = roundVariant(index, exercises.length);
 
   function next(outcome: WorkspaceOutcome) {
     const updated = [...results, { id: exercise.id, ...outcome }];
+    for (const value of crossedMilestones(percentDone(index, exercises.length), percentDone(index + 1, exercises.length))) {
+      reportProgress("progress", { label: levelText(level, lang).title, ref: `lesson-${level.id}`, value });
+    }
     onEquationSolved?.();
     if (isLast) {
       onComplete({ exercises, results: updated });
@@ -78,16 +86,32 @@ export function PracticeRound({ level, avoid, onComplete, onEquationSolved, onEx
           </li>
         ))}
       </ol>
-      <SolverWorkspace
-        // A change of language starts the equation again, so every message is in one language.
-        key={`${exercise.id}-${lang}`}
-        equation={exercise.equation}
-        prelude={exercise.prelude}
-        continueLabel={isLast ? t.solver.finishLevel : t.solver.nextEquation}
-        moveMode={moveMode}
-        onMoveModeChange={setMoveMode}
-        onContinue={next}
-      />
+      {handVariant !== null ? (
+        <>
+          <p className="hand-banner">
+            <PenLine size={18} aria-hidden="true" /> {t.solver.round.byHand[handVariant]}
+          </p>
+          <HandWorkspace
+            key={`${exercise.id}-${lang}-hand`}
+            source={exercise.source}
+            equation={exercise.equation}
+            plan={planHand(exercise.source, handVariant, pickFrom(exercise.id))}
+            continueLabel={isLast ? t.solver.finishLevel : t.solver.nextEquation}
+            onContinue={next}
+          />
+        </>
+      ) : (
+        <SolverWorkspace
+          // A change of language starts the equation again, so every message is in one language.
+          key={`${exercise.id}-${lang}`}
+          equation={exercise.equation}
+          prelude={exercise.prelude}
+          continueLabel={isLast ? t.solver.finishLevel : t.solver.nextEquation}
+          moveMode={moveMode}
+          onMoveModeChange={setMoveMode}
+          onContinue={next}
+        />
+      )}
     </section>
   );
 }

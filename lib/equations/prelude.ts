@@ -14,15 +14,15 @@
  */
 
 import { add, frac, isZero, mul, type Fraction } from "./fraction";
-import { expr, type Equation, type LinearExpr } from "./expression";
-import { formatExpression, MINUS } from "./format";
+import { equation as makeEquation, expr, scaleExpr, type Equation, type LinearExpr } from "./expression";
+import { formatEquation, formatExpression, MINUS } from "./format";
 import { parseEquation, parseExpression } from "./parse";
 import { createRng, shuffle } from "./rng";
 
-export type PreludeKind = "expand" | "simplify";
+export type PreludeKind = "expand" | "simplify" | "decimals";
 
 /** Why a wrong option is wrong. The tutor explains each reason in the learner's language. */
-export type WrongReason = "forgot-term" | "sign" | "denominators" | "arithmetic";
+export type WrongReason = "forgot-term" | "sign" | "denominators" | "arithmetic" | "decimal-term" | "decimal-point";
 
 export interface PreludeOption {
   readonly text: string;
@@ -41,6 +41,8 @@ export interface PreludeStep {
   readonly correct: number;
   /** The whole equation once this step is done: `3x − 6 = 2x + 5`. */
   readonly after: string;
+  /** For the decimals step: what every term is multiplied by (10 or 100). */
+  readonly factor?: number;
 }
 
 export interface Prelude {
@@ -180,6 +182,96 @@ function needsSimplifying(side: string): boolean {
   return splitTerms(side).length > Math.max(simple, 1);
 }
 
+
+/* -------------------------------------------------------------------------- */
+/* Decimals                                                                   */
+/* -------------------------------------------------------------------------- */
+
+const DECIMAL = /\d[.,]\d/;
+
+/** True when the equation is written with decimal numbers, such as `0.5x + 1.2 = 3.7`. */
+export function hasDecimals(source: string): boolean {
+  return DECIMAL.test(plain(source));
+}
+
+/** The most digits after a decimal point: 1 for `0.5`, 2 for `0.25`. */
+function decimalPlaces(source: string): number {
+  let most = 0;
+  for (const match of plain(source).matchAll(/\d*[.,](\d+)/g)) most = Math.max(most, match[1].length);
+  return most;
+}
+
+/** 10 for one decimal place, 100 for two: the number that turns every decimal into a whole number. */
+export function decimalFactor(source: string): number {
+  const places = decimalPlaces(source);
+  if (places < 1 || places > 3) throw new Error(`Cannot remove the decimals of "${source}"`);
+  return 10 ** places;
+}
+
+/** A number written the way a learner writes it: `1.2`, `3`, `0.25`. */
+function numberText(value: Fraction): string {
+  return value.d === 1 ? String(value.n) : String(value.n / value.d);
+}
+
+/** One side of an equation written out with decimals where there are any: `1.5x − 2`. */
+function sideText(x: Fraction, c: Fraction): string {
+  const xText = isZero(x) ? "" : x.n === x.d ? "x" : x.n === -x.d ? "-x" : `${numberText(x)}x`;
+  if (xText === "") return numberText(c);
+  if (isZero(c)) return xText;
+  return `${xText} ${c.n < 0 ? "-" : "+"} ${numberText(frac(Math.abs(c.n), c.d))}`;
+}
+
+function decimalsStep(source: string): PreludeStep {
+  const parsedEquation = preludeParse(source);
+  const factor = decimalFactor(source);
+  const scale = frac(factor);
+  const scaled = makeEquation(scaleExpr(parsedEquation.left, scale), scaleExpr(parsedEquation.right, scale));
+  const resultText = formatEquation(scaled);
+
+  const { left, right } = parsedEquation;
+  const times = (value: Fraction) => mul(value, scale);
+  const one = frac(1);
+  const make = (lx: Fraction, lc: Fraction, rx: Fraction, rc: Fraction): string => show(`${sideText(lx, lc)} = ${sideText(rx, rc)}`);
+  const [lx, lc, rx, rc] = [times(left.x), times(left.c), times(right.x), times(right.c)];
+
+  const candidates: [string, WrongReason][] = [];
+  // A term that was left as it was written: only the decimals were multiplied.
+  if (!isZero(left.c)) candidates.push([make(lx, left.c, rx, rc), "decimal-term"]);
+  if (!isZero(left.x)) candidates.push([make(left.x, lc, rx, rc), "decimal-term"]);
+  if (!isZero(right.c)) candidates.push([make(lx, lc, rx, right.c), "decimal-term"]);
+  if (!isZero(right.x)) candidates.push([make(lx, lc, right.x, rc), "decimal-term"]);
+  // The point moved one place too far on one term.
+  if (!isZero(left.c)) candidates.push([make(lx, mul(lc, frac(10)), rx, rc), "decimal-point"]);
+  if (!isZero(right.c)) candidates.push([make(lx, lc, rx, mul(rc, frac(10))), "decimal-point"]);
+  if (!isZero(left.x)) candidates.push([make(mul(lx, frac(10)), lc, rx, rc), "decimal-point"]);
+  // A sign lost, and a slip of one.
+  if (!isZero(left.c)) candidates.push([make(lx, mul(lc, frac(-1)), rx, rc), "sign"]);
+  if (!isZero(left.c)) candidates.push([make(lx, add(lc, one), rx, rc), "arithmetic"]);
+  if (!isZero(right.c)) candidates.push([make(lx, lc, rx, add(rc, one)), "arithmetic"]);
+
+  const { options, correct } = arrange(`decimals|${source}`, resultText, pickWrong(resultText, candidates));
+  return { kind: "decimals", part: show(plain(source).replace(/\s+/g, " ").trim()), result: resultText, options, correct, after: resultText, factor };
+}
+
+/** The equation read exactly, with decimals as fractions (0.5 is 1/2). */
+function preludeParse(source: string): Equation {
+  const result = parseEquation(source);
+  if (!result.ok) throw new Error(`Cannot read "${source}": ${result.message}`);
+  return result.value;
+}
+
+/**
+ * The equation the balance moves start from. Usually that is the equation
+ * itself. An equation written with decimals starts from the same equation with
+ * every term multiplied by 10 or 100, which is what the clean-up question asks.
+ */
+export function startEquation(source: string): Equation {
+  const equation = preludeParse(source);
+  if (!hasDecimals(source)) return equation;
+  const scale = frac(decimalFactor(source));
+  return makeEquation(scaleExpr(equation.left, scale), scaleExpr(equation.right, scale));
+}
+
 /**
  * The questions that lead from an equation as written to the one the balance
  * moves start from. Brackets are opened first, left to right, then each side
@@ -188,6 +280,8 @@ function needsSimplifying(side: string): boolean {
  */
 export function makePrelude(source: string): Prelude {
   const written = plain(source).replace(/\s+/g, " ").trim();
+  // Decimals come first and need one question: multiply every term by 10 or 100.
+  if (hasDecimals(written)) return { source: show(written), steps: [decimalsStep(written)] };
   const steps: PreludeStep[] = [];
   let current = written;
 
@@ -223,7 +317,28 @@ export function makePrelude(source: string): Prelude {
 
 /** The equation the prelude ends at, for checking against the parser. */
 export function preludeTarget(source: string): Equation {
-  const result = parseEquation(source);
-  if (!result.ok) throw new Error(`Cannot read "${source}": ${result.message}`);
-  return result.value;
+  return startEquation(source);
+}
+
+/** A number multiplying a bracket: in `3(x − 2)` the factor is 3 and the terms are x and −2. */
+export interface Distribution {
+  readonly factor: string;
+  readonly terms: readonly string[];
+}
+
+/**
+ * Reads a part such as `3(x − 2)`, `−2(x − 3)` or `− 2(x + 4)` for the arrows
+ * textbooks draw from the number to each term inside the bracket. A minus in
+ * front of the whole product belongs to the factor (`− 2(x + 4)` multiplies by
+ * −2). Anything else, such as a division `(x + 1)/2`, has no arrows.
+ */
+export function distributionOf(part: string): Distribution | null {
+  const match = plain(part).replace(/\s+/g, "").match(/^(-?)(-?\d+)\(([^()]+)\)$/);
+  if (!match) return null;
+  const [, front, digits, inside] = match;
+  const factor = (front ? -1 : 1) * Number(digits);
+  const terms = splitTerms(inside);
+  if (terms.length === 0 || terms.length > 3) return null;
+  const minus = (text: string) => text.replace(/-/g, "−");
+  return { factor: minus(String(factor)), terms: terms.map(minus) };
 }

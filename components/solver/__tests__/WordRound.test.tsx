@@ -43,9 +43,9 @@ describe("the word-problem level", () => {
     expect(screen.getByText("2. Solve it")).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "Show the first step" }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: "Show the next step" }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     expect(screen.getByText("The ride was 6 km long.")).toBeTruthy();
   });
 
@@ -68,6 +68,16 @@ describe("the word-problem level", () => {
 
       await solveOnScreenEquation(user);
       await user.click(screen.getByRole("button", { name: /Now answer the question/ }));
+      if (story.final !== undefined) {
+        // The question asks for something worked out from x, so x alone is not the answer.
+        const field = screen.getByLabelText("Your answer");
+        await user.type(field, String(story.solution));
+        await user.click(screen.getByRole("button", { name: "Check my answer" }));
+        expect(document.querySelector(".final-feedback")?.textContent).toContain("is not the answer yet");
+        await user.clear(field);
+        await user.type(field, String(story.final));
+        await user.click(screen.getByRole("button", { name: "Check my answer" }));
+      }
       expect(screen.getByText(`x = ${story.solution}`)).toBeTruthy();
       expect(screen.getByText(story.i18n.en.answer)).toBeTruthy();
       await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next problem/ }));
@@ -79,7 +89,7 @@ describe("the word-problem level", () => {
     // The test helper asks for hints to play each move, so hints are mentioned.
     expect(screen.getByText(/You solved 5 problems\. You used \d+ hints/)).toBeTruthy();
     // The next level is the special cases.
-    expect(screen.getByRole("button", { name: /^Next: No solution or infinitely many/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Next: Equations with brackets/ })).toBeTruthy();
   });
 
   it("starts with the easy problems and ends with the ones that have x on both sides or two steps", () => {

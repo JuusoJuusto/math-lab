@@ -16,9 +16,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - run: npm install
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # Every page in both languages, the files Cloudflare needs, and nothing loaded from another site.
+      - run: npm run verify

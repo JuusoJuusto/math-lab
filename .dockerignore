@@ -3,6 +3,7 @@ node_modules
 out
 .git
 .github
+.wrangler
 .vscode
 .idea
 *.log
@@ -10,3 +11,4 @@ out
 .env.*
 !.env.example
 .DS_Store
+docs

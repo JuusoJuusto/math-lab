@@ -21,7 +21,7 @@ export const fi: EngineText = {
   times: "·",
   divide: ":",
   kindNames: { add: "Lisää", subtract: "Vähennä", multiply: "Kerro", divide: "Jaa" },
-  modeNames: { balance: "Molemmat puolet", flip: "Siirrä termi", chain: "Käänteisoperaatiot" },
+  modeNames: { balance: "Molemmat puolet", flip: "Siirrä termi", chain: "Käänteisoperaatiot", guess: "Arvaa ja tarkista" },
 
   phrase(kind, amount) {
     switch (kind) {
@@ -109,9 +109,9 @@ export const fi: EngineText = {
     solved: (value, sameAs) =>
       `x on yksin, joten x = ${value}${sameAs ? ` (${sameAs} tarkoittaa samaa kuin x = ${value})` : ""}. Tarkista vastaus sijoittamalla se alkuperäiseen yhtälöön.`,
     noSolution: (equation) =>
-      `x on kadonnut, eikä ${equation} pidä koskaan paikkaansa. Mikään x:n arvo ei kelpaa, joten yhtälöllä ei ole ratkaisua.`,
+      `x on kadonnut, eikä ${equation} pidä koskaan paikkaansa. Yhtälö on identtisesti epätosi: mikään x:n arvo ei kelpaa, joten yhtälöllä ei ole ratkaisua.`,
     infinite: (equation) =>
-      `x on kadonnut, ja ${equation} pitää aina paikkansa. Kaikki x:n arvot kelpaavat, joten ratkaisuja on äärettömän monta.`,
+      `x on kadonnut, ja ${equation} pitää aina paikkansa. Yhtälö on identtisesti tosi: kaikki x:n arvot kelpaavat, joten ratkaisuja on äärettömän monta.`,
     nextClear: "Seuraavaksi: yhtälössä on yhä murtolukuja. Kerro molemmat puolet yhteisellä nimittäjällä, niin ne häviävät.",
     nextCollect: "Seuraavaksi: x on yhä kummallakin puolella, joten kokoa x-termit yhdelle puolelle.",
     nextConstant: "Seuraavaksi: x-termiin on yhä lisätty tai siitä on vähennetty jokin luku. Kumoa se.",
@@ -209,6 +209,10 @@ export const fi: EngineText = {
     expandRight: (part, result) =>
       `Jokainen sulkujen sisällä oleva termi kerrotaan sulkujen edessä olevalla luvulla: ${part} = ${result}.`,
     simplifyRight: (part, result) => `Yhdistä samanmuotoiset termit: ${part} = ${result}.`,
+    decimalsStage: "Poista desimaalit",
+    decimalsQuestion: (part, factor) => `Kerro yhtälön ${part} jokainen termi luvulla ${factor}, jotta desimaalit häviävät. Mitä saat?`,
+    decimalsRight: (part, result, factor) =>
+      `Kun jokainen termi kerrotaan luvulla ${factor}, jokainen desimaalipilkku siirtyy ja yhtälö pysyy tosi: ${part} muuttuu muotoon ${result}.`,
     wrongTitle: "Ei ihan",
     wrong: {
       "forgot-term": "Sulkujen edessä oleva luku kertoo jokaisen sulkujen sisällä olevan termin, ei vain yhtä.",
@@ -216,6 +220,8 @@ export const fi: EngineText = {
       denominators:
         "Murtolukuja ei lasketa yhteen laskemalla nimittäjät yhteen. Käytä yhteistä nimittäjää ja laske sitten osoittajat yhteen.",
       arithmetic: "Tarkista laskut: käy termit läpi yksi kerrallaan.",
+      "decimal-term": "Jokainen termi molemmilla puolilla pitää kertoa, ei vain desimaalilukuja.",
+      "decimal-point": "Tarkista, mihin desimaalipilkku siirtyy: kertominen luvulla 10 siirtää sitä yhden paikan, luvulla 100 kaksi paikkaa.",
     },
     done: "Yhtälö on nyt yksinkertaisessa muodossa. Ratkaise se.",
   },

@@ -7,6 +7,9 @@ import { useI18n } from "@/hooks/useLang";
 import { groupOf, type Grade, type Task, type TaskDisplay } from "@/lib/tasks";
 import { GroupIcon } from "@/components/ui/icons";
 import { MathLine } from "@/components/ui/MathLine";
+import { HandWorkspace } from "@/components/solver/HandWorkspace";
+import type { WorkspaceOutcome } from "@/components/solver/SolverWorkspace";
+import { planHand, startEquation } from "@/lib/equations";
 
 export type Phase = "answering" | "feedback";
 
@@ -24,6 +27,8 @@ interface TaskCardProps {
   onChoose: (index: number) => void;
   /** Returns a message when the answer cannot be read, otherwise `null`. */
   onSubmit: (text: string) => string | null;
+  /** A task solved by hand is done: how it went. */
+  onHand?: (outcome: WorkspaceOutcome) => void;
   onNext: () => void;
 }
 
@@ -68,7 +73,7 @@ export function TaskDisplayView({ display }: { display: TaskDisplay }) {
 }
 
 /** One task, whatever its kind: choices, a typed answer, or a worked solution to inspect. */
-export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoose, onSubmit, onNext }: TaskCardProps) {
+export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoose, onSubmit, onHand, onNext }: TaskCardProps) {
   const { lang, t } = useI18n();
   const group = groupOf(task.kind);
   const fieldId = useId();
@@ -122,7 +127,18 @@ export function TaskCard({ task, phase, grade, xp, quick, isLast, picked, onChoo
         {task.prompt}
       </h2>
 
-      {task.display && <TaskDisplayView display={task.display} />}
+      {task.display && task.input.type !== "hand" && <TaskDisplayView display={task.display} />}
+
+      {task.input.type === "hand" && answering && onHand && (
+        <HandWorkspace
+          source={task.input.source}
+          equation={startEquation(task.input.source)}
+          plan={planHand(task.input.source, task.input.variant, task.input.pick)}
+          continueLabel={t.task.handDone}
+          onContinue={onHand}
+        />
+      )}
+      {task.input.type === "hand" && !answering && task.display && <TaskDisplayView display={task.display} />}
 
       {choice && (
         <ul className={choice.options.length === 2 ? "answers answers-two" : "answers"}>

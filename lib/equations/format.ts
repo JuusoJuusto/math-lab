@@ -178,10 +178,10 @@ export function operationLabel(op: Operation, lang: Lang = "en"): string {
 
 /**
  * The operation written beside the equation, the way it is in a notebook:
- * `3x − 5 = 6 | + 5`. This returns the `| + 5` part.
+ * `3x − 5 = 6 || + 5`, the way Finnish textbooks write it. This returns the `|| + 5` part.
  */
 export function formatBar(op: Operation, lang: Lang = "en"): string {
-  return `| ${operationLabel(op, lang)}`;
+  return `|| ${operationLabel(op, lang)}`;
 }
 
 /** A lower-case sentence fragment such as `subtract 5 from both sides`. */
@@ -198,4 +198,13 @@ export function describeOperation(op: Operation, lang: Lang = "en"): string {
 /** Rewrites maths text so that screen readers pronounce it sensibly. */
 export function toSpeech(text: string, lang: Lang = "en"): string {
   return engineText(lang).speech(text);
+}
+
+/**
+ * Finnish writes the decimal separator as a comma: 0,5x + 1,2 = 3,7. The maths
+ * is the same in both languages, so numbers are kept with a point inside the
+ * engine and only drawn with a comma when they are shown in Finnish.
+ */
+export function localiseDecimals(text: string, lang: Lang = "en"): string {
+  return lang === "fi" ? text.replace(/(\d)\.(\d)/g, "$1,$2") : text;
 }

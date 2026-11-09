@@ -8,6 +8,7 @@ import {
   currentPreludeStep,
   describeOperation,
   levelText,
+  localiseDecimals,
   makePrelude,
   mustParseEquation,
   preludeShown,
@@ -18,8 +19,10 @@ import {
   type LevelDefinition,
 } from "@/lib/equations";
 import { MathLine } from "@/components/ui/MathLine";
+import { BalanceScale } from "./BalanceScale";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
+import { OtherWay } from "./OtherWay";
 import { StepHistory } from "./StepHistory";
 import { SubstitutionCheck } from "./SubstitutionCheck";
 
@@ -58,14 +61,15 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
       : state.notice;
 
   return (
-    <div className="workspace">
+    <div className="workspace workspace-single">
       <div className="workspace-main">
+        <StepHistory start={state.start} steps={state.steps} prelude={state.prelude} preludeDone={state.preludeIndex} />
         {written !== null ? (
           <section className="eq eq-written" aria-label={t.solver.display.worked}>
             <div className="eq-caption" aria-hidden="true">
               {t.solver.written}
             </div>
-            <MathLine text={written} />
+            <MathLine text={localiseDecimals(written, lang)} />
           </section>
         ) : (
           <EquationDisplay
@@ -75,6 +79,8 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
             label={t.solver.display.worked}
           />
         )}
+
+        {written === null && <BalanceScale equation={state.current} />}
 
         <FeedbackPanel notice={notice} hints={[]} emptyText={levelText(level, lang).exampleLead} />
 
@@ -86,6 +92,7 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
               checked={state.checked}
               onCheck={() => dispatch({ type: "check" })}
             />
+            <OtherWay equation={equation} />
             <div className="action-buttons action-finish">
               <button type="button" className="button-primary" onClick={onPractise}>
                 {t.solver.example.tryIt} <ArrowRight size={17} aria-hidden="true" />
@@ -107,9 +114,6 @@ export function WorkedExample({ level, onPractise }: WorkedExampleProps) {
         )}
       </div>
 
-      <div className="workspace-side">
-        <StepHistory start={state.start} steps={state.steps} prelude={state.prelude} preludeDone={state.preludeIndex} />
-      </div>
     </div>
   );
 }

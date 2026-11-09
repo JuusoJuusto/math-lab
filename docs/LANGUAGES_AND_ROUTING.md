@@ -12,9 +12,10 @@ MathLab speaks Finnish and English. Every screen is a real page of the static si
 | `/fi/solve/two-step/` | The equation solver |
 | `/fi/practice/`, `/fi/practice/?mode=time` | Practice hub, optionally with a mode's setup open |
 | `/fi/practice/exam/?topic=both&n=20&seed=5` | A practice session |
+| `/fi/test/` | The practice test (Koe): choose chapters, then start. It starts a session on `/fi/practice/test/?topic=brackets,fractions&n=20&seed=5`, where `topic` may list several topics separated by commas |
 | `/fi/progress/` | Progress |
 
-The static export builds one HTML file for every screen in both languages (`staticSegments()` in `lib/routes.ts` lists them, currently 70 files). That means:
+The static export builds one HTML file for every screen in both languages (`staticSegments()` in `lib/routes.ts` lists them, currently 72 files). That means:
 
 - the language is known when the page is built, so `<html lang>`, the title and the first paint are right without JavaScript;
 - a refresh, a shared link or a new tab opens the same screen in the same language;

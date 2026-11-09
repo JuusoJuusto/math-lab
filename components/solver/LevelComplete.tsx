@@ -2,7 +2,7 @@
 
 import { ArrowRight, CircleCheck, RotateCcw, Trophy } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
-import { formatEquation, formatFraction, getNextLevel, levelText, solveEquation, summariseRound, type LevelDefinition } from "@/lib/equations";
+import { formatEquation, formatFraction, getNextLevel, levelText, localiseDecimals, solveEquation, summariseRound, type LevelDefinition } from "@/lib/equations";
 import type { RoundReport } from "./PracticeRound";
 
 interface LevelCompleteProps {
@@ -39,7 +39,7 @@ export function LevelComplete({ level, report, onPractiseAgain, onNextLevel, onQ
           return (
             <li key={exercise.id}>
               <CircleCheck size={18} aria-hidden="true" />
-              <span className="recap-equation">{exercise.prelude.steps.length > 0 ? exercise.prelude.source : formatEquation(exercise.equation)}</span>
+              <span className="recap-equation">{exercise.prelude.steps.length > 0 ? localiseDecimals(exercise.prelude.source, lang) : formatEquation(exercise.equation)}</span>
               <span className="recap-answer">
                 {solution.kind === "one" ? `x = ${formatFraction(solution.value)}` : solution.kind === "none" ? words.noSolution : words.infinite}
               </span>

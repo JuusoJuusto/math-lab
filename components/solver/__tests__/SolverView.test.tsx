@@ -1,10 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { topics } from "@/content/topics";
 import { createRng, getLevel, type LevelId } from "@/lib/equations";
 import { SolverView } from "../SolverView";
-import { solveOnScreenEquation, spokenEquation } from "./helpers";
+import { solveCleanly, solveOnScreenEquation, spokenEquation } from "./helpers";
 
 function setup(levelId: LevelId = "one-step") {
   const level = getLevel(levelId)!;
@@ -20,7 +20,8 @@ async function playRound(user: ReturnType<typeof userEvent.setup>) {
   const seen: string[] = [];
   for (let n = 1; n <= 5; n += 1) {
     await screen.findByText(`Equation ${n} of 5`);
-    seen.push(spokenEquation());
+    // The last equation of a round is solved by hand, and is shown as it is written.
+    seen.push(spokenEquation() || document.querySelector(".hand .eq-written")?.getAttribute("data-source") || "");
     await solveOnScreenEquation(user);
     await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
   }
@@ -52,22 +53,42 @@ describe("SolverView: a level from introduction to completion", () => {
     expect(screen.getByText("Step 1: Subtract 5 from both sides")).toBeTruthy();
     expect(spokenEquation()).toBe("Worked example: 2x plus 5 minus 5 equals 17 minus 5");
 
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: "Show the next step" }));
     expect(screen.getByText("Step 2: Divide both sides by 2")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 
     expect(spokenEquation()).toBe("Worked example: x equals 6");
     await user.click(screen.getByRole("button", { name: "Check by substituting" }));
     expect(screen.getByText("Both sides are equal, so x = 6 is correct!")).toBeTruthy();
+    // The check ends the way a textbook does, with the verdict "true" ("tosi" in Finnish).
+    expect(document.querySelector(".verify-verdict")?.textContent).toBe("true");
     expect(screen.getByRole("button", { name: /Try it yourself/ })).toBeTruthy();
+  });
+
+  it("shows a second way to solve the example once it is solved, written with the double bar", async () => {
+    const { user } = setup("both");
+    await user.click(screen.getByRole("button", { name: /See a worked example/ }));
+    expect(screen.queryByText("Another way to solve it")).toBeNull();
+
+    // 6x − 4 = 2x + 8 takes three steps; let the tutor do each one.
+    for (let step = 1; step <= 3; step += 1) {
+      await user.click(screen.getByRole("button", { name: step === 1 ? "Show the first step" : "Show the next step" }));
+      await user.click(screen.getByRole("button", { name: "Work out both sides" }));
+    }
+
+    const card = screen.getByRole("region", { name: "Another way to solve it" });
+    const bars = [...card.querySelectorAll(".history-bar")].map((bar) => bar.textContent);
+    // The tutor collected the x terms first; the other way adds 4 first. Same answer.
+    expect(bars).toEqual(["|| + 4", "|| − 2x", "|| ÷ 4"]);
+    expect(card.textContent).toContain("x equals 3");
   });
 
   it("lets the learner replay the worked example", async () => {
     const { user } = setup();
     await user.click(screen.getByRole("button", { name: /See a worked example/ }));
     await user.click(screen.getByRole("button", { name: "Show the first step" }));
-    await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
     await user.click(screen.getByRole("button", { name: "Watch again" }));
     expect(screen.getByRole("button", { name: "Show the first step" })).toBeTruthy();
     expect(spokenEquation()).toBe("Worked example: x plus 5 equals 12");
@@ -151,13 +172,59 @@ describe("SolverView: a level from introduction to completion", () => {
     expect(onExit).toHaveBeenCalled();
   });
 
-  it("leads from the both-sides level on to brackets", async () => {
+  it("leads from the both-sides level on to forming equations, as the chapters do", async () => {
     vi.spyOn(Math, "random").mockImplementation(createRng(1));
     const { user, onOpenLevel } = setup("both");
     await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
     await playRound(user);
-    await user.click(screen.getByRole("button", { name: /Next: Equations with brackets/ }));
-    expect(onOpenLevel).toHaveBeenCalledWith("brackets");
+    await user.click(screen.getByRole("button", { name: /Next: Word problems/ }));
+    expect(onOpenLevel).toHaveBeenCalledWith("word");
+  });
+
+  it("offers a short quiz in a popup when a round is solved without any help, and the quiz is on this lesson", async () => {
+    vi.spyOn(Math, "random").mockImplementation(createRng(4));
+    const { user, onQuiz } = setup("two-step");
+    await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
+    for (let n = 1; n <= 5; n += 1) {
+      await screen.findByText(`Equation ${n} of 5`);
+      await solveCleanly(user);
+      await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
+    }
+
+    const popup = await screen.findByRole("dialog", { name: "You seem to know this!" });
+    expect(popup.textContent).toContain("Two-step equations");
+    await user.click(within(popup).getByRole("button", { name: "Take a short quiz" }));
+    expect(onQuiz).toHaveBeenCalledWith("two-step");
+  });
+
+  it("does not interrupt a learner who needed help with every equation", async () => {
+    vi.spyOn(Math, "random").mockImplementation(createRng(4));
+    const { user } = setup("two-step");
+    await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
+    for (let n = 1; n <= 5; n += 1) {
+      await screen.findByText(`Equation ${n} of 5`);
+      // Written by hand or with the buttons, each one is solved with help.
+      if (document.querySelector(".hand")) await user.click(screen.getByRole("button", { name: "I am stuck" }));
+      await solveOnScreenEquation(user);
+      await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
+    }
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("heading", { name: /Two-step equations: done!/ })).toBeTruthy();
+  });
+
+  it("closes the popup with Escape and keeps the results", async () => {
+    vi.spyOn(Math, "random").mockImplementation(createRng(4));
+    const { user } = setup("two-step");
+    await user.click(screen.getByRole("button", { name: /Skip to practice/ }));
+    for (let n = 1; n <= 5; n += 1) {
+      await screen.findByText(`Equation ${n} of 5`);
+      await solveCleanly(user);
+      await user.click(screen.getByRole("button", { name: n === 5 ? /Finish level/ : /Next equation/ }));
+    }
+    await screen.findByRole("dialog");
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("heading", { name: /Two-step equations: done!/ })).toBeTruthy();
   });
 
   it("can leave a round part-way without recording completion", async () => {

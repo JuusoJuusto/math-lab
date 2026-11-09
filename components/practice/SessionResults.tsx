@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, RotateCcw, Trophy } from "lucide-react";
+import { chapterOf } from "@/content/chapters";
 import { getTopic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
 import { generateTask, groupOf, type ModeInfo, type TaskGroup, type TaskSpec } from "@/lib/tasks";
@@ -42,6 +43,15 @@ export function SessionResults({ mode, records, bonus, queued, onAgain, onMistak
     const t = topics.get(record.spec.topic) ?? { correct: 0, total: 0 };
     topics.set(record.spec.topic, { correct: t.correct + (record.correct ? 1 : 0), total: t.total + 1 });
   }
+  const chapters = new Map<number, { title: string; correct: number; total: number }>();
+  if (mode.id === "test") {
+    for (const record of records) {
+      const place = chapterOf(record.spec.topic, lang);
+      if (!place) continue;
+      const entry = chapters.get(place.chapter.number) ?? { title: place.chapter.title, correct: 0, total: 0 };
+      chapters.set(place.chapter.number, { ...entry, correct: entry.correct + (record.correct ? 1 : 0), total: entry.total + 1 });
+    }
+  }
   const weak = [...topics.entries()].filter(([, t]) => t.correct < t.total).sort((a, b) => a[1].correct / a[1].total - b[1].correct / b[1].total)[0];
 
   return (
@@ -56,6 +66,24 @@ export function SessionResults({ mode, records, bonus, queued, onAgain, onMistak
         {t.results.score(correct, total).rest}
       </p>
       <p className="results-xp">{t.results.xp(xp, bonus)}</p>
+
+      {chapters.size > 0 && (
+        <ul className="breakdown" aria-label={t.results.byChapter}>
+          {[...chapters.entries()]
+            .sort((a, b) => a[0] - b[0])
+            .map(([number, tally]) => (
+              <li key={number}>
+                <span>
+                  {number}. {tally.title}
+                </span>
+                <span className="bar" aria-hidden="true">
+                  <span style={{ width: `${Math.round((tally.correct / tally.total) * 100)}%` }} />
+                </span>
+                <span>{t.results.chapterLine(tally.correct, tally.total)}</span>
+              </li>
+            ))}
+        </ul>
+      )}
 
       {groups.size > 1 && (
         <ul className="breakdown" aria-label={t.results.byType}>

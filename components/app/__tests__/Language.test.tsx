@@ -173,6 +173,18 @@ describe("the redirect page at /", () => {
     expect(redirect({ hash: "#/", saved: "en" })).toBe("/en/");
   });
 
+  it("keeps the Study Hub token on the way to the language page, so it is not lost", () => {
+    expect(redirect({ hash: "#hub_token=abc.def-123", language: "fi-FI" })).toBe("/fi/#hub_token=abc.def-123");
+    expect(redirect({ hash: "#hub_token=abc.def-123", saved: "en" })).toBe("/en/#hub_token=abc.def-123");
+    expect(redirect({ hash: "#section=2&hub_token=abc" })).toBe("/en/#hub_token=abc");
+  });
+
+  it("does not add a token when there is none, and does not copy other hash parts over", () => {
+    expect(redirect({ hash: "" })).toBe("/en/");
+    expect(redirect({ hash: "#section=2" })).toBe("/en/");
+    expect(redirect({ hash: "#not_hub_token=abc" })).toBe("/en/");
+  });
+
   it("has a way in without JavaScript", () => {
     expect(html).toContain('<a href="/en/">English</a>');
     expect(html).toContain('<a href="/fi/">Suomi</a>');
@@ -201,10 +213,10 @@ describe("the app in Finnish", () => {
     expect(spoken).toBe("Esimerkkiratkaisu: 2x plus 5 miinus 5 on yhtä suuri kuin 17 miinus 5");
     expect(document.querySelector(".notice")?.textContent).toContain("Termi + 5 on yhteenlasku. Vähennyslasku kumoaa yhteenlaskun");
     // The notebook line uses Finnish division and multiplication signs.
-    await user.click(screen.getByRole("button", { name: "Sievennä molemmat puolet" }));
+    await user.click(screen.getByRole("button", { name: "Laske molemmat puolet" }));
     await user.click(screen.getByRole("button", { name: "Näytä seuraava askel" }));
     expect(screen.getByText("Askel 2: Jaa molemmat puolet luvulla 2")).toBeTruthy();
-    expect(document.querySelector(".eq-bar")?.textContent).toBe("| : 2");
+    expect(document.querySelector(".eq-bar")?.textContent).toBe("|| : 2");
   });
 
   it("lets the learner flip a term in Finnish", async () => {

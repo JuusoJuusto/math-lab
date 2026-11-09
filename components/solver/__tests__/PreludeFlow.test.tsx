@@ -35,6 +35,14 @@ const choose = (user: ReturnType<typeof userEvent.setup>, text: string) => {
 };
 
 describe("an equation written with brackets", () => {
+  it("draws arrows from the number to each term while the brackets are opened, and not for a simplify question", async () => {
+    const { user } = setup("3(x - 2) = 2x + 5");
+    expect(document.querySelectorAll("[data-arc]")).toHaveLength(2);
+    expect(screen.getByTestId("distribute-arrows")).toBeTruthy();
+    await choose(user, "3x − 6");
+    expect(document.querySelector("[data-testid=distribute-arrows]")).toBeNull();
+  });
+
   it("shows the equation as written and asks how to open the brackets", () => {
     setup("3(x - 2) = 2x + 5");
     expect(screen.getByRole("region", { name: "The equation as it is written" })).toBeTruthy();

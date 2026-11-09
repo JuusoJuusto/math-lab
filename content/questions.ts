@@ -75,6 +75,36 @@ const equationQuestion = (
   );
 };
 
+/**
+ * "How many solutions does this equation have?": equations where x cancels. The answer key is checked with the
+ * engine in content/__tests__/special.test.ts, in both languages.
+ */
+const specialQuestion = (id: string, equation: string, kind: "none" | "infinite", left: string): QuestionDefinition => {
+  const correct = kind === "none" ? 0 : 2;
+  return def(
+    id,
+    "special",
+    "Intermediate",
+    correct,
+    {
+      prompt: `How many solutions does the equation ${equation} have?`,
+      choices: ["No solution", "Exactly one solution", "Infinitely many solutions", "Exactly two solutions"],
+      explanation:
+        kind === "none"
+          ? `The terms with x cancel and leave ${left}, which is never true. The equation is identically false, so it has no solution.`
+          : `The terms with x cancel and leave ${left}, which is always true. The equation is identically true, so every value of x is a solution.`,
+    },
+    {
+      prompt: `Montako ratkaisua yhtälöllä ${equation} on?`,
+      choices: ["Ei ratkaisua", "Täsmälleen yksi ratkaisu", "Äärettömän monta ratkaisua", "Täsmälleen kaksi ratkaisua"],
+      explanation:
+        kind === "none"
+          ? `x:llä olevat termit supistuvat pois ja jäljelle jää ${left}, mikä ei ole koskaan tosi. Yhtälö on identtisesti epätosi, joten sillä ei ole ratkaisua.`
+          : `x:llä olevat termit supistuvat pois ja jäljelle jää ${left}, mikä on aina tosi. Yhtälö on identtisesti tosi, joten jokainen x:n arvo on ratkaisu.`,
+    },
+  );
+};
+
 export const questionDefinitions: readonly QuestionDefinition[] = [
   equationQuestion(
     "q1",
@@ -275,6 +305,143 @@ export const questionDefinitions: readonly QuestionDefinition[] = [
       explanation: "Yhtälössä on yhtäsuuruusmerkki ja kaksi lauseketta, joilla on sama arvo.",
     },
   ),
+  def(
+    "q26",
+    "basics",
+    "Beginner",
+    2,
+    {
+      prompt: "Which of these is an expression, not an equation?",
+      choices: ["2x + 7 = 15", "x = 4", "5x − 3", "3 + 4 = 7"],
+      explanation: "An expression has no equals sign. The other three each have an equals sign, so they are equations.",
+    },
+    {
+      prompt: "Mikä näistä on lauseke eikä yhtälö?",
+      choices: ["2x + 7 = 15", "x = 4", "5x − 3", "3 + 4 = 7"],
+      explanation: "Lausekkeessa ei ole yhtäsuuruusmerkkiä. Kolmessa muussa on, joten ne ovat yhtälöitä.",
+    },
+  ),
+  def(
+    "q27",
+    "basics",
+    "Beginner",
+    1,
+    {
+      prompt: "In the equation 4x − 5 = −2x + 9, what is the right-hand side?",
+      choices: ["4x − 5", "−2x + 9", "9", "4x − 5 = −2x"],
+      explanation: "The equals sign splits an equation into a left side and a right side. The right side is everything after it: −2x + 9.",
+    },
+    {
+      prompt: "Mikä on yhtälön 4x − 5 = −2x + 9 oikea puoli?",
+      choices: ["4x − 5", "−2x + 9", "9", "4x − 5 = −2x"],
+      explanation: "Yhtäsuuruusmerkki jakaa yhtälön vasempaan ja oikeaan puoleen. Oikea puoli on kaikki sen jälkeen: −2x + 9.",
+    },
+  ),
+  def(
+    "q28",
+    "basics",
+    "Beginner",
+    0,
+    {
+      prompt: "Is x = 3 a solution of 2x − 1 = x + 2?",
+      choices: ["Yes: both sides equal 5", "No: the left side is 5 and the right side is 6", "No: the left side is 7 and the right side is 5", "Only if x is negative"],
+      explanation: "Substitute 3 for x. Left: 2 · 3 − 1 = 5. Right: 3 + 2 = 5. Both sides are equal, so the equation is true and 3 is a solution.",
+    },
+    {
+      prompt: "Onko x = 3 yhtälön 2x − 1 = x + 2 ratkaisu?",
+      choices: ["On: kummankin puolen arvo on 5", "Ei: vasen puoli on 5 ja oikea puoli 6", "Ei: vasen puoli on 7 ja oikea puoli 5", "Vain jos x on negatiivinen"],
+      explanation: "Sijoita x:n paikalle 3. Vasen: 2 · 3 − 1 = 5. Oikea: 3 + 2 = 5. Puolet ovat yhtä suuret, joten yhtälö on tosi ja 3 on ratkaisu.",
+    },
+  ),
+  def(
+    "q29",
+    "basics",
+    "Beginner",
+    1,
+    {
+      prompt: "Is x = 4 a solution of 3x − 5 = x + 2?",
+      choices: ["Yes: both sides equal 7", "No: the left side is 7 and the right side is 6", "No: the left side is 12 and the right side is 6", "Yes: both sides equal 6"],
+      explanation: "Substitute 4 for x. Left: 3 · 4 − 5 = 7. Right: 4 + 2 = 6. The sides differ, so the equation is false and 4 is not a solution.",
+    },
+    {
+      prompt: "Onko x = 4 yhtälön 3x − 5 = x + 2 ratkaisu?",
+      choices: ["On: kummankin puolen arvo on 7", "Ei: vasen puoli on 7 ja oikea puoli 6", "Ei: vasen puoli on 12 ja oikea puoli 6", "On: kummankin puolen arvo on 6"],
+      explanation: "Sijoita x:n paikalle 4. Vasen: 3 · 4 − 5 = 7. Oikea: 4 + 2 = 6. Puolet eroavat, joten yhtälö on epätosi eikä 4 ole ratkaisu.",
+    },
+  ),
+  def(
+    "q30",
+    "basics",
+    "Intermediate",
+    1,
+    {
+      prompt: "Is x = −2 a solution of 3x + 4 = x?",
+      choices: ["No: the left side is 10 and the right side is −2", "Yes: both sides equal −2", "No: the left side is −2 and the right side is 2", "Yes: both sides equal 2"],
+      explanation: "Substitute −2 for x, in brackets. Left: 3 · (−2) + 4 = −6 + 4 = −2. Right: −2. Both sides are −2, so the equation is true.",
+    },
+    {
+      prompt: "Onko x = −2 yhtälön 3x + 4 = x ratkaisu?",
+      choices: ["Ei: vasen puoli on 10 ja oikea puoli −2", "On: kummankin puolen arvo on −2", "Ei: vasen puoli on −2 ja oikea puoli 2", "On: kummankin puolen arvo on 2"],
+      explanation: "Sijoita x:n paikalle −2 sulkeisiin. Vasen: 3 · (−2) + 4 = −6 + 4 = −2. Oikea: −2. Puolet ovat −2, joten yhtälö on tosi.",
+    },
+  ),
+  def(
+    "q31",
+    "basics",
+    "Intermediate",
+    2,
+    {
+      prompt: "You substitute x = −3 into 4x + 1. How should you write it?",
+      choices: ["4 − 3 + 1", "43 + 1", "4 · (−3) + 1", "−(4 · 3) − 1"],
+      explanation: "A negative number goes in brackets when it replaces x: 4 · (−3) + 1 = −12 + 1 = −11. Without brackets the sign gets lost.",
+    },
+    {
+      prompt: "Sijoitat x = −3 lausekkeeseen 4x + 1. Miten kirjoitat sen?",
+      choices: ["4 − 3 + 1", "43 + 1", "4 · (−3) + 1", "−(4 · 3) − 1"],
+      explanation: "Negatiivinen luku kirjoitetaan sulkeisiin, kun se sijoitetaan x:n paikalle: 4 · (−3) + 1 = −12 + 1 = −11. Ilman sulkeita etumerkki katoaa.",
+    },
+  ),
+  def(
+    "q32",
+    "basics",
+    "Beginner",
+    2,
+    {
+      prompt: "A balance has three x-balls and a weight of 2 on the left pan, and one x-ball and a weight of 8 on the right pan. Which equation does it show?",
+      choices: ["3x + 8 = x + 2", "2x + 3 = 8x + 1", "3x + 2 = x + 8", "5x = 10"],
+      explanation: "Each ball is x and each weight is its number. The left pan is 3x + 2 and the right pan is x + 8, so the balance shows 3x + 2 = x + 8.",
+    },
+    {
+      prompt: "Vaa'an vasemmalla vaakakupilla on kolme x-kuulaa ja paino 2, oikealla vaakakupilla yksi x-kuula ja paino 8. Mitä yhtälöä vaaka esittää?",
+      choices: ["3x + 8 = x + 2", "2x + 3 = 8x + 1", "3x + 2 = x + 8", "5x = 10"],
+      explanation: "Jokainen kuula on x ja jokainen paino on sen luku. Vasen kuppi on 3x + 2 ja oikea kuppi x + 8, joten vaaka esittää yhtälöä 3x + 2 = x + 8.",
+    },
+  ),
+  def(
+    "q33",
+    "basics",
+    "Beginner",
+    1,
+    {
+      prompt: "Write an equation whose left side is 5x − 2 and whose right side is −x + 7.",
+      choices: ["5x − 2 − x + 7", "5x − 2 = −x + 7", "5x − 2 = x + 7", "5 − 2x = −x + 7"],
+      explanation: "Put the left side, an equals sign and the right side in that order: 5x − 2 = −x + 7. Without the equals sign it would only be an expression.",
+    },
+    {
+      prompt: "Kirjoita yhtälö, jonka vasen puoli on 5x − 2 ja oikea puoli −x + 7.",
+      choices: ["5x − 2 − x + 7", "5x − 2 = −x + 7", "5x − 2 = x + 7", "5 − 2x = −x + 7"],
+      explanation: "Kirjoita vasen puoli, yhtäsuuruusmerkki ja oikea puoli tässä järjestyksessä: 5x − 2 = −x + 7. Ilman yhtäsuuruusmerkkiä se olisi vain lauseke.",
+    },
+  ),
+  specialQuestion("q34", "2x + 3 = 2x + 7", "none", "3 = 7"),
+  specialQuestion("q35", "3(x + 1) = 3x + 5", "none", "3 = 5"),
+  specialQuestion("q36", "5x - 4 = 5x + 1", "none", "−4 = 1"),
+  specialQuestion("q37", "4(x - 2) = 4x - 3", "none", "−8 = −3"),
+  specialQuestion("q38", "-2x + 9 = -2x + 4", "none", "9 = 4"),
+  specialQuestion("q39", "2(x + 3) = 2x + 6", "infinite", "6 = 6"),
+  specialQuestion("q40", "3x - 9 = 3(x - 3)", "infinite", "−9 = −9"),
+  specialQuestion("q41", "x/2 + x/2 = x", "infinite", "0 = 0"),
+  specialQuestion("q42", "-4(x - 1) = -4x + 4", "infinite", "4 = 4"),
   def(
     "q12",
     "proportion",

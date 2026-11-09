@@ -1,7 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { EMPTY_PROGRESS, STORAGE_KEY, parseProgress, serialiseProgress, type Progress } from "@/lib/progress";
+import { EMPTY_PROGRESS, STORAGE_KEY, levelOf, parseProgress, serialiseProgress, type Progress } from "@/lib/progress";
+import { reportProgress } from "@/src/studyHubProgress";
 
 /**
  * Progress lives in `localStorage`, exposed to React as an external store.
@@ -67,7 +68,12 @@ function subscribe(listener: () => void): () => void {
 
 /** Applies a change to the stored progress and notifies every component using it. */
 export function updateProgress(change: (progress: Progress) => Progress): void {
-  const next = serialiseProgress(change(getSnapshot()));
+  const before = getSnapshot();
+  const changed = change(before);
+  // Reaching a new XP level is worth telling Study Hub about; going back (resetting progress) is not.
+  const reached = levelOf(changed.xp);
+  if (reached > levelOf(before.xp)) reportProgress("level", { label: `Level ${reached}`, ref: "xp-level", value: reached });
+  const next = serialiseProgress(changed);
   try {
     window.localStorage.setItem(STORAGE_KEY, next);
     memoryRaw = undefined;

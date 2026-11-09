@@ -13,7 +13,7 @@ import { int, pick } from "./sample";
 import { KIND_TOPICS, TOPIC_ORDER, difficultyOf } from "./support";
 import type { TaskKind, TaskSpec } from "./types";
 
-export type ModeId = "daily" | "quiz" | "solve" | "truefalse" | "step" | "mistake" | "equation" | "time" | "exam" | "mistakes";
+export type ModeId = "daily" | "quiz" | "solve" | "truefalse" | "step" | "mistake" | "equation" | "time" | "exam" | "test" | "mistakes";
 
 /** Where a mode's title and description live: `modes` in lib/i18n/ui-*.ts. */
 export interface ModeInfo {
@@ -25,6 +25,8 @@ export interface ModeInfo {
   readonly topicFilter: boolean;
   /** Seconds, for timed modes. */
   readonly seconds?: number;
+  /** The share of tasks written by hand (kind `hand`), where the chosen topics allow it. The rest come from the other kinds in turn. */
+  readonly handShare?: number;
 }
 
 export const MODES: readonly ModeInfo[] = [
@@ -93,6 +95,15 @@ export const MODES: readonly ModeInfo[] = [
     topicFilter: true,
   },
   {
+    // A practice test for the chapters the learner picks, with whole equations solved by hand.
+    id: "test",
+    kinds: ["bank", "choose", "solve", "check", "step", "mistake", "equation", "hand"],
+    defaultCount: 20,
+    counts: [10, 20, 30],
+    topicFilter: true,
+    handShare: 0.8,
+  },
+  {
     id: "mistakes",
     kinds: [],
     defaultCount: 10,
@@ -123,7 +134,7 @@ export function dateSeed(date: string): number {
 
 export interface SessionOptions {
   readonly mode: ModeId;
-  /** A topic id, or "all". */
+  /** A topic id, several topic ids separated by commas, or "all". */
   readonly topic: string;
   readonly count: number;
   readonly seed: number;
@@ -154,14 +165,24 @@ export function buildSession(options: SessionOptions): TaskSpec[] {
   const specs: TaskSpec[] = [];
   const seen = new Set<string>();
   const usedBank = new Set<string>();
-  const climb = mode.id === "exam";
+  const climb = mode.id === "exam" || mode.id === "test";
+  const wanted = options.topic === "all" ? null : options.topic.split(",");
   let failures = 0;
+  let slotFailures = 0;
 
   for (let index = 0; specs.length < options.count && failures < options.count * 6; index += 1) {
-    const kind = kinds[index % kinds.length];
-    const allowed = KIND_TOPICS[kind].filter((topic) => options.topic === "all" || topic === options.topic);
+    let kind = kinds[index % kinds.length];
+    // A test is mostly written by hand: every task but each fifth, which comes from the other kinds in turn.
+    if (mode.handShare !== undefined && kinds.includes("hand") && KIND_TOPICS.hand.some((topic) => wanted === null || wanted.includes(topic))) {
+      const others = kinds.filter((item) => item !== "hand");
+      const everyOther = Math.round(1 / (1 - mode.handShare));
+      // If the kind that is due cannot be made for these topics, the next one is tried.
+      kind = specs.length % everyOther === everyOther - 1 ? others[(Math.floor(specs.length / everyOther) + slotFailures) % others.length] : "hand";
+    }
+    const allowed = KIND_TOPICS[kind].filter((topic) => wanted === null || wanted.includes(topic));
     if (allowed.length === 0) {
       failures += 1;
+      slotFailures += 1;
       continue;
     }
 
@@ -173,6 +194,7 @@ export function buildSession(options: SessionOptions): TaskSpec[] {
       const fresh = pool.filter((question) => !usedBank.has(question.id));
       if (pool.length === 0 || fresh.length === 0) {
         failures += 1;
+        slotFailures += 1;
         continue;
       }
       spec = { ...spec, bankId: pick(rng, fresh).id };
@@ -186,6 +208,7 @@ export function buildSession(options: SessionOptions): TaskSpec[] {
     seen.add(fingerprint);
     if (spec.bankId) usedBank.add(spec.bankId);
     specs.push(spec);
+    slotFailures = 0;
   }
 
   return specs;

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { formatEquation } from "../format";
 import { LEVELS as ALL_LEVELS, getLevel, getNextLevel, isLevelId, levelText, toExercise, type LevelDefinition } from "../levels";
 import { mustParseEquation } from "../parse";
-import { makePrelude } from "../prelude";
-import { createRng, pickRound, shuffle, summariseRound } from "../round";
+import { hasDecimals, makePrelude, startEquation } from "../prelude";
+import { createRng, pickRound, shuffle, summariseRound, thinksYouKnow } from "../round";
 import { isSolution, solveEquation, terminalState } from "../solve";
 import { evaluateMove, solveWithTutor } from "../tutor";
 import { isInteger } from "../fraction";
@@ -29,18 +29,19 @@ describe("level catalogue", () => {
       "one-step",
       "two-step",
       "both",
+      "word",
       "brackets",
       "fractions",
-      "word",
-      "special",
       "hard-word",
+      "special",
       "challenge",
     ]);
     expect(ALL_LEVELS.map((l) => l.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(ALL_LEVELS.filter((l) => l.kind === "stories").map((l) => l.id)).toEqual(["word", "hard-word"]);
     expect(getNextLevel("one-step")?.id).toBe("two-step");
-    expect(getNextLevel("both")?.id).toBe("brackets");
-    expect(getNextLevel("fractions")?.id).toBe("word");
+    expect(getNextLevel("both")?.id).toBe("word");
+    expect(getNextLevel("word")?.id).toBe("brackets");
+    expect(getNextLevel("fractions")?.id).toBe("hard-word");
     expect(getNextLevel("challenge")).toBeUndefined();
     expect(isLevelId("two-step")).toBe(true);
     expect(isLevelId("brackets")).toBe(true);
@@ -287,8 +288,9 @@ describe("the harder levels deliver what they promise", () => {
 
   it("fractions: every exercise has a fraction, and the tutor clears them with one multiplication first", () => {
     for (const e of level("fractions").exercises) {
-      expect(e.equation, e.id).toContain("/");
-      const equation = mustParseEquation(e.equation);
+      // Fractions, or decimals (which are fractions written another way).
+      expect(e.equation.includes("/") || hasDecimals(e.equation), e.id).toBe(true);
+      const equation = startEquation(e.equation);
       const [first] = solveWithTutor(equation);
       // An equation that is only x/3 + 4 = 9 style needs no clearing, so look at the untidy ones.
       if (first.operation.kind === "multiply" && first.before.left.c.d * first.before.right.c.d * first.before.left.x.d * first.before.right.x.d > 1) {
@@ -355,5 +357,18 @@ describe("the word-problem levels", () => {
   it("climb through different tiers", () => {
     expect(level("word").tiers).toEqual([1, 2, 3]);
     expect(level("hard-word").tiers).toEqual([4, 5, 6]);
+  });
+});
+
+describe("when the app thinks a lesson is known", () => {
+  const round = (clean: number, size = 5) => ({ solved: size, hintsUsed: size - clean, cleanSolves: clean });
+  it("needs a finished round with at least four in five solved without a hint or a wrong move", () => {
+    expect(thinksYouKnow(round(5), 5)).toBe(true);
+    expect(thinksYouKnow(round(4), 5)).toBe(true);
+    expect(thinksYouKnow(round(3), 5)).toBe(false);
+    expect(thinksYouKnow(round(0), 5)).toBe(false);
+    // An unfinished round proves nothing.
+    expect(thinksYouKnow({ solved: 4, hintsUsed: 0, cleanSolves: 4 }, 5)).toBe(false);
+    expect(thinksYouKnow(round(0, 0), 0)).toBe(false);
   });
 });

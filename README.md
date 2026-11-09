@@ -34,9 +34,11 @@ Each topic includes a short introduction and a multiple-choice practice round. Q
 
 Nine levels teach equation solving hands-on, from `x + 5 = 12` to equations with brackets on both sides, fractions and negative numbers. In each level you learn the idea, watch a worked example, and then solve equations yourself, in the way you prefer:
 
-- **Both sides** (vaakamenetelmä): pick an operation and a number. A good choice is shown written on both sides in the same highlight, and in the notebook way: `3x − 5 = 6 | + 5`, then simplified.
+- **Both sides** (vaakamenetelmä): pick an operation and a number. A good choice is shown written on both sides in the same highlight, and in the notebook way: `3x − 5 = 6 || + 5`, then simplified.
 - **Flip a term** (siirtomenetelmä): tap `− 5` and it crosses the equals sign as `+ 5`: `3x = 6 + 5`.
 - **Work backwards** (käänteisoperaatiot): write what happens to x (`x → · 2 → + 5 → 17`) and undo it from the end.
+- **By hand**: type every line of the solution yourself, with no buttons (the last exercise of every round, and the practice test).
+- **Guess and check** (kokeilu): try a value for x, see both sides, and improve the guess until they are equal.
 - **On a graph**: each side is a line, and the solution is where they cross.
 - Equations written with brackets or fractions start with clean-up questions (open the brackets, simplify) that explain the typical mistakes.
 - In the word-problem levels you write the **whole equation yourself** from a blank field before you solve it.
@@ -116,9 +118,11 @@ Open the local URL printed by Next.js.
 | `npm test` | Run the unit and interaction tests once |
 | `npm run test:watch` | Re-run tests when files change |
 | `npm run build` | Create the production static export |
-| `npm run check` | Run lint, type checking, tests and the production build |
-| `npm run preview` | Build and preview the output with Wrangler |
-| `npm run deploy` | Build and deploy the Worker with Wrangler |
+| `npm run verify` | Check the exported site in `out/` (both languages complete, Cloudflare files present, nothing loaded from other sites) |
+| `npm run check` | Run lint, type checking, tests, the production build and the export check |
+| `npm run preview` | Build and preview the output in the Workers runtime (`wrangler dev`) |
+| `npm run deploy:dry` | Build, verify and validate the Cloudflare configuration without uploading anything |
+| `npm run deploy` | Build, verify and deploy the Worker with Wrangler |
 
 ## Project structure
 

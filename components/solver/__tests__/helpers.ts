@@ -1,5 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
 import type { UserEvent } from "@testing-library/user-event";
+import { formatEquation, solveWithTutor, startEquation } from "@/lib/equations";
 
 type Kind = "Add" | "Subtract" | "Multiply" | "Divide";
 
@@ -35,13 +36,54 @@ export async function playHintedMove(user: UserEvent) {
   const [, kind, withX, plain] = match;
   const amount = Number((withX ?? plain).replace("−", "-"));
   await applyOperation(user, kind as Kind, amount, withX !== undefined);
-  await user.click(screen.getByRole("button", { name: "Simplify both sides" }));
+  await user.click(screen.getByRole("button", { name: "Work out both sides" }));
 }
 
 /** Solves the equation on screen, then verifies it, and returns when "Next"/"Finish" is available. */
 export async function solveOnScreenEquation(user: UserEvent) {
+  // The last equation of a round is solved by hand: type every line, as the tutor would write it.
+  if (document.querySelector(".hand")) return solveByHand(user);
   for (let guard = 0; guard < 8 && !screen.queryByText("Solved"); guard += 1) {
     await playHintedMove(user);
+  }
+  if (!screen.queryByText("Solved")) throw new Error("Equation was not solved");
+  await user.click(screen.getByRole("button", { name: "Check by substituting" }));
+}
+
+/**
+ * Types the lines a by-hand task asks for, as the tutor would write them: every line, the rest of a begun
+ * solution, or the one step that was asked for. Then it checks the answer when there is one to check.
+ */
+export async function solveByHand(user: UserEvent) {
+  const section = document.querySelector(".hand .eq-written");
+  const source = section?.getAttribute("data-source");
+  if (!source) throw new Error("No by-hand equation on screen");
+  const variant = section?.getAttribute("data-variant") ?? "full";
+  const given = Number(section?.getAttribute("data-given") ?? 0);
+  const path = solveWithTutor(startEquation(source.replace(/−/g, "-"))).map((step) => formatEquation(step.after).replace(/−/g, "-"));
+  const lines = variant === "continue" ? path.slice(given) : variant === "write" ? path.slice(0, 1) : path;
+  for (const line of lines) {
+    fireEvent.change(screen.getByLabelText(/Write the next line|Kirjoita seuraava rivi/), { target: { value: line } });
+    await user.click(screen.getByRole("button", { name: /Add line|Lisää rivi/ }));
+  }
+  const check = screen.queryByRole("button", { name: "Check by substituting" });
+  if (check) await user.click(check);
+}
+
+/**
+ * Solves the equation on screen the way a learner who needs no help would: the tutor's own steps, typed in, with no hint
+ * asked for. The last exercise of a round is solved by hand, line by line.
+ */
+export async function solveCleanly(user: UserEvent) {
+  if (document.querySelector(".hand")) return solveByHand(user);
+  const kinds = { add: "Add", subtract: "Subtract", multiply: "Multiply", divide: "Divide" } as const;
+  for (let guard = 0; guard < 10 && !screen.queryByText("Solved"); guard += 1) {
+    const text = document.querySelector(".eq")?.getAttribute("data-equation");
+    if (!text) throw new Error("No equation on screen");
+    const step = solveWithTutor(startEquation(text.replace(/−/g, "-")))[0];
+    const op = step.operation;
+    await applyOperation(user, kinds[op.kind], Number(op.amount.n) / Number(op.amount.d), op.withVariable);
+    await user.click(screen.getByRole("button", { name: "Work out both sides" }));
   }
   if (!screen.queryByText("Solved")) throw new Error("Equation was not solved");
   await user.click(screen.getByRole("button", { name: "Check by substituting" }));

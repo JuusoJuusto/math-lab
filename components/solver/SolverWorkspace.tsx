@@ -7,10 +7,14 @@ import {
   canGetHint,
   canUndo,
   chainOf,
+  formatAppliedEquation,
+  formatEquation,
+  solveEquation,
   createSession,
   currentPreludeStep,
   hintsWithFlip,
   preludeShown,
+  preludeWords,
   sessionReducer,
   solutionOf,
   type Equation,
@@ -19,11 +23,13 @@ import {
 } from "@/lib/equations";
 import { MathLine } from "@/components/ui/MathLine";
 import { PreludeCard } from "./PreludeCard";
+import { BalanceScale } from "./BalanceScale";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
 import { MoveTabs, type MoveMode } from "./MoveTabs";
 import { GraphView } from "./GraphView";
 import { OperationPicker } from "./OperationPicker";
+import { GuessAndCheck } from "./GuessAndCheck";
 import { ReverseChain } from "./ReverseChain";
 import { StepHistory } from "./StepHistory";
 import { SubstitutionCheck } from "./SubstitutionCheck";
@@ -68,7 +74,9 @@ export function SolverWorkspace({
   const changeMode = onMoveModeChange ?? setOwnMode;
   // "Work backwards" needs x once, on one side; if the equation no longer fits, the usual way takes over.
   const chain = state.pending ? null : chainOf(state.current);
-  const moveMode: MoveMode = chosenMode === "chain" && !chain ? "balance" : chosenMode;
+  // "Guess and check" needs one answer to find: not an equation that is never true or always true.
+  const canGuess = !state.pending && solveEquation(state.current).kind === "one";
+  const moveMode: MoveMode = (chosenMode === "chain" && !chain) || (chosenMode === "guess" && !canGuess) ? "balance" : chosenMode;
 
   const root = useRef<HTMLDivElement>(null);
   const simplifyButton = useRef<HTMLButtonElement>(null);
@@ -116,15 +124,24 @@ export function SolverWorkspace({
   );
 
   return (
-    <div className="workspace" ref={root}>
+    <div className="workspace workspace-single" ref={root}>
       <div className="workspace-main">
+        <StepHistory
+          start={state.start}
+          prelude={state.prelude}
+          preludeDone={state.preludeIndex}
+          steps={state.steps}
+          canUndo={canUndo(state)}
+          onUndo={() => dispatch({ type: "undo" })}
+          onRestart={() => dispatch({ type: "restart" })}
+        />
         {preludeStep && written !== null ? (
           <>
             <section className="eq eq-written" aria-label={t.solver.written}>
               <div className="eq-caption" aria-hidden="true">
                 {t.solver.written}
               </div>
-              <MathLine text={written} />
+              <MathLine text={preludeWords(lang).local(written)} />
             </section>
             <FeedbackPanel notice={state.notice} hints={[]} emptyText={t.solver.preludeEmpty} />
             <PreludeCard step={preludeStep} wrong={state.preludeWrong} onChoose={(choice) => dispatch({ type: "prelude", choice })} />
@@ -139,11 +156,28 @@ export function SolverWorkspace({
           solved={state.outcome === "solved"}
         />
 
+        <BalanceScale equation={state.current} />
+
         <FeedbackPanel notice={state.notice} hints={shownHints} emptyText={moveMode === "flip" ? t.solver.emptyFlip : t.solver.empty} />
 
         {state.pending ? (
           <section className="action-card" aria-label={t.solver.simplifyLabel}>
             <p className="action-text">{t.solver.simplifyText}</p>
+            {state.pending && !state.pending.flip && (
+              <ul className="simplify-explain">
+                {(() => {
+                  const [leftFrom, rightFrom] = formatAppliedEquation(state.pending.before, state.pending.operation, lang).split(" = ");
+                  const [leftTo, rightTo] = formatEquation(state.pending.after).split(" = ");
+                  const lines = t.solver.simplifyExplain(leftFrom, leftTo, rightFrom, rightTo);
+                  return (
+                    <>
+                      <li>{lines.left}</li>
+                      <li>{lines.right}</li>
+                    </>
+                  );
+                })()}
+              </ul>
+            )}
             <div className="action-buttons">
               <button type="button" className="button-primary" ref={simplifyButton} onClick={() => dispatch({ type: "simplify" })}>
                 {t.solver.simplify}
@@ -180,7 +214,7 @@ export function SolverWorkspace({
           </>
         ) : (
           <>
-            <MoveTabs mode={moveMode} onChange={changeMode} canChain={chain !== null}>
+            <MoveTabs mode={moveMode} onChange={changeMode} canChain={chain !== null} canGuess={canGuess}>
               {moveMode === "flip" ? hintButton : null}
             </MoveTabs>
             {moveMode === "chain" && chain ? (
@@ -189,6 +223,8 @@ export function SolverWorkspace({
                 onSolved={(value) => dispatch({ type: "answer", value })}
                 onMiss={() => dispatch({ type: "miss" })}
               />
+            ) : moveMode === "guess" ? (
+              <GuessAndCheck equation={state.current} onSolved={(value) => dispatch({ type: "answer", value })} />
             ) : moveMode === "flip" ? (
               <p className="flip-help">{t.solver.flipHelp}</p>
             ) : (
@@ -205,17 +241,6 @@ export function SolverWorkspace({
         )}
       </div>
 
-      <div className="workspace-side">
-        <StepHistory
-          start={state.start}
-          prelude={state.prelude}
-          preludeDone={state.preludeIndex}
-          steps={state.steps}
-          canUndo={canUndo(state)}
-          onUndo={() => dispatch({ type: "undo" })}
-          onRestart={() => dispatch({ type: "restart" })}
-        />
-      </div>
     </div>
   );
 }

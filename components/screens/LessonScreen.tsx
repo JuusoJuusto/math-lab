@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
+import { chapterOf, nextLesson } from "@/content/chapters";
 import { getTopic } from "@/content/topics";
 import { useI18n } from "@/hooks/useLang";
 import { getLevel } from "@/lib/equations";
@@ -13,6 +14,8 @@ export function LessonScreen({ topicId }: { topicId: string }) {
   const topic = getTopic(topicId, lang);
   if (!topic) return null;
   const hasSolver = Boolean(getLevel(topic.id));
+  const place = chapterOf(topic.id, lang);
+  const following = nextLesson(topic.id);
   const { before, mark, after } = topic.formula;
 
   return (
@@ -26,7 +29,9 @@ export function LessonScreen({ topicId }: { topicId: string }) {
           <TopicIcon name={topic.icon} size={30} />
         </span>
         <div>
-          <p className="lesson-kicker">{t.lesson.kicker}</p>
+          <p className="lesson-kicker">
+            {place ? `${t.lesson.chapterKicker(place.chapter.number, place.chapter.title)} · ${t.lesson.lessonOf(place.index + 1, place.chapter.lessons.length)}` : t.lesson.kicker}
+          </p>
           <h1>{topic.title}</h1>
           <p className="lesson-formula">
             {before}
@@ -66,6 +71,16 @@ export function LessonScreen({ topicId }: { topicId: string }) {
           {t.lesson.practiseTopic}
           {!hasSolver && <ArrowRight size={18} aria-hidden="true" />}
         </button>
+      </div>
+
+      <div className="lesson-next">
+        {following ? (
+          <AppLink className="button-secondary lesson-next-link" route={{ name: "lesson", topic: following }}>
+            {t.lesson.nextLesson}: {getTopic(following, lang)?.title} <ArrowRight size={16} aria-hidden="true" />
+          </AppLink>
+        ) : (
+          <p className="lesson-next-done">{t.lesson.lastLesson}</p>
+        )}
       </div>
     </div>
   );
