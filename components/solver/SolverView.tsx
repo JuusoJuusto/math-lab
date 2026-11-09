@@ -121,28 +121,32 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
         </nav>
       )}
 
-      {stage === "learn" && <LevelIntro level={level} onNext={() => setStage("example")} onSkip={startPractice} />}
-      {stage === "example" &&
-        (level.kind === "stories" ? <WordExample level={level} onPractise={startPractice} /> : <WorkedExample level={level} onPractise={startPractice} />)}
-      {stage === "practice" &&
-        (level.kind === "stories" ? (
-          <WordRound key={roundId} level={level} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
-        ) : (
-          <PracticeRound key={roundId} level={level} avoid={previousIds} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
-        ))}
+      {/* Each stage arrives with a short slide, so a change of stage is seen as a change. */}
+      <div className="stage-view" key={stage}>
+        {stage === "learn" && <LevelIntro level={level} onNext={() => setStage("example")} onSkip={startPractice} />}
+        {stage === "example" &&
+          (level.kind === "stories" ? <WordExample level={level} onPractise={startPractice} /> : <WorkedExample level={level} onPractise={startPractice} />)}
+        {stage === "practice" &&
+          (level.kind === "stories" ? (
+            <WordRound key={roundId} level={level} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
+          ) : (
+            <PracticeRound key={roundId} level={level} avoid={previousIds} onComplete={finishRound} onEquationSolved={onEquationSolved} onExit={onExit} />
+          ))}
+        {stage === "complete" && report && (
+          <LevelComplete
+            level={level}
+            report={report}
+            onPractiseAgain={startPractice}
+            onNextLevel={onOpenLevel}
+            onQuiz={() => onQuiz(topic.id)}
+            onTopics={onExit}
+          />
+        )}
+      </div>
+
+      {/* Outside the sliding stage: a transform would make a fixed popup follow the slide. */}
       {stage === "complete" && report && thinksYouKnow(summariseRound(report.results), level.roundSize) && dismissedRound !== roundId && (
         <KnowledgePopup topicTitle={topic.title} onQuiz={() => onQuiz(topic.id)} onClose={() => setDismissedRound(roundId)} />
-      )}
-
-      {stage === "complete" && report && (
-        <LevelComplete
-          level={level}
-          report={report}
-          onPractiseAgain={startPractice}
-          onNextLevel={onOpenLevel}
-          onQuiz={() => onQuiz(topic.id)}
-          onTopics={onExit}
-        />
       )}
     </section>
   );

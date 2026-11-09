@@ -423,6 +423,40 @@
 .key:focus-visible { outline: 3px solid #0c5e9a; outline-offset: 2px; }
 .key-delete { color: var(--s-teal); }
 
+/* The key pad: numbers, signs, a fraction you fill by pressing, and a live picture of the line */
+.pad { display: grid; gap: 12px; min-width: 0; }
+.topic-banner svg { flex-shrink: 0; margin-top: 1px; }
+.pad-preview { display: grid; align-content: center; gap: 2px; min-height: 96px; padding: 10px 16px 12px; border-radius: 14px; border: 2px dashed #bcd9e0; background: #f4fafc; overflow-x: auto; animation: pad-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.pad-preview-label { color: var(--s-muted); font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+.pad-preview .mathline-row { justify-content: flex-start; font-size: clamp(20px, calc(100cqi / (0.54 * var(--eq-chars, 10) + 3.2)), 34px); }
+.pad-preview-empty { color: #7a97a1; font-size: 15px; line-height: 1.4; }
+.pad-preview-note { color: var(--s-teal); font: 700 17px var(--font-display); }
+.keypad { gap: 8px; }
+.key { min-height: 50px; }
+.key-sign, .key-bracket { background: #eef6f9; }
+.key-x { background: #fff3c4; border-color: #ecd271; color: #5a4300; }
+.key-equals { background: #dff3ee; border-color: #9fd6c8; color: var(--s-teal); }
+.key-bar { background: #fff7e6; border-color: #efd9a6; letter-spacing: 3px; }
+.key-clear { color: #a02b3d; }
+.key-fraction { display: flex; align-items: center; justify-content: center; gap: 10px; background: #efe9fb; border-color: #cbbcf0; color: #4b2f94; font-size: 15px; }
+.key-frac { display: inline-grid; gap: 3px; width: 18px; }
+.key-frac i { display: block; height: 7px; border: 2px solid currentColor; border-radius: 2px; }
+.key-frac b { display: block; height: 2px; border-radius: 2px; background: currentColor; }
+.key:disabled { opacity: 0.4; cursor: not-allowed; }
+.key:disabled:hover { background: inherit; border-color: inherit; }
+.fraction-builder { display: grid; gap: 10px; justify-items: center; padding: 14px 16px 16px; border-radius: 16px; border: 2px solid #cbbcf0; background: #f7f4fe; animation: pad-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.fraction-title { margin: 0; justify-self: start; color: #4b2f94; font: 800 13px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
+.fraction-slots { display: grid; justify-items: center; gap: 6px; min-width: 150px; }
+.slot { min-width: 120px; min-height: 54px; padding: 0 18px; border: 2px solid #cbbcf0; border-radius: 12px; background: #fff; color: var(--s-ink); font: 700 28px var(--font-display); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s; }
+.slot:hover { transform: translateY(-1px); }
+.slot-active { border-color: #6b45d6; box-shadow: 0 0 0 4px rgba(107, 69, 214, 0.18); }
+.slot:focus-visible { outline: 3px solid #0c5e9a; outline-offset: 2px; }
+.slot-empty { color: #8a7fb0; font-size: 15px; font-weight: 700; }
+.fraction-bar { width: 100%; height: 4px; border-radius: 2px; background: var(--s-ink); }
+.fraction-hint { margin: 0; color: var(--s-muted); font-size: 14px; line-height: 1.45; text-align: center; }
+@keyframes pad-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .pad-preview, .fraction-builder { animation: none; } .slot { transition: none; } .slot:hover { transform: none; } }
+
 /* ---------- Work backwards (käänteisoperaatiot) and the graph ---------- */
 
 .chain { display: grid; gap: 14px; min-width: 0; padding: 18px; border: 2px solid var(--s-card-line); border-radius: var(--radius); background: #fff; box-shadow: 0 4px 0 rgba(22, 88, 105, 0.08); }
@@ -517,7 +551,7 @@ line.graph-right { stroke: #f39a14; }
 .simplify-explain li { padding: 8px 12px; border-radius: 10px; background: #fff; border: 1px solid #c9dde4; font: 600 16px/1.4 var(--font-display, sans-serif); color: #164655; }
 
 /* "Only this topic" while practising one area */
-.topic-banner { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 6px 12px; border-radius: 999px; background: #e3f6ec; color: #14573b; font: 700 14px/1.2 var(--font-display, sans-serif); }
+.topic-banner { display: flex; width: fit-content; max-width: 100%; align-items: flex-start; gap: 8px; margin: 0 0 14px; padding: 8px 14px; border-radius: 14px; line-height: 1.35; background: #e3f6ec; color: #14573b; font: 700 14px/1.2 var(--font-display, sans-serif); }
 /* The two bars of the notebook notation: heavier, so it reads as two lines */
 .eq-bar, .history-bar { font-weight: 800; letter-spacing: 0.04em; }
 
@@ -563,3 +597,49 @@ line.graph-right { stroke: #f39a14; }
 .move-title { padding: 0; margin: 0 0 6px; font: 700 14px/1.2 var(--font-display, sans-serif); letter-spacing: 0.05em; text-transform: uppercase; color: #4a6b78; }
 .move-hint { margin: 8px 2px 0; color: #2f4d5a; font-size: 15px; line-height: 1.5; }
 .hand-task { margin: 10px 0 0; padding: 10px 14px; border-radius: 12px; background: #fff3d6; border: 2px solid #f0c75e; color: #5d4210; font: 700 18px/1.4 var(--font-display, sans-serif); }
+
+/* ---------- Things arrive: a stage, a message, a hint, a task, the recap ---------- */
+
+.stage-view { animation: stage-in 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes stage-in { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+
+/* Feedback: a good answer glows, a mistake shakes, a hint drops in and its bulb lights up. */
+.feedback-region .notice-success { animation: notice-good 760ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.feedback-region .notice-success .notice-icon { animation: icon-pop 560ms 140ms cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.feedback-region .notice-error { animation: notice-shake 460ms ease-in-out both; }
+.feedback-region .notice-warning { animation: notice-drop 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.feedback-region .hint { animation: notice-drop 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.feedback-region .hint-icon { animation: bulb 900ms 120ms ease-out both; }
+@keyframes notice-good {
+  0% { opacity: 0; transform: translateY(10px) scale(0.98); box-shadow: 0 0 0 0 rgba(32, 168, 118, 0); }
+  55% { opacity: 1; transform: none; box-shadow: 0 0 0 9px rgba(32, 168, 118, 0.22); }
+  100% { opacity: 1; transform: none; box-shadow: 0 0 0 0 rgba(32, 168, 118, 0); }
+}
+@keyframes icon-pop { from { opacity: 0; transform: scale(0.2) rotate(-40deg); } to { opacity: 1; transform: none; } }
+@keyframes notice-shake { 0%, 100% { transform: none; } 18% { transform: translateX(-8px); } 36% { transform: translateX(7px); } 54% { transform: translateX(-5px); } 72% { transform: translateX(3px); } }
+@keyframes notice-drop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@keyframes bulb { 0% { filter: drop-shadow(0 0 0 rgba(240, 180, 40, 0)); transform: scale(0.6); } 40% { filter: drop-shadow(0 0 8px rgba(240, 180, 40, 0.95)); transform: scale(1.25); } 100% { filter: drop-shadow(0 0 0 rgba(240, 180, 40, 0)); transform: none; } }
+
+/* The idea of a lesson, then its picture, one after the other. */
+.intro-demo > * { animation: rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.intro-demo > :nth-child(1) { animation-delay: 160ms; }
+.intro-demo > :nth-child(2) { animation-delay: 320ms; }
+.intro-demo > :nth-child(3) { animation-delay: 480ms; }
+.intro-demo > :nth-child(4) { animation-delay: 640ms; }
+
+/* A new task slides in; a finished round shows its medal first, then the equations one by one. */
+.task { animation: rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.results-card .results-medal { animation: medal-pop 820ms cubic-bezier(0.2, 1.5, 0.4, 1) both; }
+.results-card .complete-heading, .results-card .results-score { animation: rise 520ms 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.recap li { animation: row-in 440ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.recap li:nth-child(1) { animation-delay: 420ms; }
+.recap li:nth-child(2) { animation-delay: 520ms; }
+.recap li:nth-child(3) { animation-delay: 620ms; }
+.recap li:nth-child(4) { animation-delay: 720ms; }
+.recap li:nth-child(n + 5) { animation-delay: 820ms; }
+@keyframes medal-pop { 0% { opacity: 0; transform: scale(0.3) rotate(-25deg); } 60% { opacity: 1; transform: scale(1.15) rotate(6deg); } 100% { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-view, .intro-demo > *, .task, .results-card .results-medal, .results-card .complete-heading, .results-card .results-score, .recap li,
+  .feedback-region .notice, .feedback-region .notice-icon, .feedback-region .hint, .feedback-region .hint-icon { animation: none; }
+}

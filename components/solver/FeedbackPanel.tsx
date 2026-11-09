@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ArrowRight, CircleCheck, CircleX, Info, Lightbulb, TriangleAlert } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import type { Notice, NoticeTone } from "@/lib/equations";
@@ -30,10 +31,14 @@ export function FeedbackPanel({ notice, hints, emptyText }: FeedbackPanelProps) 
   const { t } = useI18n();
   const Icon = notice ? ICONS[notice.tone] : Info;
 
+  // Every new message is a new element, so its motion plays each time: a good answer glows, a mistake shakes.
+  const [shown, setShown] = useState({ notice, count: 0 });
+  if (shown.notice !== notice) setShown({ notice, count: shown.count + 1 });
+
   return (
     <div className="feedback-region" role="status" aria-live="polite">
       {notice ? (
-        <div className={`notice notice-${notice.tone}`}>
+        <div className={`notice notice-${notice.tone}`} key={shown.count}>
           <Icon className="notice-icon" size={22} aria-hidden="true" />
           <div className="notice-content">
             <p className="notice-title">{notice.title}</p>

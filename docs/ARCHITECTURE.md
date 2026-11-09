@@ -39,7 +39,7 @@ Every screen is a real static page in each language (`/fi/learn/two-step/`, `/en
 ## Learning flow
 
 1. The home screen introduces MathLab, its **Start learning** button opens the first solver level that is not finished, and its cards lead to topics and to the ten ways to practise.
-2. A topic lesson presents concise key ideas. Topics with a solver offer **Solve step by step**; every topic offers varied practice.
+2. A topic lesson presents concise key ideas, then what to remember and what to watch out for, then a three-step path: read, watch and solve (**Solve step by step**, for topics with a solver), try it on your own (varied practice, or a five-question quiz). The step that is next is marked, and a finished lesson says so.
 3. The equation solver takes a learner through a level: learn, worked example, practice round and completion.
 4. Practice sessions mix kinds of task (typed answers, true or false, which step, find the mistake, write the equation, multiple choice), explain every answer and record XP.
 5. Missed tasks wait in a queue to be retried, and the progress screen shows accuracy by topic and by type of task.

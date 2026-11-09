@@ -98,6 +98,7 @@ export function EquationDisplay({ equation, applied = null, flipped = null, onFl
 
   return (
     <section
+      key={formatEquation(equation)}
       className={`eq ${solved ? "eq-solved" : ""} ${applied || preview ? "eq-applying" : ""} ${interactive ? "eq-flippable" : ""}`}
       aria-label={name}
       data-equation={formatEquation(equation)}

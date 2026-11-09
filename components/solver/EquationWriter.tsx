@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, Delete, Lightbulb } from "lucide-react";
+import { useId, useState, type FormEvent } from "react";
+import { ArrowRight, Lightbulb } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   engineText,
@@ -13,6 +13,7 @@ import {
   type Notice,
 } from "@/lib/equations";
 import { FeedbackPanel } from "./FeedbackPanel";
+import { MathPad } from "./MathPad";
 
 export interface BuiltResult {
   readonly equation: Equation;
@@ -40,8 +41,6 @@ export function EquationWriter({ intended, onBuilt }: EquationWriterProps) {
   const { lang, t } = useI18n();
   const words = engineText(lang);
   const id = useId();
-  const input = useRef<HTMLInputElement>(null);
-  const caret = useRef<number | null>(null);
 
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<Notice | null>(null);
@@ -54,36 +53,9 @@ export function EquationWriter({ intended, onBuilt }: EquationWriterProps) {
   const read = readWritten(value);
   const reading = value.trim() !== "" && read.ok ? formatEquation(read.equation) : null;
 
-  // After a key is pressed, put the caret back where the learner was typing.
-  useEffect(() => {
-    if (caret.current !== null && input.current) {
-      input.current.focus();
-      input.current.setSelectionRange(caret.current, caret.current);
-      caret.current = null;
-    }
-  });
-
   function change(next: string) {
     setValue(next);
     if (!locked) setNotice(null);
-  }
-
-  function insert(text: string) {
-    const field = input.current;
-    const start = field?.selectionStart ?? value.length;
-    const end = field?.selectionEnd ?? value.length;
-    caret.current = start + text.length;
-    change(`${value.slice(0, start)}${text}${value.slice(end)}`);
-  }
-
-  function backspace() {
-    const field = input.current;
-    const start = field?.selectionStart ?? value.length;
-    const end = field?.selectionEnd ?? value.length;
-    if (start === end && start === 0) return;
-    const from = start === end ? start - 1 : start;
-    caret.current = from;
-    change(`${value.slice(0, from)}${value.slice(end)}`);
   }
 
   function check(event?: FormEvent) {
@@ -119,20 +91,6 @@ export function EquationWriter({ intended, onBuilt }: EquationWriterProps) {
 
   const hints = t.word.hints.map((line, index) => (index === 2 ? `${line} ${formatEquation(intended)}` : line));
   const hintLabel = hintLevel === 0 ? t.word.hint : hintLevel < 3 ? t.word.moreHelp(hintLevel) : t.word.allHints;
-  const names = t.word.keyNames;
-
-  const keys: readonly { label: string; insert: string; name: string }[] = [
-    { label: "x", insert: "x", name: names.x },
-    { label: "+", insert: " + ", name: names.plus },
-    { label: "−", insert: " − ", name: names.minus },
-    { label: words.times, insert: ` ${words.times} `, name: names.times },
-    { label: words.divide, insert: ` ${words.divide} `, name: names.divide },
-    { label: "(", insert: "(", name: names.open },
-    { label: ")", insert: ")", name: names.close },
-    { label: "=", insert: " = ", name: names.equals },
-    { label: lang === "fi" ? "," : ".", insert: lang === "fi" ? "," : ".", name: names.point },
-  ];
-
   return (
     <form className="build" onSubmit={check} aria-labelledby={`${id}-title`} noValidate>
       <h3 className="build-title" id={`${id}-title`}>
@@ -143,34 +101,7 @@ export function EquationWriter({ intended, onBuilt }: EquationWriterProps) {
       <label className="build-label" htmlFor={`${id}-field`}>
         {t.word.writeLabel}
       </label>
-      <input
-        id={`${id}-field`}
-        ref={input}
-        className="write-input"
-        type="text"
-        inputMode="text"
-        enterKeyHint="done"
-        autoComplete="off"
-        autoCapitalize="off"
-        autoCorrect="off"
-        spellCheck={false}
-        value={value}
-        disabled={locked}
-        onChange={(event) => change(event.target.value)}
-      />
-
-      {!locked && (
-        <div className="keypad" role="group" aria-label={t.word.keysLabel}>
-          {keys.map((key) => (
-            <button type="button" className="key" key={key.name} aria-label={key.name} onClick={() => insert(key.insert)}>
-              {key.label}
-            </button>
-          ))}
-          <button type="button" className="key key-delete" aria-label={names.delete} onClick={backspace}>
-            <Delete size={20} aria-hidden="true" />
-          </button>
-        </div>
-      )}
+      <MathPad inputId={`${id}-field`} value={value} onChange={change} disabled={locked} />
 
       <p className="build-preview" aria-live="polite">
         {reading ? (

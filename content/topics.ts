@@ -44,6 +44,10 @@ export interface TopicText {
   readonly caption: string;
   readonly description: string;
   readonly lesson: readonly string[];
+  /** The one thing to hold on to in this lesson. */
+  readonly remember: string;
+  /** The mistake that is most often made in this lesson, with a small example. */
+  readonly watchOut: string;
 }
 
 export interface TopicDefinition {
@@ -64,6 +68,8 @@ export interface Topic {
   formula: Formula;
   description: string;
   lesson: string[];
+  remember: string;
+  watchOut: string;
 }
 
 export const topicDefinitions: readonly TopicDefinition[] = [
@@ -86,6 +92,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "An equation stays balanced when you perform the same operation on both sides.",
           "The goal is to isolate x on one side of the equation.",
         ],
+        remember: "An equation is a balance: both sides have the same value, and the letter stands for the number that keeps it balanced.",
+        watchOut: "3x + 2 is only an expression: it has no equals sign, so there is nothing to solve. To test a value, put it in place of x in the original equation and compare the two sides.",
       },
       fi: {
         title: "Yhtälön ymmärtäminen",
@@ -100,6 +108,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Yhtälö pysyy tasapainossa, kun molemmille puolille tehdään sama laskutoimitus.",
           "Tavoitteena on saada x yksin yhtälön toiselle puolelle.",
         ],
+        remember: "Yhtälö on vaaka: molemmilla puolilla on sama arvo, ja kirjain tarkoittaa lukua, jolla vaaka pysyy tasapainossa.",
+        watchOut: "3x + 2 on vain lauseke: siinä ei ole yhtäsuuruusmerkkiä, joten sitä ei voi ratkaista. Arvon voi testata sijoittamalla sen alkuperäiseen yhtälöön x:n paikalle ja vertaamalla puolia.",
       },
     },
   },
@@ -121,6 +131,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "A shortcut: flip a term to the other side and change its sign. x + 5 = 12 becomes x = 12 − 5.",
           "Check your solution by substituting it into the original equation.",
         ],
+        remember: "To get x alone, undo the one operation attached to it with the opposite operation, on both sides.",
+        watchOut: "Undo, do not repeat: x + 5 = 12 means subtract 5 (x = 7), not add 5. And x ÷ 3 = 4 means multiply by 3 (x = 12), not divide again.",
       },
       fi: {
         title: "Yhden askeleen yhtälöt",
@@ -134,6 +146,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Oikotie: siirrä termi yhtälön toiselle puolelle ja vaihda sen merkki. x + 5 = 12 muuttuu muotoon x = 12 − 5.",
           "Tarkista ratkaisu sijoittamalla se alkuperäiseen yhtälöön.",
         ],
+        remember: "Saat x:n yksin kumoamalla siihen liittyvän laskutoimituksen käänteisoperaatiolla, molemmilla puolilla.",
+        watchOut: "Kumoa, älä toista: x + 5 = 12 tarkoittaa, että vähennät 5 (x = 7) etkä lisää sitä. Ja x : 3 = 4 tarkoittaa, että kerrot kolmella (x = 12) etkä jaa uudestaan.",
       },
     },
   },
@@ -155,6 +169,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "With flips: 2x + 5 = 17 becomes 2x = 17 − 5, and then x = 12 : 2.",
           "Check your solution by substituting it into the original equation.",
         ],
+        remember: "The last thing done to x is the first thing to undo: first the adding or subtracting, then the multiplying or dividing.",
+        watchOut: "If you divide first, divide every term: 2x + 5 = 17 becomes x + 2.5 = 8.5, not x + 5 = 8.5. Subtracting 5 first keeps the numbers whole and the work shorter.",
       },
       fi: {
         title: "Kahden askeleen yhtälöt",
@@ -168,6 +184,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Siirtämällä: 2x + 5 = 17 muuttuu muotoon 2x = 17 − 5 ja sitten x = 12 : 2.",
           "Tarkista ratkaisu sijoittamalla se alkuperäiseen yhtälöön.",
         ],
+        remember: "Viimeksi x:lle tehty asia kumotaan ensin: ensin yhteen- tai vähennyslasku, sitten kerto- tai jakolasku.",
+        watchOut: "Jos jaat ensin, jaa jokainen termi: 2x + 5 = 17 muuttuu muotoon x + 2,5 = 8,5, ei muotoon x + 5 = 8,5. Kun vähennät ensin 5, luvut pysyvät kokonaislukuina ja työ lyhenee.",
       },
     },
   },
@@ -188,6 +206,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Flip an x term across the equals sign and its sign changes too: 5x + 2 = 3x + 12 becomes 5x − 3x + 2 = 12.",
           "Combine like terms, then solve the simpler equation.",
         ],
+        remember: "Collect all the x terms on one side and all the plain numbers on the other, then solve the smaller equation that is left.",
+        watchOut: "A term changes its sign when it crosses the equals sign: 5x + 2 = 3x + 12 gives 5x − 3x = 12 − 2, so 2x = 10. Moving 3x without changing its sign would give 8x, which is wrong.",
       },
       fi: {
         title: "Muuttuja molemmilla puolilla",
@@ -200,6 +220,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Kun x-termi siirretään yhtäsuuruusmerkin yli, sen merkki vaihtuu: 5x + 2 = 3x + 12 muuttuu muotoon 5x − 3x + 2 = 12.",
           "Yhdistä samanlaiset termit ja ratkaise sitten yksinkertaisempi yhtälö.",
         ],
+        remember: "Kokoa kaikki x-termit yhdelle puolelle ja pelkät luvut toiselle, ja ratkaise sitten jäljelle jäänyt yksinkertaisempi yhtälö.",
+        watchOut: "Termin merkki vaihtuu, kun se siirtyy yhtäsuuruusmerkin yli: 5x + 2 = 3x + 12 antaa 5x − 3x = 12 − 2 eli 2x = 10. Jos 3x siirretään merkkiä vaihtamatta, tulee 8x, ja se on väärin.",
       },
     },
   },
@@ -218,7 +240,11 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Multiply every term inside the brackets by the factor outside.",
           "For example, 3(x + 2) = 3x + 6.",
           "Then solve the resulting equation as usual.",
+          "A minus sign in front of a bracket changes every sign inside it: −(x − 4) = −x + 4.",
+          "When the factor divides everything evenly, you may also divide both sides by it first: 3(x + 2) = 15 gives x + 2 = 5.",
         ],
+        remember: "A number in front of a bracket multiplies everything inside it: 3(x + 2) = 3x + 6.",
+        watchOut: "Multiply every term in the bracket, not only the first one: 3(x + 2) is 3x + 6, not 3x + 2.",
       },
       fi: {
         title: "Yhtälöt, joissa on sulkuja",
@@ -229,7 +255,11 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Kerro jokainen sulkeiden sisällä oleva termi sulkeiden edessä olevalla luvulla.",
           "Esimerkiksi 3(x + 2) = 3x + 6.",
           "Ratkaise sitten syntynyt yhtälö tavalliseen tapaan.",
+          "Miinusmerkki sulkeiden edessä vaihtaa kaikki sulkeiden sisällä olevat merkit: −(x − 4) = −x + 4.",
+          "Jos kerroin jakaa kaiken tasan, voit myös jakaa ensin molemmat puolet sillä: 3(x + 2) = 15 antaa x + 2 = 5.",
         ],
+        remember: "Sulkeiden edessä oleva luku kertoo kaiken sulkeiden sisällä: 3(x + 2) = 3x + 6.",
+        watchOut: "Kerro jokainen sulkeiden sisällä oleva termi, ei vain ensimmäistä: 3(x + 2) on 3x + 6, ei 3x + 2.",
       },
     },
   },
@@ -250,6 +280,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Solve the whole-number equation as usual.",
           "A ratio such as x/6 = 4/3 is solved the same way: multiply both sides by 6.",
         ],
+        remember: "Multiplying both sides by the common denominator makes the fractions disappear. After that it is an ordinary equation.",
+        watchOut: "Multiply every term by the common denominator, also the ones without a fraction: x/2 + 3 = 5 becomes x + 6 = 10, because the 3 is multiplied by 2 as well.",
       },
       fi: {
         title: "Murtoluvut, desimaaliluvut ja verranto",
@@ -262,6 +294,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Ratkaise kokonaislukuyhtälö tavalliseen tapaan.",
           "Verranto, kuten x/6 = 4/3, ratkeaa samalla tavalla: kerro molemmat puolet luvulla 6.",
         ],
+        remember: "Kun kerrot molemmat puolet yhteisellä nimittäjällä, murtoluvut katoavat. Sen jälkeen yhtälö on tavallinen.",
+        watchOut: "Kerro jokainen termi yhteisellä nimittäjällä, myös ne, joissa ei ole murtolukua: x/2 + 3 = 5 muuttuu muotoon x + 6 = 10, koska myös 3 kerrotaan kahdella.",
       },
     },
   },
@@ -282,6 +316,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Check by trying two different values of x in the original equation.",
           "These cases show that solving an equation is more than finding one number.",
         ],
+        remember: "When x disappears, look at what is left: a false statement (3 = 5) means no solution, a true one (4 = 4) means every number works.",
+        watchOut: "“No solution” is not the same as x = 0. It means no number makes the equation true; x = 0 is a number, and it may well be a solution.",
       },
       fi: {
         title: "Ei ratkaisua tai äärettömän monta",
@@ -294,6 +330,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Tarkista kokeilemalla alkuperäiseen yhtälöön kahta eri x:n arvoa.",
           "Nämä tapaukset osoittavat, että yhtälön ratkaiseminen on enemmän kuin yhden luvun löytämistä.",
         ],
+        remember: "Kun x katoaa, katso, mitä jää jäljelle: epätosi väite (3 = 5) tarkoittaa, ettei ratkaisua ole, tosi väite (4 = 4) tarkoittaa, että jokainen luku käy.",
+        watchOut: "”Ei ratkaisua” ei ole sama asia kuin x = 0. Se tarkoittaa, ettei mikään luku tee yhtälöstä tosi; x = 0 on luku, ja se voi olla ratkaisu.",
       },
     },
   },
@@ -312,7 +350,11 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "In direct proportion, two quantities change by the same factor.",
           "In inverse proportion, increasing one quantity decreases the other in a corresponding way.",
           "In direct proportion, the ratio y/x stays constant.",
+          "Direct proportion with numbers: if 3 notebooks cost 6 €, then 5 notebooks cost x €. Write 6/3 = x/5, so x = 10.",
+          "Inverse proportion keeps the product: if 4 workers need 6 days, then 8 workers need x days. Write 4 · 6 = 8 · x, so x = 3.",
         ],
+        remember: "Direct proportion keeps the ratio the same (divide). Inverse proportion keeps the product the same (multiply).",
+        watchOut: "More does not always mean more: with more workers the job takes fewer days. Decide first whether both quantities grow together (direct) or one grows while the other shrinks (inverse).",
       },
       fi: {
         title: "Verrannollisuus",
@@ -323,7 +365,11 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Suorassa verrannollisuudessa kaksi suuretta muuttuu samalla kertoimella.",
           "Kääntäen verrannollisuudessa toisen suureen kasvaessa toinen pienenee vastaavasti.",
           "Suorassa verrannollisuudessa suhde y/x pysyy vakiona.",
+          "Suoraan verrannolliset suureet lukuina: jos 3 vihkoa maksaa 6 €, niin 5 vihkoa maksaa x €. Kirjoita 6/3 = x/5, jolloin x = 10.",
+          "Kääntäen verrannollisilla suureilla tulo pysyy samana: jos 4 työntekijää tarvitsee 6 päivää, niin 8 työntekijää tarvitsee x päivää. Kirjoita 4 · 6 = 8 · x, jolloin x = 3.",
         ],
+        remember: "Suoraan verrannollisilla suureilla suhde pysyy samana (jakolasku). Kääntäen verrannollisilla suureilla tulo pysyy samana (kertolasku).",
+        watchOut: "Enemmän ei aina tarkoita enemmän: mitä enemmän työntekijöitä, sitä vähemmän päiviä työhön kuluu. Päätä ensin, kasvavatko suureet yhdessä (suoraan verrannolliset) vai pienenee toinen toisen kasvaessa (kääntäen verrannolliset).",
       },
     },
   },
@@ -344,6 +390,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Solve the equation and answer the question in a complete sentence.",
           "Check that your answer makes sense in the given situation.",
         ],
+        remember: "First say in words what x stands for, then write the equation, and answer the question in a full sentence with its unit.",
+        watchOut: "The solution of the equation is not always the answer to the question: if x is the price of one notebook but the question asks for three, multiply once more. Then ask whether the answer makes sense: a price cannot be negative.",
       },
       fi: {
         title: "Sanalliset tehtävät",
@@ -356,6 +404,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Ratkaise yhtälö ja vastaa kysymykseen kokonaisella lauseella.",
           "Tarkista, että vastaus on järkevä tilanteessa.",
         ],
+        remember: "Kirjoita ensin sanoin, mitä x tarkoittaa, sitten yhtälö, ja vastaa kysymykseen kokonaisella lauseella ja yksikön kanssa.",
+        watchOut: "Yhtälön ratkaisu ei aina ole vastaus kysymykseen: jos x on yhden vihon hinta mutta kysytään kolmen hintaa, kerro vielä kolmella. Mieti lopuksi, onko vastaus järkevä: hinta ei voi olla negatiivinen.",
       },
     },
   },
@@ -376,6 +426,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "A percentage is a decimal: 25 % off leaves 0.75 of the price.",
           "Distance = speed × time. Two things moving towards each other add their distances.",
         ],
+        remember: "Say what every part of the story is worth in words first. Then the equation almost writes itself.",
+        watchOut: "25 % off leaves 75 % of the price, so multiply by 0.75, not 0.25. Consecutive numbers are x, x + 1, x + 2; x, x + 2, x + 4 are every second number.",
       },
       fi: {
         title: "Vaativat sanalliset tehtävät",
@@ -388,6 +440,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Prosentti on desimaaliluku: 25 %:n alennus jättää 0,75-osan hinnasta.",
           "Matka = nopeus · aika. Toisiaan kohti kulkevien matkat lasketaan yhteen.",
         ],
+        remember: "Sano ensin sanoin, minkä arvoinen kukin tarinan osa on. Sen jälkeen yhtälö melkein kirjoittuu itsestään.",
+        watchOut: "25 %:n alennus jättää 75 % hinnasta, joten kerro luvulla 0,75, ei luvulla 0,25. Peräkkäiset luvut ovat x, x + 1, x + 2; luvut x, x + 2, x + 4 ovat joka toinen luku.",
       },
     },
   },
@@ -408,6 +462,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Collect x on one side and the numbers on the other.",
           "Always check the answer by substituting it.",
         ],
+        remember: "Work in the same order every time: open the brackets, clear the fractions, collect x, solve, check.",
+        watchOut: "Check by substituting into the original equation, not into one you changed on the way: a slip in the middle would not show up otherwise.",
       },
       fi: {
         title: "Haastetaso",
@@ -420,6 +476,8 @@ export const topicDefinitions: readonly TopicDefinition[] = [
           "Kokoa x yhdelle puolelle ja luvut toiselle.",
           "Tarkista vastaus aina sijoittamalla se.",
         ],
+        remember: "Toimi joka kerta samassa järjestyksessä: avaa sulkeet, poista murtoluvut, kokoa x, ratkaise, tarkista.",
+        watchOut: "Tarkista sijoittamalla alkuperäiseen yhtälöön, älä matkalla muokattuun: muuten välivaiheen lipsahdus ei paljastu.",
       },
     },
   },
@@ -444,6 +502,8 @@ function buildTopics(lang: Lang): Topic[] {
       formula: { ...definition.formula, caption: text.caption },
       description: text.description,
       lesson: [...text.lesson],
+      remember: text.remember,
+      watchOut: text.watchOut,
     };
   });
 }

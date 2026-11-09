@@ -144,7 +144,10 @@ describe("topics and levels", () => {
       expect(topic.lesson.length, topic.id).toBe(en[index].lesson.length);
       expect(topic.title, topic.id).not.toBe(en[index].title);
       expect(topic.formula.mark).toBe(en[index].formula.mark);
-      expect(`${topic.title} ${topic.lesson.join(" ")} ${topic.description}`, topic.id).not.toMatch(ENGLISH);
+      expect(`${topic.title} ${topic.lesson.join(" ")} ${topic.description} ${topic.remember} ${topic.watchOut}`, topic.id).not.toMatch(ENGLISH);
+      // The two notes are written for the language, not copied from the other one.
+      expect(topic.remember, topic.id).not.toBe(en[index].remember);
+      expect(topic.watchOut, topic.id).not.toBe(en[index].watchOut);
     });
   });
 

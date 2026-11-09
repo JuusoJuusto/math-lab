@@ -48,6 +48,14 @@ Every finished step stays on the screen, stacked above the current equation, wri
 
 `planHand` builds each format from the tutor's own solution, so every task can be finished. The practice test is built the same way: four tasks in five are written by hand (`handShare` in `lib/tasks/modes.ts`), in the same three formats, and every fifth task comes from the other kinds in turn (short questions, true or false, which step, find the mistake). A test checks every line of the tutor's own solution of 1,500 equations is accepted, and a changed copy of each is not. "I am stuck" gives the usual three hints and counts as hints.
 
+### Writing a line: the key pad
+
+A line is written in a text box, and a hardware keyboard works as always. Under it is a key pad (`components/solver/MathPad.tsx`, shared with the word-problem screen) for phones, where numbers, x, brackets and the equals sign hide behind keyboard layers: the digits 0 to 9, a decimal sign (a comma in Finnish), x, `+ − × ÷`, brackets, `=`, delete, clear, and on the by-hand screen the two bars `||` for the step beside a line. The keys write at the caret and do not take the focus, so a phone's own keyboard stays down.
+
+The **fraction key** is for writing x over 3 the way it looks. It opens two boxes, one above the other. The top is ready for the first key; tap the bottom to switch; press the numbers; **Put in the line** adds `x/3` (or `(x + 2)/3` when the top is longer than one term) at the caret. If a part of the line is picked out first, it becomes the top. A hardware keyboard works in the boxes as well: keys fill the active box, Enter puts it in, Escape cancels. Nothing about the engine changes: the line is text, `readWritten` reads `x/3` as it always did.
+
+Under the box the line is drawn as it will look, with fractions stacked (`MathLine`), from the first key. The space is always there, so the keys do not move down when the first key is pressed.
+
 ## Decimals
 
 An equation written with decimals (`0.5x + 1.2 = 3.7`, `0.25x + 1 = 2.5`) has one clean-up question: *multiply every term by 10 (or 100) so that the decimals disappear*. `decimalFactor` picks 10 for one decimal place and 100 for two. The balance moves then start from the whole-number equation (`startEquation`: `5x + 12 = 37`), which has the same solution. The wrong answers are the usual slips (a term left as it was written, a decimal point moved one place too far, a lost sign, an arithmetic slip), and a test checks that none of them is an alternative right answer. Inside the engine numbers use a point; Finnish shows them with a comma (`localiseDecimals`). Decimal exercises are in the fractions level, written with a point in `levels.ts`, and are chosen so that the answer is a whole number.
@@ -106,7 +114,7 @@ A topic and its level share the same id. Levels are defined in `lib/equations/le
 
 ## Word problems: the equation is written from scratch
 
-In the two word-problem levels the learner reads a story, **writes the whole equation in a blank field**, and only then solves it. Nothing is filled in: no boxes, no template, no starting text. A keypad (x, + − · : ( ) = and a decimal sign) is there for phones. What was typed is read by `readWritten`, which accepts what people write (`2x+3=15`, `0,75x`, `x : 2`, `3(x + 1)`, a capital `X`) and says in the learner's language what cannot be read (no equals sign, a different letter, x times x).
+In the two word-problem levels the learner reads a story, **writes the whole equation in a blank field**, and only then solves it. Nothing is filled in: no boxes, no template, no starting text. The same key pad as in solving by hand (digits, x, signs, brackets, a decimal sign and the fraction key; see above) is there for phones. What was typed is read by `readWritten`, which accepts what people write (`2x+3=15`, `0,75x`, `x : 2`, `3(x + 1)`, a capital `X`) and says in the learner's language what cannot be read (no equals sign, a different letter, x times x).
 
 `judgeBuiltEquation` compares it with the story's own equation:
 

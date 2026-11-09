@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS, isSolution, parseEquation, parseExpression, getLevel, type Fraction } from "@/lib/equations";
 import { SOLVE_PREFIX, getQuestions, questions, questionsFor } from "../questions";
-import { getTopic, topics } from "../topics";
+import { getTopic, getTopics, topics } from "../topics";
 
 /** "x = −5" or "x = 8.5" -> an exact number, or null when the choice is not an answer to an equation. */
 function valueOfChoice(choice: string): Fraction | null {
@@ -19,6 +19,23 @@ describe("topics", () => {
     for (const topic of topics) {
       expect(topic.title.length).toBeGreaterThan(0);
       expect(topic.lesson.length).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("each end with something to remember and a mistake to watch out for, in both languages", () => {
+    for (const lang of ["en", "fi"] as const) {
+      for (const topic of getTopics(lang)) {
+        const label = `${lang}/${topic.id}`;
+        expect(topic.remember.length, label).toBeGreaterThan(40);
+        expect(topic.watchOut.length, label).toBeGreaterThan(40);
+        // The two say different things, and they are short enough to be read at a glance.
+        expect(topic.remember, label).not.toBe(topic.watchOut);
+        expect(topic.remember.length, label).toBeLessThan(260);
+        expect(topic.watchOut.length, label).toBeLessThan(300);
+        // Neither repeats a key idea word for word.
+        expect(topic.lesson, label).not.toContain(topic.remember);
+        expect(topic.lesson, label).not.toContain(topic.watchOut);
+      }
     }
   });
 

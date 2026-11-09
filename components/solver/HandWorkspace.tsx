@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, Delete, Lightbulb, PenLine, Undo2 } from "lucide-react";
+import { useId, useState, type FormEvent } from "react";
+import { ArrowRight, Lightbulb, PenLine, Undo2 } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import {
   afterStep,
@@ -28,6 +28,7 @@ import {
 import { MathLine } from "@/components/ui/MathLine";
 import { EquationDisplay } from "./EquationDisplay";
 import { FeedbackPanel } from "./FeedbackPanel";
+import { MathPad } from "./MathPad";
 import { SubstitutionCheck } from "./SubstitutionCheck";
 import type { WorkspaceOutcome } from "./SolverWorkspace";
 
@@ -66,8 +67,6 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
   const words = t.solver.hand;
   const written = engineText(lang);
   const id = useId();
-  const field = useRef<HTMLInputElement>(null);
-  const caret = useRef<number | null>(null);
 
   const [value, setValue] = useState("");
   // What is shown as "the equation": for one step to write, the equation just before that step.
@@ -94,32 +93,6 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
   const finished = variant === "write" ? typedLines.length > 0 : ended !== null;
   const solved = ended === "solved" && variant !== "write" ? solveEquation(original) : null;
   const answer = solved?.kind === "one" ? solved.value : null;
-
-  useEffect(() => {
-    if (caret.current !== null && field.current) {
-      field.current.focus();
-      field.current.setSelectionRange(caret.current, caret.current);
-      caret.current = null;
-    }
-  });
-
-  function insert(text: string) {
-    const input = field.current;
-    const start = input?.selectionStart ?? value.length;
-    const end = input?.selectionEnd ?? value.length;
-    caret.current = start + text.length;
-    setValue(`${value.slice(0, start)}${text}${value.slice(end)}`);
-  }
-
-  function backspace() {
-    const input = field.current;
-    const start = input?.selectionStart ?? value.length;
-    const end = input?.selectionEnd ?? value.length;
-    if (start === end && start === 0) return;
-    const from = start === end ? start - 1 : start;
-    caret.current = from;
-    setValue(`${value.slice(0, from)}${value.slice(end)}`);
-  }
 
   function add(event?: FormEvent) {
     event?.preventDefault();
@@ -195,19 +168,6 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
       : getHints(current, lang);
   const hintCount = hints ? hints.length : 0;
   const shown = hints ? hints.slice(0, hintLevel) : [];
-  const names = t.word.keyNames;
-  const keys: readonly { label: string; insert: string; name: string }[] = [
-    { label: "x", insert: "x", name: names.x },
-    { label: "+", insert: " + ", name: names.plus },
-    { label: "−", insert: " − ", name: names.minus },
-    { label: written.times, insert: ` ${written.times} `, name: names.times },
-    { label: written.divide, insert: ` ${written.divide} `, name: names.divide },
-    { label: "(", insert: "(", name: names.open },
-    { label: ")", insert: ")", name: names.close },
-    { label: "=", insert: " = ", name: names.equals },
-    { label: "||", insert: " || ", name: words.barKey },
-  ];
-
   function finish() {
     onContinue({ steps: typedLines.filter((line) => line.operation !== null).length, mistakes, hints: hintsUsed });
   }
@@ -283,30 +243,7 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
             <label className="build-label" htmlFor={`${id}-field`}>
               {words.label}
             </label>
-            <input
-              id={`${id}-field`}
-              ref={field}
-              className="write-input"
-              type="text"
-              inputMode="text"
-              enterKeyHint="done"
-              autoComplete="off"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              value={value}
-              onChange={(event) => setValue(event.target.value)}
-            />
-            <div className="keypad" role="group" aria-label={t.word.keysLabel}>
-              {keys.map((key) => (
-                <button type="button" className="key" key={key.name} aria-label={key.name} onClick={() => insert(key.insert)}>
-                  {key.label}
-                </button>
-              ))}
-              <button type="button" className="key key-delete" aria-label={names.delete} onClick={backspace}>
-                <Delete size={20} aria-hidden="true" />
-              </button>
-            </div>
+            <MathPad inputId={`${id}-field`} value={value} onChange={setValue} bar={{ name: words.barKey }} />
             <div className="action-buttons">
               <button type="submit" className="button-primary" disabled={value.trim() === ""}>
                 {words.add}
