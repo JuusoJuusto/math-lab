@@ -265,7 +265,7 @@ export function HandWorkspace({ source, equation, continueLabel, plan, onContinu
 
         {lines.length > 0 && <EquationDisplay equation={current} solved={finished} />}
 
-        <FeedbackPanel notice={notice} hints={shown} emptyText={lines.length === 0 ? words.none : t.solver.empty} />
+        <FeedbackPanel notice={notice} hints={shown} emptyText={lines.length === 0 ? words.none : words.yourMove} />
 
         {finished ? (
           <>

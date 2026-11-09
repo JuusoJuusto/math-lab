@@ -404,6 +404,7 @@ export const en = {
       done: "x is alone! Now check your answer.",
       barKey: "two bars, to write the step beside a line",
       none: "Nothing written yet. Type the first line below.",
+      yourMove: "Your move. Write the next line of the solution below.",
     },
     knowledge: {
       title: "You seem to know this!",

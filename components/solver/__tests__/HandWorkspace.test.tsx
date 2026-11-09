@@ -176,6 +176,9 @@ describe("the other ways of writing by hand", () => {
     const lines = within(sheet()!).getAllByRole("listitem");
     expect(lines.length).toBeGreaterThanOrEqual(1);
     expect(lines[0].querySelector(".history-label")?.textContent).toMatch(/^Given · step 1/);
+    // There are no buttons to choose an operation, so the screen must not talk about them.
+    expect(screen.getByText("Your move. Write the next line of the solution below.")).toBeTruthy();
+    expect(screen.queryByText(/Choose an operation/)).toBeNull();
     // A line that was given cannot be deleted; there is nothing of yours to delete yet.
     expect((screen.getByRole("button", { name: "Delete the last line" }) as HTMLButtonElement).disabled).toBe(true);
 

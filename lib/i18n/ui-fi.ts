@@ -399,6 +399,7 @@ export const fi: UiMessages = {
       done: "x on yksin! Tarkista nyt vastauksesi.",
       barKey: "kaksi viivaa, jolla kirjoitat vaiheen rivin viereen",
       none: "Mitään ei ole vielä kirjoitettu. Kirjoita ensimmäinen rivi alle.",
+      yourMove: "Sinun vuorosi. Kirjoita ratkaisun seuraava rivi alle.",
     },
     knowledge: {
       title: "Tämä taitaa olla hallussa!",
