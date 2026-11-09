@@ -490,7 +490,11 @@ export function evaluateMove(eq: Equation, op: Operation, stepIndex = 0, lang: L
   const analysis = analyseCandidates(eq);
 
   if (makesProgress(eq, after)) {
-    if (analysis.tidyMoveExists && !isTidy(after)) {
+    // The tutor never calls its own suggestion awkward. Collecting 7x and x/2 gives 13x/2, which is untidy, but it is the
+    // move the tutor suggests, and the fraction is cleared next.
+    const suggestion = suggestNextMove(eq);
+    const suggested = suggestion !== null && operationsEqual(suggestion.operation, op);
+    if (analysis.tidyMoveExists && !isTidy(after) && !suggested) {
       return notHelpful("awkward", "warning", text.awkward(op.kind, amount, formatEquation(after)), step, lang);
     }
     return { verdict: "helpful", step, explanation: explainStep(step, stepIndex, lang) };

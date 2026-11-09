@@ -21,6 +21,10 @@ export type StoryId =
   | "discount"
   | "triangle"
   | "pair-prices"
+  | "temperature"
+  | "temperature-fall"
+  | "coins"
+  | "fruit-mix"
   | "triangle-sides"
   | "bracket-puzzle"
   | "cyclists"
@@ -560,6 +564,138 @@ export function triangleSidesStory(a: number, b: number, s: number): Story | nul
   };
 }
 
+/** A number as it is written in a story: a real minus sign for negative temperatures. */
+const written = (n: number) => (n < 0 ? `−${-n}` : String(n));
+
+/** The temperature goes up (or down) by some degrees and ends below zero, so the answer may be negative too. */
+export function temperatureStory(change: number, end: number, rising: boolean): Story {
+  const start = rising ? end - change : end + change;
+  const e = written(end);
+  return {
+    id: "temperature",
+    difficulty: 2,
+    equations: rising
+      ? [`x + ${change} = ${end}`, `x - ${change} = ${end}`, `x + ${end} = ${change}`, `${change} - x = ${end}`]
+      : [`x - ${change} = ${end}`, `x + ${change} = ${end}`, `x - ${end} = ${change}`, `${change} - x = ${end}`],
+    solution: start,
+    i18n: {
+      en: {
+        situation: rising
+          ? `At night the temperature was some degrees. By morning it had risen ${change} degrees, and then it was ${e} °C.`
+          : `At noon the temperature was some degrees. By evening it had fallen ${change} degrees, and then it was ${e} °C.`,
+        letX: rising ? "Let x be the temperature at night in degrees Celsius." : "Let x be the temperature at noon in degrees Celsius.",
+        question: rising ? "What was the temperature at night?" : "What was the temperature at noon?",
+        unit: "°C",
+        build: rising ? `The temperature rose ${change}: x + ${change} = ${end}.` : `The temperature fell ${change}: x − ${change} = ${end}.`,
+        answer: rising ? `The temperature at night was ${written(start)} °C.` : `The temperature at noon was ${written(start)} °C.`,
+      },
+      fi: {
+        situation: rising
+          ? `Yöllä lämpötila oli jokin määrä asteita. Aamuun mennessä se oli noussut ${change} astetta, ja silloin lämpötila oli ${e} °C.`
+          : `Keskipäivällä lämpötila oli jokin määrä asteita. Iltaan mennessä se oli laskenut ${change} astetta, ja silloin lämpötila oli ${e} °C.`,
+        letX: rising ? "Olkoon x yön lämpötila celsiusasteina." : "Olkoon x keskipäivän lämpötila celsiusasteina.",
+        question: rising ? "Mikä oli lämpötila yöllä?" : "Mikä oli lämpötila keskipäivällä?",
+        unit: "°C",
+        build: rising ? `Lämpötila nousi ${change}: x + ${change} = ${end}.` : `Lämpötila laski ${change}: x − ${change} = ${end}.`,
+        answer: rising ? `Yön lämpötila oli ${written(start)} °C.` : `Keskipäivän lämpötila oli ${written(start)} °C.`,
+      },
+    },
+  };
+}
+
+/** The temperature falls the same number of degrees each hour. The answer is the fall per hour. */
+export function temperatureFallStory(hours: number, perHour: number, from: number): Story {
+  const end = from - hours * perHour;
+  return {
+    id: "temperature-fall",
+    difficulty: 3,
+    equations: [`${from} - ${hours}x = ${end}`, `${from} + ${hours}x = ${end}`, `${hours}x = ${end}`, `${from} - x = ${end}`],
+    solution: perHour,
+    i18n: {
+      en: {
+        situation: `The temperature was ${written(from)} °C. During ${hours} hours it fell by the same number of degrees every hour, and then it was ${written(end)} °C.`,
+        letX: "Let x be how many degrees the temperature fell each hour.",
+        question: "By how many degrees did it fall each hour?",
+        unit: "°",
+        build: `It fell ${hours} times x degrees in all: ${written(from)} − ${hours}x = ${written(end)}.`,
+        answer: `The temperature fell ${perHour} degrees every hour.`,
+      },
+      fi: {
+        situation: `Lämpötila oli ${written(from)} °C. ${hours} tunnin aikana se laski joka tunti saman verran, ja silloin lämpötila oli ${written(end)} °C.`,
+        letX: "Olkoon x se, montako astetta lämpötila laski joka tunti.",
+        question: "Montako astetta lämpötila laski tunnissa?",
+        unit: "°",
+        build: `Se laski yhteensä ${hours} kertaa x astetta: ${written(from)} − ${hours}x = ${written(end)}.`,
+        answer: `Lämpötila laski ${perHour} astetta tunnissa.`,
+      },
+    },
+  };
+}
+
+/** Two kinds of coin, a known number of coins, a known total: how many of the dearer kind? */
+export function coinsStory(coins: number, twos: number): Story | null {
+  if ((coins - twos) % 2 !== 0 || twos < 2 || coins - twos < 2) return null;
+  const total = 2 * twos + (coins - twos) / 2;
+  return {
+    id: "coins",
+    difficulty: 5,
+    equations: [`2x + (${coins} - x)/2 = ${total}`, `2x + (${coins} - x) = ${total}`, `2x + x/2 = ${total}`, `x/2 + 2(${coins} - x) = ${total}`],
+    solution: twos,
+    i18n: {
+      en: {
+        situation: `A box holds ${coins} coins. Some are 2-euro coins and the rest are 50-cent coins. Together they are worth ${total} euros.`,
+        letX: "Let x be the number of 2-euro coins.",
+        question: "How many 2-euro coins are there?",
+        unit: "",
+        build: `x coins of 2 euros are worth 2x. The other ${coins} − x coins are worth half a euro each: (${coins} − x)/2. Together: 2x + (${coins} − x)/2 = ${total}.`,
+        answer: `There are ${twos} 2-euro coins and ${coins - twos} 50-cent coins.`,
+      },
+      fi: {
+        situation: `Rasiassa on ${coins} kolikkoa. Osa on 2 euron kolikoita ja loput 50 sentin kolikoita. Yhteensä ne ovat arvoltaan ${total} euroa.`,
+        letX: "Olkoon x 2 euron kolikoiden määrä.",
+        question: "Montako 2 euron kolikkoa on?",
+        unit: "",
+        build: `x kpl 2 euron kolikkoa on arvoltaan 2x. Loput ${coins} − x kolikkoa ovat puoli euroa kappale: (${coins} − x)/2. Yhteensä: 2x + (${coins} − x)/2 = ${total}.`,
+        answer: `Kolikoita on ${twos} kpl 2 euron ja ${coins - twos} kpl 50 sentin kolikkoa.`,
+      },
+    },
+  };
+}
+
+/** Two fruits at different prices, a known weight and a known bill: how many kilograms of the dearer one? */
+export function fruitMixStory(dear: number, cheap: number, kilos: number, dearKilos: number): Story {
+  const total = dear * dearKilos + cheap * (kilos - dearKilos);
+  return {
+    id: "fruit-mix",
+    difficulty: 6,
+    equations: [
+      `${dear}x + ${cheap}(${kilos} - x) = ${total}`,
+      `${dear}x + ${cheap}x = ${total}`,
+      `${dear}x + ${cheap}(${kilos} + x) = ${total}`,
+      `${dear}(${kilos} - x) + ${cheap}x = ${total}`,
+    ],
+    solution: dearKilos,
+    i18n: {
+      en: {
+        situation: `Cherries cost €${dear} a kilo and plums cost €${cheap} a kilo. Mia buys ${kilos} kilos of fruit altogether and pays €${total}.`,
+        letX: "Let x be the number of kilos of cherries.",
+        question: "How many kilos of cherries did Mia buy?",
+        unit: "kg",
+        build: `Cherries: x kilos at €${dear} cost ${dear}x. Plums: ${kilos} − x kilos at €${cheap} cost ${cheap}(${kilos} − x). Together: ${dear}x + ${cheap}(${kilos} − x) = ${total}.`,
+        answer: `Mia bought ${dearKilos} kilos of cherries and ${kilos - dearKilos} kilos of plums.`,
+      },
+      fi: {
+        situation: `Kirsikat maksavat ${dear} € kilolta ja luumut ${cheap} € kilolta. Mia ostaa hedelmiä yhteensä ${kilos} kiloa ja maksaa ${total} €.`,
+        letX: "Olkoon x kirsikoiden määrä kiloina.",
+        question: "Montako kiloa kirsikoita Mia osti?",
+        unit: "kg",
+        build: `Kirsikat: x kiloa hintaan ${dear} € maksaa ${dear}x. Luumut: ${kilos} − x kiloa hintaan ${cheap} € maksaa ${cheap}(${kilos} − x). Yhteensä: ${dear}x + ${cheap}(${kilos} − x) = ${total}.`,
+        answer: `Mia osti ${dearKilos} kiloa kirsikoita ja ${kilos - dearKilos} kiloa luumuja.`,
+      },
+    },
+  };
+}
+
 export function bracketPuzzleStory(a: number, b: number, s: number): Story {
   const result = a * (s + b);
   return {
@@ -813,6 +949,24 @@ const TEMPLATES: readonly Template[] = [
   (rng) => triangleStory(int(rng, 2, 6), int(rng, 5, 14)),
   (rng) => pairPricesStory(int(rng, 2, 12), int(rng, 1, 9)),
   (rng) => triangleSidesStory(int(rng, 2, 6), int(rng, 1, 5), int(rng, 5, 12)),
+  (rng) => {
+    const change = int(rng, 3, 14);
+    const end = int(rng, -9, 6);
+    return end === 0 ? null : temperatureStory(change, end, rng() < 0.5);
+  },
+  (rng) => {
+    const hours = int(rng, 2, 5);
+    const perHour = int(rng, 1, 6);
+    const from = int(rng, -2, 12);
+    return from === 0 ? null : temperatureFallStory(hours, perHour, from);
+  },
+  (rng) => coinsStory(int(rng, 8, 20), int(rng, 2, 12)),
+  (rng) => {
+    const cheap = int(rng, 1, 4);
+    const dear = cheap + int(rng, 1, 4);
+    const kilos = int(rng, 8, 14);
+    return fruitMixStory(dear, cheap, kilos, int(rng, 2, kilos - 2));
+  },
   (rng) => bracketPuzzleStory(int(rng, 2, 6), int(rng, 2, 9), int(rng, 2, 14)),
   (rng) => cyclistsStory(int(rng, 8, 20), int(rng, 10, 24), int(rng, 2, 5)),
   (rng) => trainsStory(pick(rng, [10, 20, 30]), int(rng, 2, 5), int(rng, 1, 3)),

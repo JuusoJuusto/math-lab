@@ -38,7 +38,15 @@ Every finished step stays on the screen, stacked above the current equation, wri
 
 ## Solving by hand
 
-`HandWorkspace` has no operation buttons and no terms to tap. The learner types each line of the solution; `judgeLine` (`lib/equations/hand.ts`) compares it with the line above: it is accepted when one step on both sides (or a flip) gives it, or when it is the same equation written more simply (brackets opened, like terms put together). It says so when a line is the same as before, jumps over a step, changes the solution, or cannot be read. A note beside the line (`|| − 5`) is allowed and read. The last exercise of every round is solved this way, and so are the "solve the whole equation" tasks of the practice test. A test checks every line of the tutor's own solution of 1,500 equations is accepted, and a changed copy of each is not. "I am stuck" gives the usual three hints and counts as hints.
+`HandWorkspace` has no operation buttons and no terms to tap. The learner types each line of the solution; `judgeLine` (`lib/equations/hand.ts`) compares it with the line above: it is accepted when one step on both sides (or a flip) gives it, or when it is the same equation written more simply (brackets opened, like terms put together). It says so when a line is the same as before, jumps over a step, changes the solution, or cannot be read. A note beside the line (`|| − 5`) is allowed and read. Four in five exercises of every round are solved this way (`roundVariant` in `lib/equations/hand.ts`): the first uses the buttons, so a learner can try the ways of solving, and the rest rotate through three formats so the work stays varied, with whole solutions the most common:
+
+| Format | What the learner does |
+| --- | --- |
+| **full** | writes every line of the solution |
+| **continue** | the first lines are written; writes the rest |
+| **write** | does the one step they are told to do (`Subtract 5 from both sides`) and writes the equation it gives |
+
+`planHand` builds each format from the tutor's own solution, so every task can be finished. The practice test is built the same way: four tasks in five are written by hand (`handShare` in `lib/tasks/modes.ts`), in the same three formats, and every fifth task comes from the other kinds in turn (short questions, true or false, which step, find the mistake). A test checks every line of the tutor's own solution of 1,500 equations is accepted, and a changed copy of each is not. "I am stuck" gives the usual three hints and counts as hints.
 
 ## Decimals
 

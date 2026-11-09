@@ -15,7 +15,7 @@ MathLab has eleven ways to practise, so a learner can prepare for an exam with t
 | Write the equation | Turn a story into the right equation | multiple choice |
 | Time attack | As many tasks as possible in **60 seconds** | mixed, quick |
 | Mixed practice | Every kind of task, climbing from easy topics to hard | all |
-| Practice test (Koe) | A test on the chapters the learner chooses, with whole equations solved by hand (`hand` tasks); results are shown per chapter. It is set up on its own screen, `/test/` | chosen chapters |
+| Practice test (Koe) | A test on the chapters the learner chooses; four tasks in five are written by hand (`hand` tasks: whole solutions, solutions to finish, single steps) and the rest come from the other kinds in turn; results are shown per chapter. It is set up on its own screen, `/test/` | chosen chapters |
 | Fix your mistakes | Retry the tasks you got wrong | the mistake queue |
 
 Most modes can be narrowed to one topic and to a shorter or longer session. The topic list only shows topics the mode really has tasks for.

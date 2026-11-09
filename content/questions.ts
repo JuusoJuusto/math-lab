@@ -75,6 +75,36 @@ const equationQuestion = (
   );
 };
 
+/**
+ * "How many solutions does this equation have?": equations where x cancels. The answer key is checked with the
+ * engine in content/__tests__/special.test.ts, in both languages.
+ */
+const specialQuestion = (id: string, equation: string, kind: "none" | "infinite", left: string): QuestionDefinition => {
+  const correct = kind === "none" ? 0 : 2;
+  return def(
+    id,
+    "special",
+    "Intermediate",
+    correct,
+    {
+      prompt: `How many solutions does the equation ${equation} have?`,
+      choices: ["No solution", "Exactly one solution", "Infinitely many solutions", "Exactly two solutions"],
+      explanation:
+        kind === "none"
+          ? `The terms with x cancel and leave ${left}, which is never true. The equation is identically false, so it has no solution.`
+          : `The terms with x cancel and leave ${left}, which is always true. The equation is identically true, so every value of x is a solution.`,
+    },
+    {
+      prompt: `Montako ratkaisua yhtälöllä ${equation} on?`,
+      choices: ["Ei ratkaisua", "Täsmälleen yksi ratkaisu", "Äärettömän monta ratkaisua", "Täsmälleen kaksi ratkaisua"],
+      explanation:
+        kind === "none"
+          ? `x:llä olevat termit supistuvat pois ja jäljelle jää ${left}, mikä ei ole koskaan tosi. Yhtälö on identtisesti epätosi, joten sillä ei ole ratkaisua.`
+          : `x:llä olevat termit supistuvat pois ja jäljelle jää ${left}, mikä on aina tosi. Yhtälö on identtisesti tosi, joten jokainen x:n arvo on ratkaisu.`,
+    },
+  );
+};
+
 export const questionDefinitions: readonly QuestionDefinition[] = [
   equationQuestion(
     "q1",
@@ -403,6 +433,15 @@ export const questionDefinitions: readonly QuestionDefinition[] = [
       explanation: "Kirjoita vasen puoli, yhtäsuuruusmerkki ja oikea puoli tässä järjestyksessä: 5x − 2 = −x + 7. Ilman yhtäsuuruusmerkkiä se olisi vain lauseke.",
     },
   ),
+  specialQuestion("q34", "2x + 3 = 2x + 7", "none", "3 = 7"),
+  specialQuestion("q35", "3(x + 1) = 3x + 5", "none", "3 = 5"),
+  specialQuestion("q36", "5x - 4 = 5x + 1", "none", "−4 = 1"),
+  specialQuestion("q37", "4(x - 2) = 4x - 3", "none", "−8 = −3"),
+  specialQuestion("q38", "-2x + 9 = -2x + 4", "none", "9 = 4"),
+  specialQuestion("q39", "2(x + 3) = 2x + 6", "infinite", "6 = 6"),
+  specialQuestion("q40", "3x - 9 = 3(x - 3)", "infinite", "−9 = −9"),
+  specialQuestion("q41", "x/2 + x/2 = x", "infinite", "0 = 0"),
+  specialQuestion("q42", "-4(x - 1) = -4x + 4", "infinite", "4 = 4"),
   def(
     "q12",
     "proportion",

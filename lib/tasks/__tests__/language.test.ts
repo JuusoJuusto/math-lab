@@ -217,8 +217,8 @@ describe("the harder word problems", () => {
       seen.set(story.difficulty, (seen.get(story.difficulty) ?? new Set()).add(story.id));
     }
     expect([...seen.keys()].sort()).toEqual([1, 2, 3, 4, 5, 6]);
-    // Twelve new stories plus the nine before, plus two whose question asks for more than x, in every language.
-    expect([...seen.values()].reduce((sum, ids) => sum + ids.size, 0)).toBe(23);
+    // Twelve new stories plus the nine before, plus two whose question asks for more than x, plus four with negative temperatures, coins and a fruit mix, in every language.
+    expect([...seen.values()].reduce((sum, ids) => sum + ids.size, 0)).toBe(27);
   });
 
   it("keep the tiers apart: practice draws easy ones for 'word' and hard ones for 'hard-word'", () => {

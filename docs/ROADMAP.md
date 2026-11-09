@@ -23,7 +23,7 @@ This roadmap describes the intended evolution of MathLab. Checked items are pres
 - [x] Solver equations with decimals (one clean-up question: multiply every term by 10 or 100; shown with a comma in Finnish)
 - [x] Trial and improvement ("guess and check") as another way to solve
 - [x] Learn in nine chapters in the order of the textbook, each with its lessons and a marked next lesson
-- [x] Solving by hand: every line typed and checked, with no buttons, as the last exercise of every round
+- [x] Solving by hand: every line typed and checked, with no buttons, on four in five exercises of every round, in three varied formats
 - [x] A practice test (Koe): choose chapters, mixed tasks from easy to hard, whole equations by hand, results per chapter
 - [x] A short-quiz popup when a lesson is solved without help
 - [x] The worksheet: finished steps stack above the current equation
