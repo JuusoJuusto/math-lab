@@ -5,6 +5,7 @@ import { LangProvider, useI18n } from "@/hooks/useLang";
 import { replaceRoute, useAddress } from "@/hooks/useRoute";
 import { DEFAULT_LANG, type Lang } from "@/lib/lang";
 import { parseHash, parseLocation, toPath, type Route } from "@/lib/routes";
+import { initStudyHub } from "@/src/studyHubProgress";
 import { Footer } from "@/components/shell/Footer";
 import { Header } from "@/components/shell/Header";
 import { PracticeSession } from "@/components/practice/PracticeSession";
@@ -15,6 +16,10 @@ import { PracticeHub } from "@/components/screens/PracticeHub";
 import { ProgressScreen } from "@/components/screens/ProgressScreen";
 import { SolverScreen } from "@/components/screens/SolverScreen";
 import { TestScreen } from "@/components/screens/TestScreen";
+
+// Runs when the page's script loads, before React reads the address: a student who came from Study Hub has a token
+// after the # of the address, which is kept for this visit and removed from the address bar. Without one, nothing happens.
+if (typeof window !== "undefined") initStudyHub();
 
 function Screen({ route }: { route: Route }) {
   switch (route.name) {
@@ -42,6 +47,12 @@ function Shell({ route }: { route: Route }) {
   const main = useRef<HTMLElement>(null);
   const key = toPath(route, DEFAULT_LANG);
   const first = useRef(true);
+
+  // Next.js puts the address it saw at load time back once the page has hydrated, which brings the Study Hub token
+  // back into the address bar. If that happened, take it out again (the token is already kept for this visit).
+  useEffect(() => {
+    if (/(?:^#|&)hub_token=/.test(window.location.hash)) initStudyHub();
+  }, []);
 
   // The page language and title follow the address, for screen readers and the tab.
   useEffect(() => {

@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, PenLine } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
-import { pickFrom, pickRound, planHand, roundVariant, type Exercise, type ExerciseResult, type LevelDefinition } from "@/lib/equations";
+import { levelText, pickFrom, pickRound, planHand, roundVariant, type Exercise, type ExerciseResult, type LevelDefinition } from "@/lib/equations";
+import { crossedMilestones, percentDone } from "@/src/studyHubMilestones";
+import { reportProgress } from "@/src/studyHubProgress";
 import type { MoveMode } from "./MoveTabs";
 import { HandWorkspace } from "./HandWorkspace";
 import { SolverWorkspace, type WorkspaceOutcome } from "./SolverWorkspace";
@@ -51,6 +53,9 @@ export function PracticeRound({ level, avoid, onComplete, onEquationSolved, onEx
 
   function next(outcome: WorkspaceOutcome) {
     const updated = [...results, { id: exercise.id, ...outcome }];
+    for (const value of crossedMilestones(percentDone(index, exercises.length), percentDone(index + 1, exercises.length))) {
+      reportProgress("progress", { label: levelText(level, lang).title, ref: `lesson-${level.id}`, value });
+    }
     onEquationSolved?.();
     if (isLast) {
       onComplete({ exercises, results: updated });

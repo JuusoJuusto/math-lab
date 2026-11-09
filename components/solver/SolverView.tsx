@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import { useI18n } from "@/hooks/useLang";
 import { levelText, summariseRound, thinksYouKnow, type LevelDefinition } from "@/lib/equations";
+import { reportProgress } from "@/src/studyHubProgress";
 import type { Topic } from "@/content/topics";
 import { TopicIcon } from "@/components/ui/icons";
 import { KnowledgePopup } from "@/components/ui/KnowledgePopup";
@@ -64,9 +65,12 @@ export function SolverView({ level, topic, onComplete, onEquationSolved, onExit,
   function startPractice() {
     setRoundId((id) => id + 1);
     setStage("practice");
+    reportProgress("started", { label: text.title, ref: `lesson-${level.id}` });
   }
 
   function finishRound(finished: RoundReport) {
+    // The score of a round is how many equations were solved without a hint or a wrong move.
+    reportProgress("score", { label: text.title, ref: `lesson-${level.id}`, value: summariseRound(finished.results).cleanSolves, max: finished.exercises.length });
     setReport(finished);
     setPreviousIds(finished.exercises.map((exercise) => exercise.id));
     setStage("complete");

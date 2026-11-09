@@ -7,6 +7,7 @@ import {
   formatEquation,
   formatFraction,
   frac,
+  levelText,
   mustParseEquation,
   pickFrom,
   planHand,
@@ -18,6 +19,8 @@ import {
   type LevelDefinition,
 } from "@/lib/equations";
 import { EXAMPLE_STORIES, pickStoryRound, type Story } from "@/lib/tasks";
+import { crossedMilestones, percentDone } from "@/src/studyHubMilestones";
+import { reportProgress } from "@/src/studyHubProgress";
 import { EquationWriter, type BuiltResult } from "./EquationWriter";
 import type { RoundReport } from "./PracticeRound";
 import { HandWorkspace } from "./HandWorkspace";
@@ -219,7 +222,7 @@ function storyExercise(story: Story, index: number): Exercise {
 
 /** A run of word problems, easy ones first. Each one: write the equation, solve it, answer in words. */
 export function WordRound({ level, onComplete, onEquationSolved, onExit }: WordRoundProps) {
-  const { t } = useI18n();
+  const { lang, t } = useI18n();
   // Chosen once, when the learner starts the round, so server-rendered HTML never differs from the client.
   const [stories] = useState(() => pickStoryRound(Math.random, level.roundSize, level.tiers));
   const [index, setIndex] = useState(0);
@@ -241,6 +244,9 @@ export function WordRound({ level, onComplete, onEquationSolved, onExit }: WordR
   function next(outcome: WorkspaceOutcome) {
     const exercise = storyExercise(stories[index], index);
     const updated = [...results, { id: exercise.id, ...outcome }];
+    for (const value of crossedMilestones(percentDone(index, stories.length), percentDone(index + 1, stories.length))) {
+      reportProgress("progress", { label: levelText(level, lang).title, ref: `lesson-${level.id}`, value });
+    }
     onEquationSolved?.();
     if (isLast) {
       onComplete({ exercises: stories.map(storyExercise), results: updated });

@@ -28,7 +28,10 @@
         var parts = rest.split("?");
         var path = parts[0].replace(/^\/+|\/+$/g, "");
         var target = "/" + lang + "/" + (path ? path + "/" : "") + (parts[1] ? "?" + parts[1] : "");
-        location.replace(target);
+        // A student who came from Study Hub has a token in the fragment (#hub_token=...), which the browser would drop here.
+        // The app reads it on the next page and removes it from the address bar.
+        var hub = /(?:^#|&)(hub_token=[^&]*)/.exec(location.hash);
+        location.replace(target + (hub ? "#" + hub[1] : ""));
       })();
     </script>
   </head>

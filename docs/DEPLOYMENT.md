@@ -87,7 +87,7 @@ npm run deploy
 - `html_handling: "auto-trailing-slash"`: `/fi` goes to `/fi/` (a 307 redirect), and `/fi/learn/index.html` goes to `/fi/learn/`.
 - `not_found_handling: "404-page"`: an unknown address returns the bilingual `404.html` **with status 404**.
 - `public/_headers` is copied into `out/` and sets security headers on every page (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) and a one-year `immutable` cache for the hashed files under `/_next/static/`. Pages themselves are revalidated on every visit, so a new deployment shows up at once. `_headers` is never served as a file.
-- The content security policy allows only the site's own files (plus the small inline scripts Next.js writes into each page). If you ever add an outside script, font or image, the browser will refuse it until you add its address to the policy in `public/_headers`.
+- The content security policy allows only the site's own files (plus the small inline scripts Next.js writes into each page). If you ever add an outside script, font or image, the browser will refuse it until you add its address to the policy in `public/_headers`. The one exception is `connect-src`, which also allows `https://insaneones.xyz` so the app can report a student's progress to Study Hub (see [Study Hub progress](STUDY_HUB.md)); keep it the same in `deploy/security-headers.conf` for Coolify.
 
 ### Checked in the real runtime
 

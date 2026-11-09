@@ -173,6 +173,18 @@ describe("the redirect page at /", () => {
     expect(redirect({ hash: "#/", saved: "en" })).toBe("/en/");
   });
 
+  it("keeps the Study Hub token on the way to the language page, so it is not lost", () => {
+    expect(redirect({ hash: "#hub_token=abc.def-123", language: "fi-FI" })).toBe("/fi/#hub_token=abc.def-123");
+    expect(redirect({ hash: "#hub_token=abc.def-123", saved: "en" })).toBe("/en/#hub_token=abc.def-123");
+    expect(redirect({ hash: "#section=2&hub_token=abc" })).toBe("/en/#hub_token=abc");
+  });
+
+  it("does not add a token when there is none, and does not copy other hash parts over", () => {
+    expect(redirect({ hash: "" })).toBe("/en/");
+    expect(redirect({ hash: "#section=2" })).toBe("/en/");
+    expect(redirect({ hash: "#not_hub_token=abc" })).toBe("/en/");
+  });
+
   it("has a way in without JavaScript", () => {
     expect(html).toContain('<a href="/en/">English</a>');
     expect(html).toContain('<a href="/fi/">Suomi</a>');
