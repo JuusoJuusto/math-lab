@@ -107,7 +107,7 @@ In Coolify: **New Resource → Public or Private Repository → `JuusoJuusto/mat
 | Domain | your address, for example `https://mathlab.example.com` |
 | Build argument (optional) | `NEXT_PUBLIC_SITE_URL` = the same address, so that a shared link shows the MathLab picture card |
 
-Coolify puts HTTPS in front of the container, so nothing else is needed. The logo is a normal file at the usual addresses (`/favicon.ico`, `/favicon.svg`, `/apple-touch-icon.png`, `/manifest.webmanifest`), so the browser tab icon, the home-screen icon on a phone and the installed-app icon all work the same on every host.
+Use the `main` branch. Coolify rebuilds the image whenever it deploys a new commit, so switch on automatic deployments (the GitHub webhook) in Coolify if a push to `main` should deploy by itself. The container listens on port 80. The site at mathlab.insaneones.xyz is reached through a Cloudflare Tunnel: point the tunnel at the Coolify application's HTTP service, never at the build stage. Coolify (or the tunnel) puts HTTPS in front of the container, so nothing else is needed. The logo is a normal file at the usual addresses (`/favicon.ico`, `/favicon.svg`, `/apple-touch-icon.png`, `/manifest.webmanifest`), so the browser tab icon, the home-screen icon on a phone and the installed-app icon all work the same on every host.
 
 To try it on your own computer: `docker build -t mathlab . && docker run --rm -p 8080:80 mathlab`, then open http://localhost:8080/.
 

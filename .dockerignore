@@ -4,6 +4,11 @@ out
 .git
 .github
 .wrangler
+.vscode
+.idea
 *.log
-.env*
+.env
+.env.*
+!.env.example
+.DS_Store
 docs
